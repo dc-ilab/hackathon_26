@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { clients } from './data/clients';
+import { useState } from 'react';
+import { Link, useParams } from 'react-router-dom';
+import { clients } from '../data/clients';
 
 const formatCurrency = (value) =>
   new Intl.NumberFormat('en-US', {
@@ -9,48 +9,29 @@ const formatCurrency = (value) =>
     maximumFractionDigits: 0,
   }).format(value);
 
-// Simple donut chart component
-function DonutChart() {
-  return (
-    <div className="donut" aria-hidden="true"></div>
-  );
-}
-
-function App() {
-  const [search, setSearch] = useState('');
-  const [selectedId, setSelectedId] = useState(clients[0].id);
+function ClientProfile() {
+  const { clientId } = useParams();
   const [activeTab, setActiveTab] = useState('Homepage');
-
-  const filteredClients = useMemo(() => {
-    const normalized = search.trim().toLowerCase();
-    if (!normalized) return clients;
-    return clients.filter(
-      (client) =>
-        client.name.toLowerCase().includes(normalized) ||
-        client.id.toLowerCase().includes(normalized)
-    );
-  }, [search]);
-
-  const selectedClient = clients.find((client) => client.id === selectedId) || filteredClients[0] || clients[0];
+  
+  // Find the selected client from URL params or default to first client
+  const selectedClient = clients.find((client) => client.id === clientId) || clients[0];
 
   return (
     <div className="page">
       {/* Client selector dropdown */}
-      {filteredClients.length > 1 && (
-        <div className="client-selector">
-          <label>Viewing client: </label>
-          <select
-            value={selectedId}
-            onChange={(e) => setSelectedId(e.target.value)}
-          >
-            {filteredClients.map((client) => (
-              <option key={client.id} value={client.id}>
-                {client.name}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
+      <div className="client-selector">
+        <label>Viewing client: </label>
+        <select
+          value={selectedClient.id}
+          onChange={(e) => window.location.href = `/client/${e.target.value}`}
+        >
+          {clients.map((client) => (
+            <option key={client.id} value={client.id}>
+              {client.name}
+            </option>
+          ))}
+        </select>
+      </div>
 
       {/* header container */}
       <header className="header card">
@@ -97,9 +78,9 @@ function App() {
         </div>
 
         <div className="header__right">
-          <Link to="/client" className="btn">
+          <button className="btn">
             Client profile <span aria-hidden="true">↗</span>
-          </Link>
+          </button>
         </div>
       </header>
 
@@ -116,11 +97,11 @@ function App() {
         </Link>
       </nav>
 
-      {/* recent activity */}
+      {/* Recent Activity */}
       <section className="activity card">
         <div className="activity__title">Recent Activity</div>
         <div className="timeline">
-          {selectedClient.recentActivity.map((_, i) => (
+          {selectedClient.recentActivity.slice(0, 7).map((_, i) => (
             <div 
               key={i} 
               className="tick" 
@@ -225,7 +206,7 @@ function App() {
         <section className="module module--accounts card">
           <h2 className="module__title">Accounts</h2>
           <div className="module__content accountsLayout">
-            <DonutChart />
+            <div className="donut" aria-hidden="true"></div>
 
             <div className="table">
               <div className="row headerRow">
@@ -245,4 +226,4 @@ function App() {
   );
 }
 
-export default App;
+export default ClientProfile;
