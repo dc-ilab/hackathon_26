@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { clients } from './data/clients';
 
 const formatCurrency = (value) =>
@@ -246,7 +247,11 @@ function App() {
 
           <article className="card accounts-card">
             <header>
-              <h3>Accounts</h3>
+              <h3>
+                <Link to="/accounts" className="header-link">
+                      Accounts
+                </Link>
+              </h3>
             </header>
             <div className="accounts-content">
               <div className="chart-container">
