@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mock Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <div class="page">
+
+    <!-- header container -->
+    <header class="header card">
+      <div class="header__left">
+        <div class="avatar" aria-hidden="true"></div>
+        <div class="pronouns">she/her</div>
+      </div>
+
+      <div class="header__grid">
+        <div class="info">
+          <div class="label">Name</div>
+          <div class="value strong">JANE SMITH</div>
+        </div>
+
+        <div class="info">
+          <div class="label">Marital Status</div>
+          <div class="value">Single</div>
+        </div>
+
+        <div class="info">
+          <div class="label">Location</div>
+          <div class="value">Pittsburgh, PA</div>
+        </div>
+
+        <div class="info">
+          <div class="label">Housing Status</div>
+          <div class="value">First Home</div>
+        </div>
+
+        <div class="info">
+          <div class="label">Age</div>
+          <div class="value">26 yrs</div>
+        </div>
+
+        <div class="info">
+          <div class="label">Time with PNC</div>
+          <div class="value">3 yrs 4 mths</div>
+        </div>
+
+        <div class="info">
+          <div class="label">Employment</div>
+          <div class="value">Office Worker</div>
+        </div>
+      </div>
+
+      <div class="header__right">
+        <button class="btn">
+          Client profile <span aria-hidden="true">↗</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- navigation tabs -->
+    <nav class="tabs">
+      <a class="tab active" href="#">Homepage</a>
+      <a class="tab" href="#">Accounts</a>
+    </nav>
+
+    <!-- recent activity -->
+    <section class="activity card">
+      <div class="activity__title">Recent Activity</div>
+      <div class="timeline">
+        <div class="tick" title="4/2"></div>
+        <div class="tick"></div>
+        <div class="tick"></div>
+        <div class="tick"></div>
+        <div class="tick"></div>
+        <div class="tick"></div>
+        <div class="tick"></div>
+        <div class="callout">Appointment scheduled</div>
+      </div>
+    </section>
+
+    <!-- dashboard -->
+    <main class="dashboard">
+      <!-- insights -->
+      <section class="module module--insights card">
+        <h2 class="module__title">Insights</h2>
+        <div class="module__content split">
+          <div class="subcard">
+            <h3 class="subcard__title">Client Summary</h3>
+            <p class="muted">
+              Jane Smith is a x year client of PNC, other stuff yeah
+            </p>
+
+            <h3 class="subcard__title">Possible Opportunities</h3>
+            <ul class="list">
+              <li>Lock mortgage rate</li>
+              <li>Open a credit card</li>
+            </ul>
+          </div>
+
+          <div class="subcard">
+            <h3 class="subcard__title">Client Goals</h3>
+            <ul class="list">
+              <li>Finish mortgage payments</li>
+              <li>Diversify portfolio</li>
+              <li>Open travel credit card</li>
+            </ul>
+
+            <div class="notes">
+              <div class="notes__label">Client Notes</div>
+              <select class="select">
+                <option>Last submitted note</option>
+                <option>Note 2</option>
+                <option>Note 3</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- forms -->
+      <section class="module module--forms card">
+        <h2 class="module__title">Forms</h2>
+
+        <div class="formPanel">
+          <h3 class="formPanel__title">Client Interaction</h3>
+          <p class="muted">
+            Client appointment coming up? Start interaction form to see client insights +
+            previous interaction summaries.
+          </p>
+          <div class="formPanel__actions">
+            <button class="btn btn--ghost" aria-label="Call">
+              ☎
+            </button>
+            <button class="btn">Start</button>
+          </div>
+        </div>
+        <button class="accordion">
+          <span>Service Request</span>
+          <span class="chev" aria-hidden="true">▾</span>
+        </button>
+        <div class="accordionPanel muted">
+          Placeholder content for service request module.
+        </div>
+
+        <button class="accordion">
+          <span>Sales Request</span>
+          <span class="chev" aria-hidden="true">▾</span>
+        </button>
+        <div class="accordionPanel muted">
+          Placeholder content for sales request module.
+        </div>
+      </section>
+
+      <!-- net worth -->
+      <section class="module module--networth card">
+        <div class="bigMoney">$45,584</div>
+        <div class="module__subtitle">Total Net Worth</div>
+        <div class="muted">Assets</div>
+
+        <div class="iconRow" aria-hidden="true">
+          <div class="iconBox"></div>
+          <div class="iconBox"></div>
+          <div class="iconBox"></div>
+        </div>
+      </section>
+
+      <!-- accounts & chart -->
+      <section class="module module--accounts card">
+        <h2 class="module__title">Accounts</h2>
+        <div class="module__content accountsLayout">
+          <div class="donut" aria-hidden="true"></div>
+
+          <div class="table">
+            <div class="row headerRow">
+              <div>Type</div><div>Account</div>
+            </div>
+            <div class="row"><div>Spend</div><div>xxx1234</div></div>
+            <div class="row"><div>Reserve</div><div>xxx4321</div></div>
+            <div class="row"><div>Growth</div><div>xxx5671</div></div>
+            <div class="row"><div>Mortgage</div><div>xxx1765</div></div>
+          </div>
+        </div>
+      </section>
+
+      
+    </main>
+
+  </div>
+
+  <script>
+    // accordion
+    document.querySelectorAll(".accordion").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const panel = btn.nextElementSibling;
+        panel.classList.toggle("open");
+      });
+    });
+  </script>
+</body>
+</html>
