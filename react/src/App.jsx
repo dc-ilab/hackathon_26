@@ -20,7 +20,7 @@ function DonutChart() {
 function App() {
   const [search, setSearch] = useState('');
   const [selectedId, setSelectedId] = useState(clients[0].id);
-  const [tabs, setTabs] = useState([{id: 'homepage', name: 'Homepage', component: <Homepage selectedClient={clients.find(c => c.id === selectedId) || clients[0]} setSelectedId={setSelectedId} filteredClients={[]} openTab={(id, name, Component) => openTab(id, name, Component)} />}]);
+  const [tabs, setTabs] = useState([{id: 'homepage', name: 'Homepage', component: <Homepage selectedClient={clients.find(c => c.id === selectedId) || clients[0]} setSelectedId={setSelectedId} filteredClients={[]} openTab={(id, name, Component) => openTab(id, name, Component)} />, closable: false}]);
   const [activeTab, setActiveTab] = useState('homepage');
 
   const filteredClients = useMemo(() => {
@@ -38,13 +38,14 @@ function App() {
   const openTab = (id, name, Component) => {
     const existing = tabs.find(t => t.id === id);
     if (!existing) {
-      setTabs([...tabs, {id, name, component: <Component selectedClient={selectedClient} />}]);
+      setTabs([...tabs, {id, name, component: <Component selectedClient={selectedClient} />, closable: true}]);
     }
     setActiveTab(id);
   };
 
   const closeTab = (id) => {
-    if (tabs.length > 1) {
+    const tabToClose = tabs.find(t => t.id === id);
+    if (tabToClose && tabToClose.closable && tabs.length > 1) {
       setTabs(tabs.filter(t => t.id !== id));
       if (activeTab === id) {
         setActiveTab(tabs.find(t => t.id !== id).id);
@@ -59,6 +60,8 @@ function App() {
       component: tab.id === 'homepage' ? <Homepage selectedClient={selectedClient} setSelectedId={setSelectedId} filteredClients={filteredClients} openTab={openTab} /> : tab.component
     })));
   }, [selectedClient, filteredClients]);
+
+  const contentBackground = activeTab === 'homepage' ? '#F4EFE7' : '#BDDDBD';
 
   return (
     <div className="page">
@@ -116,15 +119,15 @@ function App() {
       {/* tab navigation */}
       <nav className="tabs">
         {tabs.map((tab) => (
-          <div key={tab.id} className={`tab ${activeTab === tab.id ? 'active' : ''}`} onClick={() => setActiveTab(tab.id)}>
+          <div key={tab.id} className={`tab ${activeTab === tab.id ? 'active' : ''} ${tab.id}`} onClick={() => setActiveTab(tab.id)}>
             {tab.name}
-            <button onClick={(e) => {e.stopPropagation(); closeTab(tab.id);}}>x</button>
+            {tab.closable && <button onClick={(e) => {e.stopPropagation(); closeTab(tab.id);}}>x</button>}
           </div>
         ))}
       </nav>
 
       {/* content */}
-      <div className="content">
+      <div className="content" style={{ background: contentBackground }}>
         {tabs.find((tab) => tab.id === activeTab)?.component}
       </div>
     </div>
