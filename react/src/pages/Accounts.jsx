@@ -177,16 +177,7 @@ function LineChart({ data }) {
   );
 }
 
-function Accounts() {
-  const [searchParams] = useSearchParams();
-  const clientId = searchParams.get('clientId');
-
-  const selectedClient = useMemo(() => {
-    if (clientId) {
-      return clients.find(c => c.id === clientId) || clients[0];
-    }
-    return clients[0];
-  }, [clientId]);
+function Accounts({ selectedClient }) {
 
   const accountHistory = useMemo(() => {
     const spend = selectedClient.accounts.find((account) => account.type === 'Spend')?.balance || 0;
@@ -212,64 +203,6 @@ function Accounts() {
 
   return (
     <div className="accounts-page">
-      {/* Breadcrumb Navigation */}
-      <nav className="breadcrumb">
-        <Link to="/">Homepage</Link>
-        <span>&gt;</span>
-        <span>Accounts</span>
-      </nav>
-
-      {/* Client Information Section */}
-      <header className="header card">
-        <div className="header__left">
-          <div className="avatar" aria-hidden="true"></div>
-          <div className="pronouns">{selectedClient.pronouns || 'she/her'}</div>
-        </div>
-
-        <div className="header__grid">
-          <div className="info">
-            <div className="label">Name</div>
-            <div className="value strong">{selectedClient.name.toUpperCase()}</div>
-          </div>
-
-          <div className="info">
-            <div className="label">Marital Status</div>
-            <div className="value">{selectedClient.maritalStatus}</div>
-          </div>
-
-          <div className="info">
-            <div className="label">Location</div>
-            <div className="value">{selectedClient.location}</div>
-          </div>
-
-          <div className="info">
-            <div className="label">Housing Status</div>
-            <div className="value">{selectedClient.housingStatus}</div>
-          </div>
-
-          <div className="info">
-            <div className="label">Age</div>
-            <div className="value">{selectedClient.age} yrs</div>
-          </div>
-
-          <div className="info">
-            <div className="label">Time with PNC</div>
-            <div className="value">{selectedClient.timeWithBank}</div>
-          </div>
-
-          <div className="info">
-            <div className="label">Employment</div>
-            <div className="value">{selectedClient.employment}</div>
-          </div>
-        </div>
-
-        <div className="header__right">
-          <Link to="/client" className="btn">
-            Client profile <span aria-hidden="true">↗</span>
-          </Link>
-        </div>
-      </header>
-
       {/* Overview Insight Section */}
       <section className="overview-insight-section">
         <h2>Overview Insight</h2>
@@ -374,11 +307,6 @@ function Accounts() {
           </tbody>
         </table>
       </section>
-
-      {/* Back to Client Button */}
-      <div className="accounts-footer">
-        <Link to="/" className="btn-back">← Back to Client</Link>
-      </div>
     </div>
   );
 }
