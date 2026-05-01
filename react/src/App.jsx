@@ -223,13 +223,19 @@ function App() {
 
         {/* accounts & chart */}
         <section className="module module--accounts card">
-          <h2 className="module__title">Accounts</h2>
+          
+          <h2 className="module__title">
+            <Link to="/accounts" className="module__title-link">
+              Accounts
+            </Link>
+          </h2>
+
           <div className="module__content accountsLayout">
             <DonutChart />
 
             <div className="table">
               <div className="row headerRow">
-                <div>Type</div><div>Account</div>
+                <div>Type</div><div>AcCount</div>
               </div>
               {selectedClient.accounts.map((account, i) => (
                 <div key={i} className="row">
