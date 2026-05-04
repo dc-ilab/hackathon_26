@@ -3,6 +3,7 @@ import Homepage from './pages/Homepage';
 import Accounts from './pages/Accounts';
 import ClientProfile from './pages/ClientProfile';
 import Forms from './pages/Forms';
+import InteractionPage from './pages/InteractionPage';
 import { clients } from './data/clients';
 
 const formatCurrency = (value) =>
@@ -41,7 +42,7 @@ function App() {
   const openTab = (id, name, Component) => {
     const existing = tabs.find(t => t.id === id);
     if (!existing) {
-      setTabs([...tabs, {id, name, component: <Component selectedClient={selectedClient} />, closable: true}]);
+      setTabs([...tabs, {id, name, component: <Component selectedClient={selectedClient} openTab={openTab} />, closable: true}]);
     }
     setActiveTab(id);
   };
@@ -111,6 +112,12 @@ function App() {
             onClick={() => handleMenuItemClick('client-profile', 'Client Profile', ClientProfile)}
           >
             Client Profile
+          </button>
+          <button
+            className="menu-item"
+            onClick={() => handleMenuItemClick('interaction', 'Client Interaction', InteractionPage)}
+          >
+            Client Interaction
           </button>
         </nav>
       </div>
