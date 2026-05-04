@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react';
 import Homepage from './pages/Homepage';
 import Accounts from './pages/Accounts';
+import ClientProfile from './pages/ClientProfile';
+import Forms from './pages/Forms';
 import { clients } from './data/clients';
 
 const formatCurrency = (value) =>
@@ -22,6 +24,7 @@ function App() {
   const [selectedId, setSelectedId] = useState(clients[0].id);
   const [tabs, setTabs] = useState([{id: 'homepage', name: 'Homepage', component: <Homepage selectedClient={clients.find(c => c.id === selectedId) || clients[0]} setSelectedId={setSelectedId} filteredClients={[]} openTab={(id, name, Component) => openTab(id, name, Component)} />, closable: false}]);
   const [activeTab, setActiveTab] = useState('homepage');
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const filteredClients = useMemo(() => {
     const normalized = search.trim().toLowerCase();
@@ -63,8 +66,55 @@ function App() {
 
   const contentBackground = activeTab === 'homepage' ? '#F4EFE7' : '#BDDDBD';
 
+  const handleMenuItemClick = (id, name, Component) => {
+    setIsMenuOpen(false);
+    openTab(id, name, Component);
+  };
+
   return (
     <div className="page">
+      {/* Hamburger Menu */}
+      <div className="hamburger-menu">
+        <button
+          className={`hamburger-toggle ${isMenuOpen ? 'open' : ''}`}
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          aria-label="Toggle menu"
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+        {isMenuOpen && (
+          <div className="menu-overlay" onClick={() => setIsMenuOpen(false)}></div>
+        )}
+        <nav className={`hamburger-nav ${isMenuOpen ? 'open' : ''}`}>
+          <button
+            className="menu-item"
+            onClick={() => handleMenuItemClick('homepage', 'Homepage', Homepage)}
+          >
+            Homepage
+          </button>
+          <button
+            className="menu-item"
+            onClick={() => handleMenuItemClick('forms', 'Forms', Forms)}
+          >
+            Forms
+          </button>
+          <button
+            className="menu-item"
+            onClick={() => handleMenuItemClick('accounts', 'Accounts', Accounts)}
+          >
+            Accounts
+          </button>
+          <button
+            className="menu-item"
+            onClick={() => handleMenuItemClick('client-profile', 'Client Profile', ClientProfile)}
+          >
+            Client Profile
+          </button>
+        </nav>
+      </div>
+
       {/* header container */}
       <header className="header card">
         <div className="header__left">
@@ -110,7 +160,7 @@ function App() {
         </div>
 
         <div className="header__right">
-          <button className="btn">
+          <button className="btn" onClick={() => openTab('client-profile', 'Client Profile', ClientProfile)}>
             Client profile <span aria-hidden="true">↗</span>
           </button>
         </div>

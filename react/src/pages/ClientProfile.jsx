@@ -1,5 +1,3 @@
-import { useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
 import { clients } from '../data/clients';
 
 const formatCurrency = (value) =>
@@ -9,219 +7,138 @@ const formatCurrency = (value) =>
     maximumFractionDigits: 0,
   }).format(value);
 
-function ClientProfile() {
-  const { clientId } = useParams();
-  const [activeTab, setActiveTab] = useState('Homepage');
-  
-  // Find the selected client from URL params or default to first client
-  const selectedClient = clients.find((client) => client.id === clientId) || clients[0];
-
+function ClientProfile({ selectedClient }) {
   return (
-    <div className="page">
-      {/* Client selector dropdown */}
-      <div className="client-selector">
-        <label>Viewing client: </label>
-        <select
-          value={selectedClient.id}
-          onChange={(e) => window.location.href = `/client/${e.target.value}`}
-        >
-          {clients.map((client) => (
-            <option key={client.id} value={client.id}>
-              {client.name}
-            </option>
-          ))}
-        </select>
+    <div className="client-profile-page">
+      {/* Client Summary */}
+      <div className="module module--summary card">
+        <h2 className="module__title">Client Summary</h2>
+        <div className="module__content">
+          <div className="summary-details">
+            <div className="detail-item">
+              <span>Total Net Worth:</span>
+              <span className="value">{formatCurrency(selectedClient.netWorth)}</span>
+            </div>
+            <div className="detail-item">
+              <span>Total Assets:</span>
+              <span className="value">{formatCurrency(selectedClient.assets)}</span>
+            </div>
+            <div className="detail-item">
+              <span>Total Liabilities:</span>
+              <span className="value">{formatCurrency(selectedClient.liabilities)}</span>
+            </div>
+            <div className="detail-item">
+              <span>Relationship:</span>
+              <span className="value">{selectedClient.relationship}</span>
+            </div>
+            <div className="detail-item">
+              <span>Time with Bank:</span>
+              <span className="value">{selectedClient.timeWithBank}</span>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* header container */}
-      <header className="header card">
-        <div className="header__left">
-          <div className="avatar" aria-hidden="true"></div>
-          <div className="pronouns">{selectedClient.pronouns || 'she/her'}</div>
-        </div>
-
-        <div className="header__grid">
-          <div className="info">
-            <div className="label">Name</div>
-            <div className="value strong">{selectedClient.name.toUpperCase()}</div>
-          </div>
-
-          <div className="info">
-            <div className="label">Marital Status</div>
-            <div className="value">{selectedClient.maritalStatus}</div>
-          </div>
-
-          <div className="info">
-            <div className="label">Location</div>
-            <div className="value">{selectedClient.location}</div>
-          </div>
-
-          <div className="info">
-            <div className="label">Housing Status</div>
-            <div className="value">{selectedClient.housingStatus}</div>
-          </div>
-
-          <div className="info">
-            <div className="label">Age</div>
-            <div className="value">{selectedClient.age} yrs</div>
-          </div>
-
-          <div className="info">
-            <div className="label">Time with PNC</div>
-            <div className="value">{selectedClient.timeWithBank}</div>
-          </div>
-
-          <div className="info">
-            <div className="label">Employment</div>
-            <div className="value">{selectedClient.employment}</div>
+      {/* Contact Information */}
+      <div className="module module--contact card">
+        <h2 className="module__title">Contact Information</h2>
+        <div className="module__content">
+          <div className="contact-grid">
+            <div className="contact-item">
+              <span>Name:</span>
+              <span className="value">{selectedClient.name}</span>
+            </div>
+            <div className="contact-item">
+              <span>Age:</span>
+              <span className="value">{selectedClient.age} yrs</span>
+            </div>
+            <div className="contact-item">
+              <span>Marital Status:</span>
+              <span className="value">{selectedClient.maritalStatus}</span>
+            </div>
+            <div className="contact-item">
+              <span>Location:</span>
+              <span className="value">{selectedClient.location}</span>
+            </div>
+            <div className="contact-item">
+              <span>Housing Status:</span>
+              <span className="value">{selectedClient.housingStatus}</span>
+            </div>
+            <div className="contact-item">
+              <span>Employment:</span>
+              <span className="value">{selectedClient.employment}</span>
+            </div>
+            <div className="contact-item">
+              <span>Pronouns:</span>
+              <span className="value">{selectedClient.pronouns || 'she/her'}</span>
+            </div>
           </div>
         </div>
+      </div>
 
-        <div className="header__right">
-          <button className="btn">
-            Client profile <span aria-hidden="true">↗</span>
-          </button>
+      {/* Account Overview */}
+      <div className="module module--accounts-overview card">
+        <h2 className="module__title">Account Overview</h2>
+        <div className="module__content">
+          <div className="accounts-overview-grid">
+            {selectedClient.accounts.map((account, index) => (
+              <div key={index} className="account-overview-card">
+                <h3>{account.type}</h3>
+                <div className="account-balance">{formatCurrency(account.balance)}</div>
+                <div className="account-percentage">{account.percentage}% of total</div>
+                <div
+                  className="account-indicator"
+                  style={{ backgroundColor: account.color }}
+                ></div>
+              </div>
+            ))}
+          </div>
         </div>
-      </header>
-
-      {/* navigation tabs */}
-      <nav className="tabs">
-        <button 
-          className={`tab ${activeTab === 'Homepage' ? 'active' : ''}`}
-          onClick={() => setActiveTab('Homepage')}
-        >
-          Homepage
-        </button>
-        <Link to="/accounts" className={`tab ${activeTab === 'Accounts' ? 'active' : ''}`}>
-          Accounts
-        </Link>
-      </nav>
+      </div>
 
       {/* Recent Activity */}
-      <section className="activity card">
-        <div className="activity__title">Recent Activity</div>
-        <div className="timeline">
-          {selectedClient.recentActivity.slice(0, 7).map((_, i) => (
-            <div 
-              key={i} 
-              className="tick" 
-              title={i === 0 ? '4/2' : undefined}
-            ></div>
-          ))}
-          <div className="callout">Appointment scheduled</div>
+      <div className="module module--recent-activity card">
+        <h2 className="module__title">Recent Activity</h2>
+        <div className="module__content">
+          <ul className="activity-list">
+            {selectedClient.recentActivity.map((activity, index) => (
+              <li key={index} className="activity-item">
+                <span className="activity-date">{activity.date}</span>
+                <span className="activity-type">{activity.type}</span>
+                <span className="activity-amount">{formatCurrency(activity.amount)}</span>
+              </li>
+            ))}
+          </ul>
         </div>
-      </section>
+      </div>
 
-      {/* dashboard */}
-      <main className="dashboard">
-        {/* insights */}
-        <section className="module module--insights card">
-          <h2 className="module__title">Insights</h2>
-          <div className="module__content split">
-            <div className="subcard">
-              <h3 className="subcard__title">Client Summary</h3>
-              <p className="muted">
-                {selectedClient.name} is a {selectedClient.relationship} of PNC, {selectedClient.clientSummary.toLowerCase()}
-              </p>
+      {/* Client Goals */}
+      <div className="module module--goals card">
+        <h2 className="module__title">Client Goals</h2>
+        <div className="module__content">
+          <ul className="goals-list">
+            {selectedClient.clientGoals.map((goal, index) => (
+              <li key={index} className={`goal-item ${goal.completed ? 'completed' : ''}`}>
+                {goal.goal}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
 
-              <h3 className="subcard__title">Possible Opportunities</h3>
-              <ul className="list">
-                {selectedClient.opportunities.map((opp, i) => (
-                  <li key={i}>{opp}</li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="subcard">
-              <h3 className="subcard__title">Client Goals</h3>
-              <ul className="list">
-                {selectedClient.clientGoals.map((goal, i) => (
-                  <li key={i} className={goal.completed ? 'completed' : ''}>
-                    {goal.goal}
-                  </li>
-                ))}
-              </ul>
-
-              <div className="notes">
-                <div className="notes__label">Client Notes</div>
-                <select className="select">
-                  <option>Last submitted note</option>
-                  <option>Note 2</option>
-                  <option>Note 3</option>
-                </select>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* forms */}
-        <section className="module module--forms card">
-          <h2 className="module__title">Forms</h2>
-
-          <div className="formPanel">
-            <h3 className="formPanel__title">Client Interaction</h3>
-            <p className="muted">
-              Client appointment coming up? Start interaction form to see client insights +
-              previous interaction summaries.
-            </p>
-            <div className="formPanel__actions">
-              <button className="btn btn--ghost" aria-label="Call">
-                ☎
-              </button>
-              <button className="btn">Start</button>
-            </div>
-          </div>
-          
-          <button className="accordion">
-            <span>Service Request</span>
-            <span className="chev" aria-hidden="true">▾</span>
-          </button>
-          <div className="accordionPanel muted">
-            Placeholder content for service request module.
-          </div>
-
-          <button className="accordion">
-            <span>Sales Request</span>
-            <span className="chev" aria-hidden="true">▾</span>
-          </button>
-          <div className="accordionPanel muted">
-            Placeholder content for sales request module.
-          </div>
-        </section>
-
-        {/* net worth */}
-        <section className="module module--networth card">
-          <div className="bigMoney">{formatCurrency(selectedClient.netWorth)}</div>
-          <div className="module__subtitle">Total Net Worth</div>
-          <div className="muted">Assets</div>
-
-          <div className="iconRow" aria-hidden="true">
-            <div className="iconBox"></div>
-            <div className="iconBox"></div>
-            <div className="iconBox"></div>
-          </div>
-        </section>
-
-        {/* accounts & chart */}
-        <section className="module module--accounts card">
-          <h2 className="module__title">Accounts</h2>
-          <div className="module__content accountsLayout">
-            <div className="donut" aria-hidden="true"></div>
-
-            <div className="table">
-              <div className="row headerRow">
-                <div>Type</div><div>Account</div>
-              </div>
-              {selectedClient.accounts.map((account, i) => (
-                <div key={i} className="row">
-                  <div>{account.type}</div>
-                  <div>xxx{String(i + 1).padStart(4, '0')}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      </main>
+      {/* Opportunities */}
+      <div className="module module--opportunities card">
+        <h2 className="module__title">Opportunities</h2>
+        <div className="module__content">
+          <ul className="opportunities-list">
+            {selectedClient.opportunities.map((opp, index) => (
+              <li key={index} className="opportunity-item">
+                {opp}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
     </div>
   );
 }
