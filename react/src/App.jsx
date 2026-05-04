@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import Homepage from './pages/Homepage';
+import Accounts from './pages/Accounts';
 import { clients } from './data/clients';
 
 const formatCurrency = (value) =>
@@ -19,7 +20,8 @@ function DonutChart() {
 function App() {
   const [search, setSearch] = useState('');
   const [selectedId, setSelectedId] = useState(clients[0].id);
-  const [activeTab, setActiveTab] = useState('Homepage');
+  const [tabs, setTabs] = useState([{id: 'homepage', name: 'Homepage', component: <Homepage selectedClient={clients.find(c => c.id === selectedId) || clients[0]} setSelectedId={setSelectedId} filteredClients={[]} openTab={(id, name, Component) => openTab(id, name, Component)} />, closable: false}]);
+  const [activeTab, setActiveTab] = useState('homepage');
 
   const filteredClients = useMemo(() => {
     const normalized = search.trim().toLowerCase();
@@ -33,25 +35,36 @@ function App() {
 
   const selectedClient = clients.find((client) => client.id === selectedId) || filteredClients[0] || clients[0];
 
+  const openTab = (id, name, Component) => {
+    const existing = tabs.find(t => t.id === id);
+    if (!existing) {
+      setTabs([...tabs, {id, name, component: <Component selectedClient={selectedClient} />, closable: true}]);
+    }
+    setActiveTab(id);
+  };
+
+  const closeTab = (id) => {
+    const tabToClose = tabs.find(t => t.id === id);
+    if (tabToClose && tabToClose.closable && tabs.length > 1) {
+      setTabs(tabs.filter(t => t.id !== id));
+      if (activeTab === id) {
+        setActiveTab(tabs.find(t => t.id !== id).id);
+      }
+    }
+  };
+
+  // Update tabs when selectedClient changes
+  useMemo(() => {
+    setTabs(tabs.map(tab => ({
+      ...tab,
+      component: tab.id === 'homepage' ? <Homepage selectedClient={selectedClient} setSelectedId={setSelectedId} filteredClients={filteredClients} openTab={openTab} /> : tab.component
+    })));
+  }, [selectedClient, filteredClients]);
+
+  const contentBackground = activeTab === 'homepage' ? '#F4EFE7' : '#BDDDBD';
+
   return (
     <div className="page">
-      {/* Client selector dropdown */}
-      {filteredClients.length > 1 && (
-        <div className="client-selector">
-          <label>Viewing client: </label>
-          <select
-            value={selectedId}
-            onChange={(e) => setSelectedId(e.target.value)}
-          >
-            {filteredClients.map((client) => (
-              <option key={client.id} value={client.id}>
-                {client.name}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
-
       {/* header container */}
       <header className="header card">
         <div className="header__left">
@@ -97,156 +110,26 @@ function App() {
         </div>
 
         <div className="header__right">
-          <Link to="/client" className="btn">
+          <button className="btn">
             Client profile <span aria-hidden="true">↗</span>
-          </Link>
+          </button>
         </div>
       </header>
 
-      {/* navigation tabs */}
+      {/* tab navigation */}
       <nav className="tabs">
-        <button 
-          className={`tab ${activeTab === 'Homepage' ? 'active' : ''}`}
-          onClick={() => setActiveTab('Homepage')}
-        >
-          Homepage
-        </button>
-        <Link to="/accounts" className={`tab ${activeTab === 'Accounts' ? 'active' : ''}`}>
-          Accounts
-        </Link>
+        {tabs.map((tab) => (
+          <div key={tab.id} className={`tab ${activeTab === tab.id ? 'active' : ''} ${tab.id}`} onClick={() => setActiveTab(tab.id)}>
+            {tab.name}
+            {tab.closable && <button onClick={(e) => {e.stopPropagation(); closeTab(tab.id);}}>x</button>}
+          </div>
+        ))}
       </nav>
 
-      {/* recent activity */}
-      <section className="activity card">
-        <div className="activity__title">Recent Activity</div>
-        <div className="timeline">
-          {selectedClient.recentActivity.map((_, i) => (
-            <div 
-              key={i} 
-              className="tick" 
-              title={i === 0 ? '4/2' : undefined}
-            ></div>
-          ))}
-          <div className="callout">Appointment scheduled</div>
-        </div>
-      </section>
-
-      {/* dashboard */}
-      <main className="dashboard">
-        {/* insights */}
-        <section className="module module--insights card">
-          <h2 className="module__title">Insights</h2>
-          <div className="module__content split">
-            <div className="subcard">
-              <h3 className="subcard__title">Client Summary</h3>
-              <p className="muted">
-                {selectedClient.name} is a {selectedClient.relationship} of PNC, {selectedClient.clientSummary.toLowerCase()}
-              </p>
-
-              <h3 className="subcard__title">Possible Opportunities</h3>
-              <ul className="list">
-                {selectedClient.opportunities.map((opp, i) => (
-                  <li key={i}>{opp}</li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="subcard">
-              <h3 className="subcard__title">Client Goals</h3>
-              <ul className="list">
-                {selectedClient.clientGoals.map((goal, i) => (
-                  <li key={i} className={goal.completed ? 'completed' : ''}>
-                    {goal.goal}
-                  </li>
-                ))}
-              </ul>
-
-              <div className="notes">
-                <div className="notes__label">Client Notes</div>
-                <select className="select">
-                  <option>Last submitted note</option>
-                  <option>Note 2</option>
-                  <option>Note 3</option>
-                </select>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* forms */}
-        <section className="module module--forms card">
-          <h2 className="module__title">Forms</h2>
-
-          <div className="formPanel">
-            <h3 className="formPanel__title">Client Interaction</h3>
-            <p className="muted">
-              Client appointment coming up? Start interaction form to see client insights +
-              previous interaction summaries.
-            </p>
-            <div className="formPanel__actions">
-              <button className="btn btn--ghost" aria-label="Call">
-                ☎
-              </button>
-              <button className="btn">Start</button>
-            </div>
-          </div>
-          
-          <button className="accordion">
-            <span>Service Request</span>
-            <span className="chev" aria-hidden="true">▾</span>
-          </button>
-          <div className="accordionPanel muted">
-            Placeholder content for service request module.
-          </div>
-
-          <button className="accordion">
-            <span>Sales Request</span>
-            <span className="chev" aria-hidden="true">▾</span>
-          </button>
-          <div className="accordionPanel muted">
-            Placeholder content for sales request module.
-          </div>
-        </section>
-
-        {/* net worth */}
-        <section className="module module--networth card">
-          <div className="bigMoney">{formatCurrency(selectedClient.netWorth)}</div>
-          <div className="module__subtitle">Total Net Worth</div>
-          <div className="muted">Assets</div>
-
-          <div className="iconRow" aria-hidden="true">
-            <div className="iconBox"></div>
-            <div className="iconBox"></div>
-            <div className="iconBox"></div>
-          </div>
-        </section>
-
-        {/* accounts & chart */}
-        <section className="module module--accounts card">
-          
-          <h2 className="module__title">
-            <Link to="/accounts" className="module__title-link">
-              Accounts
-            </Link>
-          </h2>
-
-          <div className="module__content accountsLayout">
-            <DonutChart />
-
-            <div className="table">
-              <div className="row headerRow">
-                <div>Type</div><div>AcCount</div>
-              </div>
-              {selectedClient.accounts.map((account, i) => (
-                <div key={i} className="row">
-                  <div>{account.type}</div>
-                  <div>xxx{String(i + 1).padStart(4, '0')}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      </main>
+      {/* content */}
+      <div className="content" style={{ background: contentBackground }}>
+        {tabs.find((tab) => tab.id === activeTab)?.component}
+      </div>
     </div>
   );
 }
