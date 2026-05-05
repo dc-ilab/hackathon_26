@@ -1890,6 +1890,7 @@ body{
   padding: 12px;
   background: rgba(255,255,255,.08);
   border: 1px solid rgba(255,255,255,.18);
+  color: white;
 }
 .formPanel__title{
   margin: 0 0 8px;
@@ -1955,14 +1956,13 @@ body{
 
 .accounts-link {
   cursor: pointer;
-  text-decoration: underline;
-  text-decoration-color: rgba(255, 255, 255, 0.7);
   text-underline-offset: 4px;
   transition: text-decoration-color 0.2s ease;
+  color: white !important;
 }
 
 .accounts-link:hover {
-  text-decoration-color: rgba(255, 255, 255, 1);
+  color: var(--ink) !important;
 }
 
 .account-name {
@@ -2415,6 +2415,43 @@ body::before {
   background-size: cover;
 }
 
+/* --- Force white text in Forms section --- */
+/* --- Forms text: white, except buttons --- */
+.module--forms {
+  color: #ffffff;
+}
+
+/* All text inside forms EXCEPT buttons */
+.module--forms :not(button):not(.btn) {
+  color: #ffffff;
+}
+
+/* Explicitly restore button text */
+.module--forms button,
+.module--forms .btn {
+  color: #1f2430;
+}
+
+/* Muted text inside forms should still be readable */
+.module--forms .muted,
+.module--forms small {
+  color: rgba(255, 255, 255, 0.75) !important;
+}
+
+/* --- Remove all link underlines --- */
+a,
+a:visited,
+a:hover,
+a:focus,
+.account-link,
+.accounts-link {
+  text-decoration: none !important;
+}
+
+.accounts-link:hover{
+  color: var(--ink);
+}
+
 
 html,
 body,
@@ -2424,6 +2461,59 @@ body,
 .content,
 .accounts-page {
   background: transparent !important;
+}
+
+
+/* --- Cursor control --- */
+
+/* Default: always arrow */
+body {
+  cursor: default;
+}
+
+/* Explicitly remove text-selection cursor */
+p, span, div, li, label, h1, h2, h3, h4, h5, h6 {
+  cursor: default;
+}
+
+/* Clickable elements: pointer */
+a,
+button,
+[role="button"],
+.account-link,
+.accounts-link,
+.client-card,
+.menu-item,
+.tab,
+.accordion,
+.quick-action-btn {
+  cursor: pointer;
+}
+
+/* Links on light backgrounds */
+a,
+.account-link,
+.accounts-link {
+  color: var(--color-heading);
+  transition: color 0.2s ease;
+}
+
+a:hover,
+.account-link:hover,
+.accounts-link:hover {
+  color: var(--color-accent);
+}
+
+/* Links in dark modules */
+.module--forms a,
+.module--accounts a {
+  color: #ffffff;
+  transition: color 0.2s ease;
+}
+
+.module--forms a:hover,
+.module--accounts a:hover {
+  color: #1f2430; /* dark ink */
 }
 
 
