@@ -4,6 +4,7 @@ import Accounts from './pages/Accounts';
 import ClientProfile from './pages/ClientProfile';
 import Forms from './pages/Forms';
 import InteractionPage from './pages/InteractionPage';
+import SpendDetails from './pages/SpendDetails';
 import { clients } from './data/clients';
 
 const formatCurrency = (value) =>

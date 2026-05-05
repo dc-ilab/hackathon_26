@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { clients } from '../data/clients';
 import Accounts from './Accounts';
+import InteractionPage from './InteractionPage';
 
 const formatCurrency = (value) =>
   new Intl.NumberFormat('en-US', {
@@ -10,10 +11,95 @@ const formatCurrency = (value) =>
     maximumFractionDigits: 0,
   }).format(value);
 
-// Simple donut chart component
-function DonutChart() {
+// Pie chart component for account distribution (copied from Accounts.jsx)
+function PieChart({ accounts }) {
+  const width = 200;
+  const height = 200;
+  const radius = 80;
+  const centerX = width / 2;
+  const centerY = height / 2;
+
+  const total = accounts.reduce((sum, account) => sum + account.balance, 0);
+  let currentAngle = -Math.PI / 2; // Start from top
+
+  const colors = ['#71B48D', '#BDDDBD', '#404E7C'];
+
+  const [hoverSlice, setHoverSlice] = useState(null);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  const handleMouseEnter = (account, event) => {
+    setHoverSlice(account);
+    setMousePosition({ x: event.clientX, y: event.clientY });
+  };
+
+  const handleMouseLeave = () => {
+    setHoverSlice(null);
+  };
+
+  const handleMouseMove = (event) => {
+    if (hoverSlice) {
+      setMousePosition({ x: event.clientX, y: event.clientY });
+    }
+  };
+
   return (
-    <div className="donut" aria-hidden="true"></div>
+    <div className="pie-chart-container" onMouseMove={handleMouseMove}>
+      <svg viewBox={`0 0 ${width} ${height}`} width="100%" height="100%">
+        {accounts.map((account, index) => {
+          const percentage = account.balance / total;
+          const angle = percentage * 2 * Math.PI;
+          const startAngle = currentAngle;
+          const endAngle = currentAngle + angle;
+
+          const x1 = centerX + radius * Math.cos(startAngle);
+          const y1 = centerY + radius * Math.sin(startAngle);
+          const x2 = centerX + radius * Math.cos(endAngle);
+          const y2 = centerY + radius * Math.sin(endAngle);
+
+          const largeArcFlag = angle > Math.PI ? 1 : 0;
+
+          const pathData = [
+            `M ${centerX} ${centerY}`,
+            `L ${x1} ${y1}`,
+            `A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2}`,
+            'Z'
+          ].join(' ');
+
+          currentAngle = endAngle;
+
+          return (
+            <path
+              key={account.type}
+              d={pathData}
+              fill={colors[index]}
+              stroke="#fff"
+              strokeWidth="2"
+              onMouseEnter={(event) => handleMouseEnter(account, event)}
+              onMouseLeave={handleMouseLeave}
+              style={{ cursor: 'pointer' }}
+            />
+          );
+        })}
+      </svg>
+
+      {hoverSlice && (
+        <div
+          className="pie-tooltip"
+          style={{
+            position: 'fixed',
+            left: mousePosition.x + 10,
+            top: mousePosition.y - 10,
+            pointerEvents: 'none',
+            zIndex: 1000,
+          }}
+        >
+          <div className="pie-tooltip-content">
+            <div className="pie-tooltip-title">{hoverSlice.type} Account</div>
+            <div className="pie-tooltip-value">{formatCurrency(hoverSlice.balance)}</div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -108,7 +194,7 @@ function Homepage({ selectedClient, setSelectedId, filteredClients, openTab }) {
               <button className="btn btn--ghost" aria-label="Call">
                 ☎
               </button>
-              <button className="btn">Start</button>
+              <button className="btn" onClick={() => openTab('interaction', 'Client Interaction', InteractionPage)}>Start</button>
             </div>
           </div>
 
@@ -144,21 +230,27 @@ function Homepage({ selectedClient, setSelectedId, filteredClients, openTab }) {
 
         {/* accounts & chart */}
         <section className="module module--accounts card">
-          <h2 className="module__title" onClick={() => openTab('accounts', 'Accounts', Accounts)}>
+          <h2 className="module__title accounts-link" onClick={() => openTab('accounts', 'Accounts', Accounts)}>
             Accounts
           </h2>
 
           <div className="module__content accountsLayout">
-            <DonutChart />
+            <PieChart accounts={selectedClient.accounts} />
 
             <div className="table">
               <div className="row headerRow">
-                <div>Type</div><div>AcCount</div>
+                <div>Type</div><div>Balance</div>
               </div>
               {selectedClient.accounts.map((account, i) => (
                 <div key={i} className="row">
-                  <div>{account.type}</div>
-                  <div>xxx{String(i + 1).padStart(4, '0')}</div>
+                  <div className="account-name">
+                    <div
+                      className="account-indicator"
+                      style={{ backgroundColor: ['#71B48D', '#BDDDBD', '#404E7C'][i] }}
+                    ></div>
+                    {account.type}
+                  </div>
+                  <div>{formatCurrency(account.balance)}</div>
                 </div>
               ))}
             </div>

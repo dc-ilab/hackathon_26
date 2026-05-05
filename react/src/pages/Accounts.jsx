@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
+import SpendDetails from './SpendDetails';
 import { clients } from '../data/clients';
 
 const formatCurrency = (value) =>
@@ -177,7 +177,99 @@ function LineChart({ data }) {
   );
 }
 
-function Accounts({ selectedClient }) {
+// Pie chart component for account distribution
+function PieChart({ accounts }) {
+  const width = 200;
+  const height = 200;
+  const radius = 80;
+  const centerX = width / 2;
+  const centerY = height / 2;
+
+  const total = accounts.reduce((sum, account) => sum + account.balance, 0);
+  let currentAngle = -Math.PI / 2; // Start from top
+
+  const colors = ['#71B48D', '#BDDDBD', '#404E7C'];
+
+  const [hoverSlice, setHoverSlice] = useState(null);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  const handleMouseEnter = (account, event) => {
+    setHoverSlice(account);
+    setMousePosition({ x: event.clientX, y: event.clientY });
+  };
+
+  const handleMouseLeave = () => {
+    setHoverSlice(null);
+  };
+
+  const handleMouseMove = (event) => {
+    if (hoverSlice) {
+      setMousePosition({ x: event.clientX, y: event.clientY });
+    }
+  };
+
+  return (
+    <div className="pie-chart-container" onMouseMove={handleMouseMove}>
+      <svg viewBox={`0 0 ${width} ${height}`} width="100%" height="100%">
+        {accounts.map((account, index) => {
+          const percentage = account.balance / total;
+          const angle = percentage * 2 * Math.PI;
+          const startAngle = currentAngle;
+          const endAngle = currentAngle + angle;
+
+          const x1 = centerX + radius * Math.cos(startAngle);
+          const y1 = centerY + radius * Math.sin(startAngle);
+          const x2 = centerX + radius * Math.cos(endAngle);
+          const y2 = centerY + radius * Math.sin(endAngle);
+
+          const largeArcFlag = angle > Math.PI ? 1 : 0;
+
+          const pathData = [
+            `M ${centerX} ${centerY}`,
+            `L ${x1} ${y1}`,
+            `A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2}`,
+            'Z'
+          ].join(' ');
+
+          currentAngle = endAngle;
+
+          return (
+            <path
+              key={account.type}
+              d={pathData}
+              fill={colors[index]}
+              stroke="#fff"
+              strokeWidth="2"
+              onMouseEnter={(event) => handleMouseEnter(account, event)}
+              onMouseLeave={handleMouseLeave}
+              style={{ cursor: 'pointer' }}
+            />
+          );
+        })}
+      </svg>
+
+      {hoverSlice && (
+        <div
+          className="pie-tooltip"
+          style={{
+            position: 'fixed',
+            left: mousePosition.x + 10,
+            top: mousePosition.y - 10,
+            pointerEvents: 'none',
+            zIndex: 1000,
+          }}
+        >
+          <div className="pie-tooltip-content">
+            <div className="pie-tooltip-title">{hoverSlice.type} Account</div>
+            <div className="pie-tooltip-value">{formatCurrency(hoverSlice.balance)}</div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Accounts({ selectedClient, openTab }) {
 
   const accountHistory = useMemo(() => {
     const spend = selectedClient.accounts.find((account) => account.type === 'Spend')?.balance || 0;
@@ -252,60 +344,59 @@ function Accounts({ selectedClient }) {
       {/* Accounts Breakdown Section */}
       <section className="accounts-breakdown-section">
         <h2>Accounts Breakdown</h2>
-        <div className="accounts-breakdown-grid">
-          {selectedClient.accounts.map((account, i) => (
-            <div key={account.type} className="breakdown-card">
-              <div
-                className="breakdown-indicator"
-                style={{ backgroundColor: ['#71B48D', '#BDDDBD', '#404E7C'][i] }}
-              ></div>
-              <h3>{account.type} Account</h3>
-              <p className="breakdown-balance">{formatCurrency(account.balance)}</p>
-              <p className="breakdown-percentage">{account.percentage}% of total</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Account Information Section */}
-      <section className="account-information-section">
-        <h2>Account Information</h2>
-        <table className="accounts-table">
-          <thead>
-            <tr>
-              <th>Account Type</th>
-              <th>Balance</th>
-              <th>Percentage</th>
-              <th>Last Transaction</th>
-            </tr>
-          </thead>
-          <tbody>
-            {selectedClient.accounts.map((account, i) => {
-              const lastActivity = selectedClient.recentActivity[i] || selectedClient.recentActivity[0];
-              return (
-                <tr key={account.type}>
-                  <td>
-                    <div className="account-name">
-                      <div
-                        className="account-indicator"
-                        style={{ backgroundColor: ['#71B48D', '#BDDDBD', '#404E7C'][i] }}
-                      ></div>
-                      {account.type}
-                    </div>
-                  </td>
-                  <td>{formatCurrency(account.balance)}</td>
-                  <td>{account.percentage}%</td>
-                  <td>
-                    {lastActivity.type === 'deposit' && '+'}
-                    {lastActivity.type === 'withdrawal' && '-'}
-                    {lastActivity.type !== 'deposit' && lastActivity.type !== 'withdrawal' && ''}
-                    {formatCurrency(lastActivity.amount)} ({lastActivity.date})
-                  </td>
+        <div className="breakdown-grid">
+          <div className="breakdown-chart">
+            <PieChart accounts={selectedClient.accounts} />
+          </div>
+          <div className="breakdown-table">
+            <table className="accounts-table">
+              <thead>
+                <tr>
+                  <th>Account Type</th>
+                  <th>Balance</th>
+                  <th>Percentage</th>
+                  <th>Last Transaction</th>
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
+              </thead>
+              <tbody>
+                {selectedClient.accounts.map((account, i) => {
+                  const lastActivity = selectedClient.recentActivity[i] || selectedClient.recentActivity[0];
+                  return (
+                    <tr key={account.type}>
+                          <td>
+                        <div
+                          className={`account-name ${account.type === 'Spend' ? 'account-link' : ''}`}
+                          onClick={() => account.type === 'Spend' && openTab('spend-account', 'Spend Account', SpendDetails)}
+                          onKeyDown={(event) => {
+                            if (account.type === 'Spend' && (event.key === 'Enter' || event.key === ' ')) {
+                              openTab('spend-account', 'Spend Account', SpendDetails);
+                            }
+                          }}
+                          role={account.type === 'Spend' ? 'button' : undefined}
+                          tabIndex={account.type === 'Spend' ? 0 : undefined}
+                        >
+                          <div
+                            className="account-indicator"
+                            style={{ backgroundColor: ['#71B48D', '#BDDDBD', '#404E7C'][i] }}
+                          ></div>
+                          {account.type}
+                        </div>
+                      </td>
+                      <td>{formatCurrency(account.balance)}</td>
+                      <td>{account.percentage}%</td>
+                      <td>
+                        {lastActivity.type === 'deposit' && '+'}
+                        {lastActivity.type === 'withdrawal' && '-'}
+                        {lastActivity.type !== 'deposit' && lastActivity.type !== 'withdrawal' && ''}
+                        {formatCurrency(lastActivity.amount)} ({lastActivity.date})
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </section>
     </div>
   );

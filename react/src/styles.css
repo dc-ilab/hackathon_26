@@ -1338,6 +1338,30 @@ input:focus {
   pointer-events: none;
 }
 
+.pie-tooltip {
+  pointer-events: none;
+  z-index: 1000;
+}
+
+.pie-tooltip-content {
+  background-color: #251F47;
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  white-space: nowrap;
+}
+
+.pie-tooltip-title {
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.pie-tooltip-value {
+  font-weight: 400;
+}
+
 .legend-item {
   display: flex;
   gap: 8px;
@@ -1372,47 +1396,41 @@ input:focus {
   color: var(--color-heading);
 }
 
-.accounts-breakdown-grid {
+.breakdown-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
+  grid-template-columns: 1fr 2fr;
+  gap: 32px;
+  align-items: start;
 }
 
-.breakdown-card {
-  background: rgba(113, 180, 141, 0.08);
-  border: 1px solid var(--color-border);
-  border-radius: 16px;
-  padding: 24px;
+.breakdown-chart {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  align-items: center;
 }
 
-.breakdown-indicator {
+.pie-chart-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--color-text);
+}
+
+.legend-color {
   width: 12px;
   height: 12px;
-  border-radius: 3px;
-  align-self: flex-start;
+  border-radius: 50%;
 }
 
-.breakdown-card h3 {
-  margin: 0;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--color-heading);
-}
-
-.breakdown-balance {
-  margin: 0;
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: var(--color-accent);
-}
-
-.breakdown-percentage {
-  margin: 0;
-  font-size: 0.9rem;
-  color: var(--color-text-secondary);
+.breakdown-table {
+  width: 100%;
 }
 
 /* Account Information Section */
@@ -1467,6 +1485,21 @@ input:focus {
   gap: 12px;
   align-items: center;
   font-weight: 600;
+}
+
+.account-name.account-link {
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: rgba(37, 31, 71, 0.7);
+}
+
+.account-name.account-link:hover {
+  opacity: 0.85;
+}
+
+.account-name.account-link:focus {
+  outline: 3px solid rgba(113, 180, 141, 0.4);
+  outline-offset: 2px;
 }
 
 .account-indicator {
@@ -1913,6 +1946,39 @@ body{
   align-items: center;
   color: white;
 }
+.accountsLayout .pie-chart-container {
+  width: 140px;
+  height: 140px;
+}
+.accountsLayout .pie-chart-container svg {
+  width: 140px !important;
+  height: 140px !important;
+}
+
+.accounts-link {
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: rgba(255, 255, 255, 0.7);
+  text-underline-offset: 4px;
+  transition: text-decoration-color 0.2s ease;
+}
+
+.accounts-link:hover {
+  text-decoration-color: rgba(255, 255, 255, 1);
+}
+
+.account-name {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.account-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
 .donut{
   width: 140px;
   height: 140px;
@@ -2007,5 +2073,328 @@ body{
       "forms"
       "networth"
       "accounts"
+  }
+}
+
+.spend-details-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 24px;
+  display: grid;
+  gap: 24px;
+}
+
+.spend-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.spend-header h1 {
+  margin: 0 0 8px;
+  font-size: 2rem;
+  color: var(--color-heading);
+}
+
+.spend-balance-card {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  padding: 24px;
+  min-width: 240px;
+  display: grid;
+  gap: 8px;
+}
+
+.spend-balance-label {
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.spend-balance-value {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--color-accent);
+}
+
+.spend-balance-note {
+  color: var(--color-text-secondary);
+  font-size: 0.95rem;
+}
+
+.spend-main-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr);
+  gap: 24px;
+}
+
+.spend-left-column {
+  display: grid;
+  gap: 24px;
+}
+
+.spend-insights-card,
+.spend-graph-card,
+.spend-transactions-card,
+.calendar-card {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  padding: 24px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.section-header h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: var(--color-heading);
+}
+
+.insight-stat-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.insight-stat-row div {
+  background: rgba(113, 180, 141, 0.1);
+  border-radius: 14px;
+  padding: 18px;
+}
+
+.insight-label {
+  display: block;
+  color: var(--color-text-secondary);
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+}
+
+.spend-bar-chart {
+  display: grid;
+  gap: 16px;
+}
+
+.chart-axis-labels {
+  display: grid;
+  grid-template-rows: repeat(5, minmax(0, 1fr));
+  row-gap: 24px;
+  align-items: stretch;
+  justify-items: start;
+  color: var(--color-text-secondary);
+  font-size: 0.85rem;
+}
+
+.chart-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  align-items: end;
+  gap: 16px;
+  min-height: 220px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border);
+}
+
+.chart-column {
+  display: grid;
+  align-items: end;
+  justify-items: center;
+  gap: 10px;
+}
+
+
+.bar-stack {
+  display: flex;
+  gap: 6px;
+  align-items: flex-end;
+  width: 100%;
+}
+
+.bar-column {
+  flex: 1;
+}
+
+
+.bar-column.expense {
+  background: rgba(113, 180, 141, 0.9);
+}
+
+.bar-column.income {
+  background: rgba(64, 78, 124, 0.95);
+}
+
+.chart-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+}
+
+.transaction-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.transaction-table th,
+.transaction-table td {
+  padding: 14px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.transaction-table th {
+  font-size: 0.85rem;
+  color: var(--color-heading);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: rgba(113, 180, 141, 0.08);
+}
+
+.transaction-amount.positive {
+  color: #1f7a3f;
+  font-weight: 700;
+}
+
+.transaction-amount.expense {
+  color: var(--color-text);
+}
+
+.calendar-card {
+  display: grid;
+  gap: 20px;
+  overflow: hidden;
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.calendar-header-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.calendar-nav-button {
+  border: none;
+  background: rgba(64, 78, 124, 0.1);
+  color: var(--color-heading);
+  padding: 10px 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.calendar-nav-button:hover {
+  background: rgba(64, 78, 124, 0.16);
+}
+
+.calendar-action {
+  border: none;
+  background: var(--color-accent);
+  color: white;
+  padding: 10px 16px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.calendar-day-label {
+  color: var(--color-text-secondary);
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.calendar-cell {
+  min-height: 44px;
+  display: grid;
+  place-items: center;
+  background: #f5f3ef;
+  border-radius: 12px;
+  color: var(--color-text);
+  cursor: default;
+}
+
+.calendar-cell.clickable {
+  cursor: pointer;
+  transition: transform 150ms ease, background-color 150ms ease;
+}
+
+.calendar-cell.clickable:hover {
+  transform: translateY(-1px);
+  background: rgba(113, 180, 141, 0.12);
+}
+
+.calendar-cell.inactive {
+  background: transparent;
+  color: rgba(34, 15, 38, 0.25);
+}
+
+.calendar-cell.today {
+  background: var(--color-accent);
+  color: white;
+  font-weight: 700;
+}
+
+.calendar-cell.selected {
+  border: 2px solid var(--color-accent);
+  background: rgba(64, 78, 124, 0.08);
+}
+
+.calendar-footer {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+}
+
+.calendar-transactions-section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--color-border);
+  overflow-x: auto;
+}
+
+.calendar-transaction-table {
+  width: 100%;
+  min-width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.calendar-transaction-table th,
+.calendar-transaction-table td {
+  padding: 12px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+  word-break: break-word;
+  white-space: normal;
+}
+
+.calendar-transaction-table th {
+  font-size: 0.82rem;
+  color: var(--color-heading);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: rgba(113, 180, 141, 0.06);
+}
+
+@media (max-width: 980px) {
+  .spend-main-grid {
+    grid-template-columns: 1fr;
   }
 }
