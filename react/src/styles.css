@@ -2137,12 +2137,19 @@ body{
 
 .spend-insights-card,
 .spend-graph-card,
-.spend-transactions-card,
 .calendar-card {
   background: rgba(255, 255, 255, 0.95);
   border: 1px solid var(--color-border);
   border-radius: 20px;
   padding: 24px;
+}
+
+.spend-transactions-card{ 
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  padding: 24px;
+  grid-column: 1 / -1;
 }
 
 .section-header {
@@ -2269,7 +2276,6 @@ body{
 
 .calendar-card {
   display: grid;
-  gap: 20px;
   overflow: hidden;
 }
 
@@ -2357,14 +2363,12 @@ body{
   background: rgba(64, 78, 124, 0.08);
 }
 
-.calendar-footer {
+/* .calendar-footer {
   font-size: 0.9rem;
   color: var(--color-text-secondary);
-}
+} */
 
 .calendar-transactions-section {
-  margin-top: 20px;
-  padding-top: 20px;
   border-top: 1px solid var(--color-border);
   overflow-x: auto;
 }

@@ -177,38 +177,6 @@ function SpendDetails({ selectedClient }) {
               </div>
             </div>
           </section>
-
-          <section className="spend-transactions-card">
-            <div className="section-header">
-              <div>
-                <h2>Transactions</h2>
-                <p className="muted">All recent transactions for your Spend account.</p>
-              </div>
-            </div>
-            <table className="transaction-table">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Name of Institution</th>
-                  <th>Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                {spendTransactions.map((item, index) => {
-                  const isPositive = item.type === 'income';
-                  return (
-                    <tr key={index}>
-                      <td>{item.date}</td>
-                      <td>{item.description}</td>
-                      <td className={`transaction-amount ${isPositive ? 'positive' : 'expense'}`}>
-                        {isPositive ? '+' : '-'}{formatCurrency(item.amount)}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </section>
         </div>
 
         <aside className="spend-calendar-card">
@@ -216,7 +184,7 @@ function SpendDetails({ selectedClient }) {
             <div className="calendar-header">
               <div className="calendar-header-top">
                 <button className="calendar-nav-button" onClick={handlePrevMonth} type="button">
-                  ← Prev
+                  ←
                 </button>
                 <div>
                   <p className="eyebrow">Calendar</p>
@@ -252,7 +220,7 @@ function SpendDetails({ selectedClient }) {
               })}
             </div>
             <div className="calendar-footer">
-              <div className="calendar-note">Upcoming payments and spend reminders are highlighted here.</div>
+              {/* <div className="calendar-note">Upcoming payments and spend reminders are highlighted here.</div> */}
             </div>
             {selectedDate && (
               <div className="calendar-transactions-section">
@@ -290,6 +258,37 @@ function SpendDetails({ selectedClient }) {
             )}
           </div>
         </aside>
+        <section className="spend-transactions-card">
+            <div className="section-header">
+              <div>
+                <h2>Transactions</h2>
+                <p className="muted">All recent transactions for your Spend account.</p>
+              </div>
+            </div>
+            <table className="transaction-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Name of Institution</th>
+                  <th>Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                {spendTransactions.map((item, index) => {
+                  const isPositive = item.type === 'income';
+                  return (
+                    <tr key={index}>
+                      <td>{item.date}</td>
+                      <td>{item.description}</td>
+                      <td className={`transaction-amount ${isPositive ? 'positive' : 'expense'}`}>
+                        {isPositive ? '+' : '-'}{formatCurrency(item.amount)}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </section>
       </div>
     </div>
   );
