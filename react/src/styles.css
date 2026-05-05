@@ -1,7 +1,6 @@
 :root {
   color-scheme: light;
   font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  background: #F4EFE7;
   color: #220F26;
   font-size: 16px;
   --color-bg: #F4EFE7;
@@ -37,7 +36,7 @@ html, body, #root {
 }
 
 body {
-  background: linear-gradient(135deg, #F4EFE7 0%, #BDDDBD 50%, #F4EFE7 100%);
+  min-height: 100%;
 }
 
 button {
@@ -295,7 +294,6 @@ input:focus {
 }
 
 .content {
-  background: #F4EFE7;
   border-radius: 8px;
   padding: 20px;
   position: relative;
@@ -2396,6 +2394,38 @@ body{
   letter-spacing: 0.04em;
   background: rgba(113, 180, 141, 0.06);
 }
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+
+  background: conic-gradient(
+    rgb(221, 236, 241),
+    rgb(240, 221, 199),
+    #c4f7e0,
+    rgb(221, 236, 241),
+    rgb(245, 234, 212),
+    #add9f3,
+    rgb(221, 236, 241)
+  );
+
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+
+html,
+body,
+#root,
+.app-shell,
+.page,
+.content,
+.accounts-page {
+  background: transparent !important;
+}
+
 
 @media (max-width: 980px) {
   .spend-main-grid {
