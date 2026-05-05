@@ -3,6 +3,9 @@ import { Link } from 'react-router-dom';
 import { clients } from '../data/clients';
 import Accounts from './Accounts';
 import InteractionPage from './InteractionPage';
+import Forms from './Forms';
+import SpendDetails from './SpendDetails';
+
 
 const formatCurrency = (value) =>
   new Intl.NumberFormat('en-US', {
@@ -182,7 +185,9 @@ function Homepage({ selectedClient, setSelectedId, filteredClients, openTab }) {
 
         {/* forms */}
         <section className="module module--forms card">
-          <h2 className="module__title">Forms</h2>
+          <h2 className="module__title forms-link" onClick={() => openTab('forms', 'Forms', Forms)}>
+            Forms
+          </h2>
 
           <div className="formPanel">
             <h3 className="formPanel__title">Client Interaction</h3>
@@ -242,8 +247,26 @@ function Homepage({ selectedClient, setSelectedId, filteredClients, openTab }) {
                 <div>Type</div><div>Balance</div>
               </div>
               {selectedClient.accounts.map((account, i) => (
-                <div key={i} className="row">
-                  <div className="account-name">
+                <div key={i} className="row">                  
+                <div
+                  className={`account-name ${
+                    account.type === 'Spend' ? 'account-link' : ''
+                  }`}
+                  onClick={() =>
+                    account.type === 'Spend' &&
+                    openTab('spend-account', 'Spend Account', SpendDetails)
+                  }
+                  onKeyDown={(e) => {
+                    if (
+                      account.type === 'Spend' &&
+                      (e.key === 'Enter' || e.key === ' ')
+                    ) {
+                      openTab('spend-account', 'Spend Account', SpendDetails);
+                    }
+                  }}
+                  role={account.type === 'Spend' ? 'button' : undefined}
+                  tabIndex={account.type === 'Spend' ? 0 : undefined}
+                >
                     <div
                       className="account-indicator"
                       style={{ backgroundColor: ['#71B48D', '#BDDDBD', '#404E7C'][i] }}
