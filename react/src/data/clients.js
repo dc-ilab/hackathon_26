@@ -2,6 +2,7 @@ export const clients = [
   {
     id: 'C-1034',
     name: 'Jane Smith',
+    title: '',
     age: 26,
     employment: 'Office Worker',
     maritalStatus: 'Single',
@@ -46,6 +47,7 @@ export const clients = [
   {
     id: 'C-2062',
     name: 'Noah Patel',
+    title: 'Dr.',
     age: 34,
     employment: 'Software Engineer',
     maritalStatus: 'Married',
@@ -88,6 +90,7 @@ export const clients = [
   {
     id: 'C-3101',
     name: 'Mia Chen',
+    title: '',
     age: 29,
     employment: 'Marketing Manager',
     maritalStatus: 'Single',
@@ -129,6 +132,7 @@ export const clients = [
   {
     id: 'C-4238',
     name: 'Ethan Carter',
+    title: 'Mr.',
     age: 48,
     employment: 'CEO',
     maritalStatus: 'Married',
@@ -170,6 +174,7 @@ export const clients = [
   {
     id: 'C-5370',
     name: 'Sophia Bennett',
+    title: 'Ms.',
     age: 55,
     employment: 'Retired',
     maritalStatus: 'Married',

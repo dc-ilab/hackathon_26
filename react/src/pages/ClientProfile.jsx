@@ -45,6 +45,10 @@ function ClientProfile({ selectedClient }) {
         <div className="module__content">
           <div className="contact-grid">
             <div className="contact-item">
+              <span>Title:</span>
+              <span className="value">{selectedClient.title || ''}</span>
+            </div>
+            <div className="contact-item">
               <span>Name:</span>
               <span className="value">{selectedClient.name}</span>
             </div>
