@@ -106,7 +106,7 @@ function PieChart({ accounts }) {
 function Homepage({ selectedClient, setSelectedId, filteredClients, openTab }) {
   return (
     <>
-      {/* Client selector dropdown */}
+      {/* Client selector dropdown
       {filteredClients.length > 1 && (
         <div className="client-selector">
           <label>Viewing client: </label>
@@ -121,22 +121,7 @@ function Homepage({ selectedClient, setSelectedId, filteredClients, openTab }) {
             ))}
           </select>
         </div>
-      )}
-
-      {/* recent activity */}
-      <section className="activity card">
-        <div className="activity__title">Recent Activity</div>
-        <div className="timeline">
-          {selectedClient.recentActivity.map((_, i) => (
-            <div
-              key={i}
-              className="tick"
-              title={i === 0 ? '4/2' : undefined}
-            ></div>
-          ))}
-          <div className="callout">Appointment scheduled</div>
-        </div>
-      </section>
+      )} */}
 
       {/* dashboard */}
       <main className="dashboard">

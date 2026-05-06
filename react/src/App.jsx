@@ -27,6 +27,7 @@ function App() {
   const [tabs, setTabs] = useState([{id: 'homepage', name: 'Homepage', component: <Homepage selectedClient={clients.find(c => c.id === selectedId) || clients[0]} setSelectedId={setSelectedId} filteredClients={[]} openTab={(id, name, Component) => openTab(id, name, Component)} />, closable: false}]);
   const [activeTab, setActiveTab] = useState('homepage');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
 
   const filteredClients = useMemo(() => {
     const normalized = search.trim().toLowerCase();
@@ -77,15 +78,35 @@ function App() {
     <div className="page">
       {/* Hamburger Menu */}
       <div className="hamburger-menu">
-        <button
-          className={`hamburger-toggle ${isMenuOpen ? 'open' : ''}`}
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-          aria-label="Toggle menu"
-        >
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
+        <div className="menu-controls">
+          <button
+            className={`hamburger-toggle ${isMenuOpen ? 'open' : ''}`}
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+          <input
+            type="text"
+            placeholder="Search clients..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            onFocus={() => setShowDropdown(true)}
+            onBlur={() => setTimeout(() => setShowDropdown(false), 100)} // delay to allow click
+            className="client-search"
+          />
+          {showDropdown && search.trim() && filteredClients.length > 0 && (
+            <div className="client-search-dropdown">
+              {filteredClients.slice(0, 5).map(client => (
+                <div key={client.id} className="dropdown-item" onClick={() => { setSelectedId(client.id); setSearch(''); setShowDropdown(false); }}>
+                  {client.name}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
         {isMenuOpen && (
           <div className="menu-overlay" onClick={() => setIsMenuOpen(false)}></div>
         )}
@@ -133,7 +154,7 @@ function App() {
         <div className="header__grid">
           <div className="info">
             <div className="label">Name</div>
-            <div className="value strong">{selectedClient.name.toUpperCase()}</div>
+            <div className="value strong">{(selectedClient.title ? selectedClient.title + ' ' : '') + selectedClient.name.toUpperCase()}</div>
           </div>
 
           <div className="info">
