@@ -9,6 +9,13 @@ const formatCurrency = (value) => {
   }).format(value);
 }
 
+const formatDate = (value) => {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat('en-US').format(date);
+};
+
 function ClientProfile({ selectedClient }) {
   const normalizeGoals = (goalList) =>
     goalList.map((goal) => {
@@ -32,6 +39,7 @@ function ClientProfile({ selectedClient }) {
 
   const [goals, setGoals] = useState(() => normalizeGoals(selectedClient.clientGoals));
   const [showGoalForm, setShowGoalForm] = useState(false);
+  const [editingIndex, setEditingIndex] = useState(null);
   const [goalForm, setGoalForm] = useState({
     description: '',
     date: '',
@@ -44,13 +52,25 @@ function ClientProfile({ selectedClient }) {
     setGoalForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  const addGoal = () => {
+  const startEditGoal = (index) => {
+    const goal = goals[index];
+    setGoalForm({
+      description: goal.description,
+      date: goal.date,
+      isSavingsGoal: goal.isSavingsGoal,
+      startAmount: goal.currentAmount != null ? String(goal.currentAmount) : '0',
+      targetAmount: goal.targetAmount != null ? String(goal.targetAmount) : '10000',
+    });
+    setEditingIndex(index);
+    setShowGoalForm(true);
+  };
+
+  const submitGoal = () => {
     if (!goalForm.description.trim() || !goalForm.date) return;
 
     const startAmount = Number(goalForm.startAmount || 0);
     const targetAmount = Number(goalForm.targetAmount || 0);
-
-    const newGoal = {
+    const goalData = {
       description: goalForm.description.trim(),
       date: goalForm.date,
       startDate: new Date().toLocaleDateString('en-US'),
@@ -60,7 +80,13 @@ function ClientProfile({ selectedClient }) {
       completed: goalForm.isSavingsGoal ? startAmount >= targetAmount : false,
     };
 
-    setGoals((prev) => [...prev, newGoal]);
+    if (editingIndex !== null) {
+      setGoals((prev) => prev.map((goal, i) => (i === editingIndex ? goalData : goal)));
+      setEditingIndex(null);
+    } else {
+      setGoals((prev) => [...prev, goalData]);
+    }
+
     setShowGoalForm(false);
     setGoalForm({
       description: '',
@@ -71,14 +97,13 @@ function ClientProfile({ selectedClient }) {
     });
   };
 
-  const updateProgress = (index, value) => {
+  const toggleCompletion = (index) => {
     setGoals((prev) =>
       prev.map((goal, i) =>
         i === index
           ? {
               ...goal,
-              currentAmount: value,
-              completed: goal.targetAmount != null ? value >= goal.targetAmount : goal.completed,
+              completed: !goal.completed,
             }
           : goal
       )
@@ -93,12 +118,16 @@ function ClientProfile({ selectedClient }) {
     <>
       <div className="client-profile-top">
         <div className="module module--goals-top card">
-          <h2 className="module__title">Client Goals</h2>
-          <div className="module__content">
-            <button className="new-goal-btn" onClick={() => setShowGoalForm((prev) => !prev)}>
+          <div className="goals-header-row">
+            <h2 className="module__title">Client Goals</h2>
+            <button className="new-goal-btn" onClick={() => {
+              setShowGoalForm((prev) => !prev);
+              if (showGoalForm) setEditingIndex(null);
+            }}>
               {showGoalForm ? 'Close' : 'New Goal'}
             </button>
-
+          </div>
+          <div className="module__content">
             {showGoalForm && (
               <section className="goal-form-panel">
                 <div className="goal-form-row">
@@ -153,10 +182,13 @@ function ClientProfile({ selectedClient }) {
                 )}
 
                 <div className="goal-form-actions">
-                  <button className="goal-save-btn" onClick={addGoal}>
-                    Save goal
+                  <button className="goal-save-btn" onClick={submitGoal}>
+                    {editingIndex !== null ? 'Save changes' : 'Save goal'}
                   </button>
-                  <button className="btn-ghost" onClick={() => setShowGoalForm(false)}>
+                  <button className="btn-ghost" onClick={() => {
+                    setShowGoalForm(false);
+                    setEditingIndex(null);
+                  }}>
                     Cancel
                   </button>
                 </div>
@@ -173,24 +205,39 @@ function ClientProfile({ selectedClient }) {
                 return (
                   <li key={index} className={`goal-item ${goal.completed ? 'completed' : ''}`}>
                     <div className="goal-card-header">
-                      <div>
-                        <h3>{goal.description}</h3>
-                        <div className="goal-meta-row">
-                          <span>{goal.isSavingsGoal ? 'Savings goal' : 'Milestone goal'}</span>
-                          <span>Due {goal.date || 'TBD'}</span>
+                      <div className="goal-card-title">
+                        <label className="goal-checkbox">
+                          <input
+                            type="checkbox"
+                            checked={goal.completed}
+                            onChange={() => toggleCompletion(index)}
+                          />
+                        </label>
+                        <div className="goal-card-title-text">
+                          <h3>{goal.description}</h3>
+                          <div className="goal-meta-row">
+                            <span>{goal.isSavingsGoal ? 'Savings goal' : 'Milestone goal'}</span>
+                          </div>
+                          <p className="goal-dates">
+                            <span>Start: {formatDate(goal.startDate) || 'Today'}</span>
+                            <span>Due: {formatDate(goal.date) || 'TBD'}</span>
+                          </p>
                         </div>
+                        <span className={`goal-status-tag ${goal.completed ? 'completed' : ''}`}>
+                          {goal.completed ? 'Completed' : goal.isSavingsGoal ? `${progressPercent}%` : 'Pending'}
+                        </span>
                       </div>
-                      <div className="goal-status-tag">
-                        {goal.completed ? 'Completed' : goal.isSavingsGoal ? `${progressPercent}%` : 'Pending'}
-                        {goal.completed && (
-                          <button
-                            className="delete-goal-btn"
-                            onClick={() => deleteGoal(index)}
-                            title="Delete goal"
-                          >
-                            ×
-                          </button>
-                        )}
+                      <div className="goal-card-actions">
+                        <button
+                          className="delete-goal-btn"
+                          onClick={() => deleteGoal(index)}
+                          title="Delete goal"
+                        >
+                          ×
+                        </button>
+                        <button className="goal-edit-btn" onClick={() => startEditGoal(index)}>
+                          Edit
+                        </button>
                       </div>
                     </div>
 
@@ -201,28 +248,8 @@ function ClientProfile({ selectedClient }) {
                           <span>{formatCurrency(goal.currentAmount)} saved</span>
                           <span>of {formatCurrency(goal.targetAmount)}</span>
                         </div>
-                        <input
-                          type="range"
-                          min="0"
-                          max={goal.targetAmount}
-                          value={goal.currentAmount}
-                          onChange={(e) => updateProgress(index, Number(e.target.value))}
-                        />
                       </div>
-                    ) : (
-                      <label className="goal-checkbox">
-                        <input
-                          type="checkbox"
-                          checked={goal.completed}
-                          onChange={() => toggleCompletion(index)}
-                        />
-                        Mark milestone complete
-                      </label>
-                    )}
-
-                    <p className="goal-dates">
-                      Start: {goal.startDate || 'Today'} · Due: {goal.date || 'TBD'}
-                    </p>
+                    ) : null}
                   </li>
                 );
               })}

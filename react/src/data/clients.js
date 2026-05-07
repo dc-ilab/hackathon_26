@@ -25,9 +25,23 @@ export const clients = [
       { type: 'Growth', balance: 14884, percentage: 32.7 }
     ],
     clientGoals: [
-      { goal: 'Finish Mortgage Payments', completed: true },
-      { goal: 'Diversify portfolio', completed: true },
-      { goal: 'Build emergency fund', completed: false }
+      {
+        goal: 'Finish Mortgage Payments',
+        description: 'Pay off remaining mortgage balance',
+        date: '2025-12-31',
+        targetAmount: 200000,
+        currentAmount: 200000,
+        completed: true,
+      },
+      {
+        goal: 'Build emergency fund',
+        description: 'Save $10,000 for unexpected expenses',
+        date: '2026-12-31',
+        targetAmount: 10000,
+        currentAmount: 6700,
+        completed: false,
+      },
+      { goal: 'Diversify portfolio', completed: false },
     ],
     recentActivity: [
       { date: '2026-04-24', type: 'deposit', amount: 5000 },
