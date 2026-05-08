@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import SpendDetails from './SpendDetails';
 
 const formatCurrency = (value) => {
   if (value == null || value === '') return '-';
@@ -16,7 +17,7 @@ const formatDate = (value) => {
   return new Intl.DateTimeFormat('en-US').format(date);
 };
 
-function ClientProfile({ selectedClient }) {
+function ClientProfile({ selectedClient, openTab }) {
   const normalizeGoals = (goalList) =>
     goalList.map((goal) => {
       const isSavingsGoal = typeof goal.targetAmount === 'number' && goal.targetAmount > 0;
@@ -318,6 +319,18 @@ function ClientProfile({ selectedClient }) {
                 <span className="value">{selectedClient.housingStatus}</span>
               </div>
               <div className="contact-item">
+                <span>Phone:</span>
+                <span className="value">{selectedClient.phoneNumber || 'N/A'}</span>
+              </div>
+              <div className="contact-item">
+                <span>Email:</span>
+                <span className="value">{selectedClient.email || 'N/A'}</span>
+              </div>
+              <div className="contact-item">
+                <span>Do Not Call:</span>
+                <span className="value">{selectedClient.doNotCall ? 'Yes' : 'No'}</span>
+              </div>
+              <div className="contact-item">
                 <span>Employment:</span>
                 <span className="value">{selectedClient.employment}</span>
               </div>
@@ -355,7 +368,18 @@ function ClientProfile({ selectedClient }) {
           <div className="module__content">
             <ul className="activity-list">
               {selectedClient.recentActivity.map((activity, index) => (
-                <li key={index} className="activity-item">
+                <li
+                  key={index}
+                  className="activity-item activity-link"
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => openTab?.('spend-account', 'Spend Account', SpendDetails)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      openTab?.('spend-account', 'Spend Account', SpendDetails);
+                    }
+                  }}
+                >
                   <span className="activity-date">{activity.date}</span>
                   <span className="activity-type">{activity.type}</span>
                   <span className="activity-amount">{formatCurrency(activity.amount)}</span>

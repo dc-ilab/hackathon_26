@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import logo from './assets/pnclogo.png';
 import Homepage from './pages/Homepage';
 import Accounts from './pages/Accounts';
 import ClientProfile from './pages/ClientProfile';
@@ -76,6 +77,7 @@ function App() {
 
   return (
     <div className="page">
+      <img className="fixed-logo" src={logo} alt="PNC logo" />
       {/* Hamburger Menu */}
       <div className="hamburger-menu">
         <div className="menu-controls">

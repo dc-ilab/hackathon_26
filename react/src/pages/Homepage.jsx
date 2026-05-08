@@ -19,10 +19,10 @@ function PieChart({ accounts }) {
   const centerX = width / 2;
   const centerY = height / 2;
 
-  const total = accounts.reduce((sum, account) => sum + account.balance, 0);
+  const total = accounts.reduce((sum, account) => sum + Math.abs(account.balance), 0);
   let currentAngle = -Math.PI / 2; // Start from top
 
-  const colors = ['#71B48D', '#BDDDBD', '#404E7C'];
+  const colors = ['#71B48D', '#BDDDBD', '#404E7C', '#db8c4f', '#eeceb6'];
 
   const [hoverSlice, setHoverSlice] = useState(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -46,7 +46,7 @@ function PieChart({ accounts }) {
     <div className="pie-chart-container" onMouseMove={handleMouseMove}>
       <svg viewBox={`0 0 ${width} ${height}`} width="100%" height="100%">
         {accounts.map((account, index) => {
-          const percentage = account.balance / total;
+          const percentage = Math.abs(account.balance) / total;
           const angle = percentage * 2 * Math.PI;
           const startAngle = currentAngle;
           const endAngle = currentAngle + angle;
@@ -231,7 +231,7 @@ function Homepage({ selectedClient, setSelectedId, filteredClients, openTab }) {
                   <div className="account-name">
                     <div
                       className="account-indicator"
-                      style={{ backgroundColor: ['#71B48D', '#BDDDBD', '#404E7C'][i] }}
+                      style={{ backgroundColor: ['#71B48D', '#BDDDBD', '#404E7C', '#db8c4f', '#eeceb6'][i] }}
                     ></div>
                     {account.type}
                   </div>
