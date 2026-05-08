@@ -1,6 +1,4 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { clients } from '../data/clients';
 import Accounts from './Accounts';
 import InteractionPage from './InteractionPage';
 

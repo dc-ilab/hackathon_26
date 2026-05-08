@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import SpendDetails from './SpendDetails';
-import { clients } from '../data/clients';
 
 const formatCurrency = (value) =>
   new Intl.NumberFormat('en-US', {

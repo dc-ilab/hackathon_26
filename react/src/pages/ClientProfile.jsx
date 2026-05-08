@@ -1,5 +1,3 @@
-import { clients } from '../data/clients';
-
 const formatCurrency = (value) =>
   new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -21,11 +19,11 @@ function ClientProfile({ selectedClient }) {
             </div>
             <div className="detail-item">
               <span>Total Assets:</span>
-              <span className="value">{formatCurrency(selectedClient.assets)}</span>
+              <span className="value">{formatCurrency(selectedClient.totalAssets)}</span>
             </div>
             <div className="detail-item">
-              <span>Total Liabilities:</span>
-              <span className="value">{formatCurrency(selectedClient.liabilities)}</span>
+              <span>Liquidity:</span>
+              <span className="value">{formatCurrency(selectedClient.liquidity)}</span>
             </div>
             <div className="detail-item">
               <span>Relationship:</span>
