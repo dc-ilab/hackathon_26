@@ -17,10 +17,10 @@ function PieChart({ accounts }) {
   const centerX = width / 2;
   const centerY = height / 2;
 
-  const total = accounts.reduce((sum, account) => sum + account.balance, 0);
+  const total = accounts.reduce((sum, account) => sum + Math.abs(account.balance), 0);
   let currentAngle = -Math.PI / 2; // Start from top
 
-  const colors = ['#71B48D', '#BDDDBD', '#404E7C'];
+  const colors = ['#71B48D', '#BDDDBD', '#404E7C', '#db8c4f', '#eeceb6'];
 
   const [hoverSlice, setHoverSlice] = useState(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -44,7 +44,7 @@ function PieChart({ accounts }) {
     <div className="pie-chart-container" onMouseMove={handleMouseMove}>
       <svg viewBox={`0 0 ${width} ${height}`} width="100%" height="100%">
         {accounts.map((account, index) => {
-          const percentage = account.balance / total;
+          const percentage = Math.abs(account.balance) / total;
           const angle = percentage * 2 * Math.PI;
           const startAngle = currentAngle;
           const endAngle = currentAngle + angle;
@@ -104,7 +104,7 @@ function PieChart({ accounts }) {
 function Homepage({ selectedClient, setSelectedId, filteredClients, openTab }) {
   return (
     <>
-      {/* Client selector dropdown */}
+      {/* Client selector dropdown
       {filteredClients.length > 1 && (
         <div className="client-selector">
           <label>Viewing client: </label>
@@ -119,22 +119,7 @@ function Homepage({ selectedClient, setSelectedId, filteredClients, openTab }) {
             ))}
           </select>
         </div>
-      )}
-
-      {/* recent activity */}
-      <section className="activity card">
-        <div className="activity__title">Recent Activity</div>
-        <div className="timeline">
-          {selectedClient.recentActivity.map((_, i) => (
-            <div
-              key={i}
-              className="tick"
-              title={i === 0 ? '4/2' : undefined}
-            ></div>
-          ))}
-          <div className="callout">Appointment scheduled</div>
-        </div>
-      </section>
+      )} */}
 
       {/* dashboard */}
       <main className="dashboard">
@@ -244,7 +229,7 @@ function Homepage({ selectedClient, setSelectedId, filteredClients, openTab }) {
                   <div className="account-name">
                     <div
                       className="account-indicator"
-                      style={{ backgroundColor: ['#71B48D', '#BDDDBD', '#404E7C'][i] }}
+                      style={{ backgroundColor: ['#71B48D', '#BDDDBD', '#404E7C', '#db8c4f', '#eeceb6'][i] }}
                     ></div>
                     {account.type}
                   </div>

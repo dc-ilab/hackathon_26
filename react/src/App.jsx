@@ -1,4 +1,5 @@
-import { useMemo, useState, useEffect, useCallback } from 'react';
+import { useMemo, useState } from 'react';
+import logo from './assets/pnclogo.png';
 import Homepage from './pages/Homepage';
 import Accounts from './pages/Accounts';
 import ClientProfile from './pages/ClientProfile';
@@ -20,43 +21,7 @@ function App() {
   const [tabs, setTabs] = useState([]);
   const [activeTab, setActiveTab] = useState('');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    const controller = new AbortController();
-
-    async function loadClients() {
-      try {
-        const response = await fetch('/api/clients', {
-          signal: controller.signal,
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to load clients: ${response.status}`);
-        }
-
-        const data = await response.json();
-        setClients(data);
-
-        if (data.length > 0) {
-          setSelectedId(data[0].id);
-          setTabs([{ id: 'homepage', name: 'Homepage', Component: Homepage, closable: false }]);
-          setActiveTab('homepage');
-        }
-      } catch (fetchError) {
-        if (fetchError.name !== 'AbortError') {
-          setError(fetchError.message);
-        }
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadClients();
-
-    return () => controller.abort();
-  }, []);
+  const [showDropdown, setShowDropdown] = useState(false);
 
   const filteredClients = useMemo(() => {
     const normalized = search.trim().toLowerCase();
@@ -145,17 +110,38 @@ function App() {
 
   return (
     <div className="page">
+      <img className="fixed-logo" src={logo} alt="PNC logo" />
       {/* Hamburger Menu */}
       <div className="hamburger-menu">
-        <button
-          className={`hamburger-toggle ${isMenuOpen ? 'open' : ''}`}
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-          aria-label="Toggle menu"
-        >
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
+        <div className="menu-controls">
+          <button
+            className={`hamburger-toggle ${isMenuOpen ? 'open' : ''}`}
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+          <input
+            type="text"
+            placeholder="Search clients..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            onFocus={() => setShowDropdown(true)}
+            onBlur={() => setTimeout(() => setShowDropdown(false), 100)} // delay to allow click
+            className="client-search"
+          />
+          {showDropdown && search.trim() && filteredClients.length > 0 && (
+            <div className="client-search-dropdown">
+              {filteredClients.slice(0, 5).map(client => (
+                <div key={client.id} className="dropdown-item" onClick={() => { setSelectedId(client.id); setSearch(''); setShowDropdown(false); }}>
+                  {client.name}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
         {isMenuOpen && (
           <div className="menu-overlay" onClick={() => setIsMenuOpen(false)}></div>
         )}
@@ -188,7 +174,7 @@ function App() {
         <div className="header__grid">
           <div className="info">
             <div className="label">Name</div>
-            <div className="value strong">{selectedClient.name.toUpperCase()}</div>
+            <div className="value strong">{(selectedClient.title ? selectedClient.title + ' ' : '') + selectedClient.name.toUpperCase()}</div>
           </div>
           <div className="info">
             <div className="label">Marital Status</div>

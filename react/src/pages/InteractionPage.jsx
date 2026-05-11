@@ -30,7 +30,7 @@ function InteractionPage({ selectedClient }) {
             <h2 className="module__title">Accounts Overview</h2>
             <div className="module__content">
               <div className="accounts-grid">
-                {selectedClient.accounts.map((account, index) => (
+                {selectedClient.accounts.filter(account => account.percentage !== null).map((account, index) => (
                   <div key={index} className="account-card">
                     <h3>{account.type}</h3>
                     <div className="account-balance">{formatCurrency(account.balance)}</div>
@@ -42,6 +42,71 @@ function InteractionPage({ selectedClient }) {
                   </div>
                 ))}
               </div>
+              <div className="loans-section">
+                <h3>Loans & Credit</h3>
+                <div className="loans-grid">
+                  {selectedClient.accounts.filter(account => account.percentage === null).map((account, index) => (
+                    <div key={index} className="loan-card">
+                      <h4>{account.type}</h4>
+                      <div className="loan-balance">{formatCurrency(account.balance)}</div>
+                      <div className="loan-rate">Interest Rate: {account.interestRate}%</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Campaign Referrals */}
+      <div className="interaction-section section-campaigns">
+        <div className="module module--campaigns card">
+          <h2 className="module__title">Campaign Referrals</h2>
+          <div className="module__content">
+            <ul className="campaigns-list">
+              {selectedClient.campaignReferrals.map((campaign, index) => (
+                <li key={index} className={`campaign-item ${campaign.eligible ? 'eligible' : 'not-eligible'}`}>
+                  <h3>{campaign.type}</h3>
+                  <p>{campaign.description}</p>
+                  <span className="eligibility">{campaign.eligible ? 'Eligible' : 'Not Eligible'}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      {/* Appointments */}
+      <div className="interaction-section section-appointments">
+        <div className="module module--appointments card">
+          <h2 className="module__title">Appointments</h2>
+          <div className="module__content appointments-grid">
+            <div className="appointments-column">
+              <h3>Upcoming</h3>
+              <ul className="appointment-list">
+                {(selectedClient.appointments?.upcoming || []).map((appointment, index) => (
+                  <li key={index} className="appointment-item">
+                    <strong>{appointment.title}</strong>
+                    <span>{appointment.date}</span>
+                    <p className="appointment-notes">{appointment.notes}</p>
+                  </li>
+                ))}
+                {!(selectedClient.appointments?.upcoming?.length) && <li className="appointment-empty">No upcoming appointments</li>}
+              </ul>
+            </div>
+            <div className="appointments-column">
+              <h3>Past</h3>
+              <ul className="appointment-list">
+                {(selectedClient.appointments?.past || []).map((appointment, index) => (
+                  <li key={index} className="appointment-item">
+                    <strong>{appointment.title}</strong>
+                    <span>{appointment.date}</span>
+                    <p className="appointment-notes">{appointment.notes}</p>
+                  </li>
+                ))}
+                {!(selectedClient.appointments?.past?.length) && <li className="appointment-empty">No past appointments</li>}
+              </ul>
             </div>
           </div>
         </div>
