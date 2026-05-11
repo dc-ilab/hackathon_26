@@ -6,23 +6,15 @@ This backend serves client data for the React dashboard.
 
 ```bash
 cd backend
-python -m venv .venv
-.\.venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
 ## Run
 
-If you are inside the `backend/` directory:
+Inside the `backend/` directory:
 
 ```bash
 uvicorn main:app --reload --port 8000
-```
-
-If you are in the project root (`hackathon_26/`):
-
-```bash
-uvicorn backend.main:app --reload --port 8000
 ```
 
 ## API
