@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect, useCallback } from 'react';
 import logo from './assets/pnclogo.png';
 import Homepage from './pages/Homepage';
 import Accounts from './pages/Accounts';
@@ -22,6 +22,43 @@ function App() {
   const [activeTab, setActiveTab] = useState('');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadClients() {
+      try {
+        const response = await fetch('/api/clients', {
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to load clients: ${response.status}`);
+        }
+
+        const data = await response.json();
+        setClients(data);
+
+        if (data.length > 0) {
+          setSelectedId(data[0].id);
+          setTabs([{ id: 'homepage', name: 'Homepage', Component: Homepage, closable: false }]);
+          setActiveTab('homepage');
+        }
+      } catch (fetchError) {
+        if (fetchError.name !== 'AbortError') {
+          setError(fetchError.message);
+        }
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadClients();
+
+    return () => controller.abort();
+  }, []);
 
   const filteredClients = useMemo(() => {
     const normalized = search.trim().toLowerCase();

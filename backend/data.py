@@ -2,10 +2,14 @@ clients = [
   {
     "id": "C-1034",
     "name": "Jane Smith",
+    "title": "",
     "age": 26,
     "employment": "Office Worker",
     "maritalStatus": "Single",
-    "housingStatus": "First Home",
+    "housingStatus": "Mortgage",
+    "phoneNumber": "(412) 555-0198",
+    "email": "jane.smith@pnc.com",
+    "doNotCall": False,
     "timeWithBank": "3 yrs 4 mths",
     "location": "Pittsburgh, PA",
     "relationship": "Premium Business",
@@ -21,18 +25,51 @@ clients = [
     "accounts": [
       {"type": "Spend", "balance": 12500, "percentage": 27.4},
       {"type": "Reserve", "balance": 18200, "percentage": 39.9},
-      {"type": "Growth", "balance": 14884, "percentage": 32.7}
+      {"type": "Growth", "balance": 14884, "percentage": 32.7},
+      {"type": "Auto Loan", "balance": -15000, "percentage": None, "interestRate": 4.5},
+      {"type": "Home Equity Line of Credit", "balance": -25000, "percentage": None, "interestRate": 5.2}
+    ],
+    "campaignReferrals": [
+      {"type": "Credit Card Offer", "description": "PNC Cash Rewards Visa Signature Card - Earn 3% cash back on dining and U.S. supermarkets.", "eligible": True},
+      {"type": "Investment Promotion", "description": "Open a new brokerage account and get $100 bonus.", "eligible": True},
+      {"type": "Mortgage Refinance", "description": "Refinance your mortgage at a lower rate. Current rates starting at 6.5%.", "eligible": True}
     ],
     "clientGoals": [
-      {"goal": "Finish Mortgage Payments", "completed": True},
-      {"goal": "Diversify portfolio", "completed": True},
-      {"goal": "Build emergency fund", "completed": False}
+      {
+        "goal": "Finish Mortgage Payments",
+        "description": "Pay off remaining mortgage balance",
+        "date": "2025-12-31",
+        "targetAmount": 200000,
+        "currentAmount": 200000,
+        "completed": True,
+      },
+      {
+        "goal": "Build emergency fund",
+        "description": "Save $10,000 for unexpected expenses",
+        "date": "2026-12-31",
+        "targetAmount": 10000,
+        "currentAmount": 6700,
+        "completed": False,
+      },
+      {"goal": "Diversify portfolio", "completed": False}
     ],
     "recentActivity": [
       {"date": "2026-04-24", "type": "deposit", "amount": 5000},
       {"date": "2026-04-20", "type": "withdrawal", "amount": 2500},
       {"date": "2026-04-15", "type": "transfer", "amount": 1200},
       {"date": "2026-04-10", "type": "deposit", "amount": 8000}
+    ],
+    "spendTransactions": [
+      {"date": "04/02/2026", "description": "Whole Foods", "category": "Food", "type": "expense", "amount": 126.0},
+      {"date": "04/01/2026", "description": "Stripe Payroll", "category": "Income", "type": "income", "amount": 3200.0},
+      {"date": "03/29/2026", "description": "Uber", "category": "Transport", "type": "expense", "amount": 42.5},
+      {"date": "03/27/2026", "description": "Netflix", "category": "Entertainment", "type": "expense", "amount": 15.99},
+      {"date": "03/22/2026", "description": "Chipotle", "category": "Food", "type": "expense", "amount": 88.75},
+      {"date": "03/15/2026", "description": "Freelance Client", "category": "Income", "type": "income", "amount": 1400.0},
+      {"date": "03/12/2026", "description": "Shell", "category": "Transport", "type": "expense", "amount": 52.0},
+      {"date": "03/08/2026", "description": "Amazon", "category": "Shopping", "type": "expense", "amount": 184.2},
+      {"date": "03/02/2026", "description": "Planet Fitness", "category": "Health", "type": "expense", "amount": 39.99},
+      {"date": "02/27/2026", "description": "Vanguard", "category": "Income", "type": "income", "amount": 320.0}
     ],
     "clientSummary": "Long-term customer with strong credit profile and consistent savings behavior.",
     "opportunities": ["Consolidate debt", "Increase emergency fund", "Review investment strategy"],
@@ -46,10 +83,14 @@ clients = [
   {
     "id": "C-2062",
     "name": "Noah Patel",
+    "title": "Dr.",
     "age": 34,
     "employment": "Software Engineer",
     "maritalStatus": "Married",
-    "housingStatus": "Own Home",
+    "housingStatus": "Homeowner",
+    "phoneNumber": "(312) 555-0172",
+    "email": "noah.patel@pnc.com",
+    "doNotCall": False,
     "timeWithBank": "5 yrs 2 mths",
     "location": "Chicago, IL",
     "relationship": "Wealth Planning",
@@ -67,15 +108,55 @@ clients = [
       {"type": "Reserve", "balance": 310000, "percentage": 33.2},
       {"type": "Growth", "balance": 444500, "percentage": 47.6}
     ],
+    "campaignReferrals": [
+      {"type": "Private Banking Services", "description": "Exclusive wealth management services for high-net-worth clients.", "eligible": True},
+      {"type": "Tax-Advantaged Investments", "description": "Explore municipal bonds and other tax-efficient investment options.", "eligible": True},
+      {"type": "Estate Planning Consultation", "description": "Comprehensive estate planning services including trusts and wills.", "eligible": True}
+    ],
+    "appointments": {
+      "past": [
+        {"date": "2026-03-09", "title": "Estate planning review", "notes": "Confirmed beneficiary updates."},
+        {"date": "2026-02-21", "title": "Investment allocation check-in", "notes": "Discussed tax-efficient growth."}
+      ],
+      "upcoming": [
+        {"date": "2026-05-28", "title": "Retirement income planning", "notes": "Discuss annuity and IRA options."}
+      ]
+    },
     "clientGoals": [
-      {"goal": "Plan for retirement", "completed": False},
-      {"goal": "Save for children education", "completed": True},
+      {
+        "goal": "Plan for retirement",
+        "description": "Build comprehensive retirement portfolio",
+        "date": "2045-12-31",
+        "targetAmount": 2000000,
+        "currentAmount": 934500,
+        "completed": False
+      },
+      {
+        "goal": "Save for children education",
+        "description": "College savings for two children",
+        "date": "2035-08-01",
+        "targetAmount": 200000,
+        "currentAmount": 75000,
+        "completed": False
+      },
       {"goal": "Build passive income", "completed": False}
     ],
     "recentActivity": [
       {"date": "2026-04-23", "type": "deposit", "amount": 15000},
       {"date": "2026-04-19", "type": "transfer", "amount": 25000},
       {"date": "2026-04-15", "type": "investment", "amount": 50000}
+    ],
+    "spendTransactions": [
+      {"date": "04/03/2026", "description": "Mortgage Payment", "category": "Housing", "type": "expense", "amount": 2850.0},
+      {"date": "04/01/2026", "description": "Google Salary", "category": "Income", "type": "income", "amount": 8500.0},
+      {"date": "03/30/2026", "description": "Whole Foods", "category": "Food", "type": "expense", "amount": 245.0},
+      {"date": "03/28/2026", "description": "Delta Airlines", "category": "Travel", "type": "expense", "amount": 1200.0},
+      {"date": "03/25/2026", "description": "Netflix", "category": "Entertainment", "type": "expense", "amount": 15.99},
+      {"date": "03/20/2026", "description": "Dividend Payment", "category": "Income", "type": "income", "amount": 3200.0},
+      {"date": "03/18/2026", "description": "Home Depot", "category": "Home Improvement", "type": "expense", "amount": 180.0},
+      {"date": "03/15/2026", "description": "Uber", "category": "Transport", "type": "expense", "amount": 65.0},
+      {"date": "03/10/2026", "description": "Gym Membership", "category": "Health", "type": "expense", "amount": 89.99},
+      {"date": "03/05/2026", "description": "Amazon", "category": "Shopping", "type": "expense", "amount": 320.0}
     ],
     "clientSummary": "High net-worth individual interested in tax-efficient investing and estate planning.",
     "opportunities": ["Tax planning", "College savings plan", "Wealth transfer strategy"],
@@ -88,10 +169,14 @@ clients = [
   {
     "id": "C-3101",
     "name": "Mia Chen",
+    "title": "",
     "age": 29,
     "employment": "Marketing Manager",
     "maritalStatus": "Single",
     "housingStatus": "Renting",
+    "phoneNumber": "(206) 555-0145",
+    "email": "mia.chen@pnc.com",
+    "doNotCall": False,
     "timeWithBank": "2 yrs 1 month",
     "location": "Seattle, WA",
     "relationship": "Retail Banking",
@@ -109,14 +194,38 @@ clients = [
       {"type": "Reserve", "balance": 82700, "percentage": 42.9},
       {"type": "Growth", "balance": 82000, "percentage": 42.6}
     ],
+    "campaignReferrals": [
+      {"type": "Homebuyer Program", "description": "First-time homebuyer assistance program with reduced fees and flexible terms.", "eligible": True},
+      {"type": "Credit Builder Loan", "description": "Small personal loan designed to help build or improve your credit score.", "eligible": True},
+      {"type": "Investment Starter Kit", "description": "Begin your investment journey with our low-minimum IRA options.", "eligible": True}
+    ],
     "clientGoals": [
-      {"goal": "Save for home down payment", "completed": False},
+      {
+        "goal": "Save for home down payment",
+        "description": "Save 20% down payment for a home",
+        "date": "2027-12-31",
+        "targetAmount": 60000,
+        "currentAmount": 28000,
+        "completed": False
+      },
       {"goal": "Build emergency fund", "completed": True},
       {"goal": "Reduce credit card debt", "completed": False}
     ],
     "recentActivity": [
       {"date": "2026-04-25", "type": "deposit", "amount": 3500},
       {"date": "2026-04-20", "type": "payment", "amount": 1200}
+    ],
+    "spendTransactions": [
+      {"date": "04/04/2026", "description": "Rent Payment", "category": "Housing", "type": "expense", "amount": 1850.0},
+      {"date": "04/01/2026", "description": "Microsoft Salary", "category": "Income", "type": "income", "amount": 4200.0},
+      {"date": "03/30/2026", "description": "Starbucks", "category": "Food", "type": "expense", "amount": 12.5},
+      {"date": "03/28/2026", "description": "Gym Membership", "category": "Health", "type": "expense", "amount": 45.0},
+      {"date": "03/25/2026", "description": "Amazon Prime", "category": "Entertainment", "type": "expense", "amount": 14.99},
+      {"date": "03/20/2026", "description": "Freelance Work", "category": "Income", "type": "income", "amount": 800.0},
+      {"date": "03/18/2026", "description": "Uber", "category": "Transport", "type": "expense", "amount": 28.0},
+      {"date": "03/15/2026", "description": "Target", "category": "Shopping", "type": "expense", "amount": 95.0},
+      {"date": "03/10/2026", "description": "Phone Bill", "category": "Utilities", "type": "expense", "amount": 65.0},
+      {"date": "03/05/2026", "description": "Netflix", "category": "Entertainment", "type": "expense", "amount": 15.99}
     ],
     "clientSummary": "Growing customer base with increasing financial engagement and savings goals.",
     "opportunities": ["First-time homebuyer program", "Debt consolidation", "Investment guidance"],
@@ -129,10 +238,14 @@ clients = [
   {
     "id": "C-4238",
     "name": "Ethan Carter",
+    "title": "",
     "age": 48,
     "employment": "CEO",
     "maritalStatus": "Married",
     "housingStatus": "Own Home",
+    "phoneNumber": "(212) 555-0199",
+    "email": "ethan.carter@pnc.com",
+    "doNotCall": False,
     "timeWithBank": "12 yrs 6 mths",
     "location": "New York, NY",
     "relationship": "Corporate",
@@ -150,6 +263,11 @@ clients = [
       {"type": "Reserve", "balance": 920000, "percentage": 32.2},
       {"type": "Growth", "balance": 1360000, "percentage": 47.5}
     ],
+    "campaignReferrals": [
+      {"type": "Business Line of Credit", "description": "Flexible financing for business expansion and working capital needs.", "eligible": True},
+      {"type": "Commercial Real Estate Financing", "description": "Competitive rates for commercial property purchases and refinancing.", "eligible": True},
+      {"type": "Treasury Management Services", "description": "Comprehensive cash management and payment solutions for businesses.", "eligible": True}
+    ],
     "clientGoals": [
       {"goal": "Expand business funding", "completed": True},
       {"goal": "Succession planning", "completed": False},
@@ -158,6 +276,18 @@ clients = [
     "recentActivity": [
       {"date": "2026-04-24", "type": "deposit", "amount": 250000},
       {"date": "2026-04-20", "type": "withdrawal", "amount": 100000}
+    ],
+    "spendTransactions": [
+      {"date": "04/05/2026", "description": "Business Expense Reimbursement", "category": "Business", "type": "expense", "amount": 15000.0},
+      {"date": "04/01/2026", "description": "Company Revenue", "category": "Income", "type": "income", "amount": 125000.0},
+      {"date": "03/30/2026", "description": "Office Supplies", "category": "Business", "type": "expense", "amount": 3200.0},
+      {"date": "03/28/2026", "description": "Travel Expenses", "category": "Business", "type": "expense", "amount": 8500.0},
+      {"date": "03/25/2026", "description": "Dividend Income", "category": "Income", "type": "income", "amount": 25000.0},
+      {"date": "03/20/2026", "description": "Equipment Purchase", "category": "Business", "type": "expense", "amount": 45000.0},
+      {"date": "03/18/2026", "description": "Legal Fees", "category": "Business", "type": "expense", "amount": 12000.0},
+      {"date": "03/15/2026", "description": "Marketing Campaign", "category": "Business", "type": "expense", "amount": 25000.0},
+      {"date": "03/10/2026", "description": "Insurance Premium", "category": "Business", "type": "expense", "amount": 3500.0},
+      {"date": "03/05/2026", "description": "Consulting Services", "category": "Business", "type": "expense", "amount": 8000.0}
     ],
     "clientSummary": "Executive-level client with sophisticated financial needs and large transaction volumes.",
     "opportunities": ["Merchant services", "Executive benefits", "International banking"],
@@ -170,10 +300,14 @@ clients = [
   {
     "id": "C-5370",
     "name": "Sophia Bennett",
+    "title": "",
     "age": 55,
     "employment": "Retired",
     "maritalStatus": "Married",
     "housingStatus": "Own Home",
+    "phoneNumber": "(305) 555-0134",
+    "email": "sophia.bennett@pnc.com",
+    "doNotCall": False,
     "timeWithBank": "18 yrs",
     "location": "Miami, FL",
     "relationship": "Private Client",
@@ -191,6 +325,11 @@ clients = [
       {"type": "Reserve", "balance": 520000, "percentage": 41.7},
       {"type": "Growth", "balance": 563000, "percentage": 45.1}
     ],
+    "campaignReferrals": [
+      {"type": "Charitable Giving Program", "description": "Tax-advantaged charitable giving strategies and donor-advised funds.", "eligible": True},
+      {"type": "Retirement Income Planning", "description": "Optimize retirement account withdrawals and required minimum distributions.", "eligible": True},
+      {"type": "Legacy Planning Services", "description": "Comprehensive estate planning including trusts, wills, and beneficiary designations.", "eligible": True}
+    ],
     "clientGoals": [
       {"goal": "Maximize retirement income", "completed": True},
       {"goal": "Plan charitable giving", "completed": False},
@@ -199,6 +338,18 @@ clients = [
     "recentActivity": [
       {"date": "2026-04-24", "type": "dividend", "amount": 18000},
       {"date": "2026-04-19", "type": "withdrawal", "amount": 5000}
+    ],
+    "spendTransactions": [
+      {"date": "04/06/2026", "description": "Property Taxes", "category": "Housing", "type": "expense", "amount": 3200.0},
+      {"date": "04/01/2026", "description": "Pension Payment", "category": "Income", "type": "income", "amount": 4500.0},
+      {"date": "03/30/2026", "description": "Grocery Delivery", "category": "Food", "type": "expense", "amount": 125.0},
+      {"date": "03/28/2026", "description": "Medical Bills", "category": "Health", "type": "expense", "amount": 850.0},
+      {"date": "03/25/2026", "description": "Charitable Donation", "category": "Charity", "type": "expense", "amount": 2500.0},
+      {"date": "03/20/2026", "description": "Dividend Income", "category": "Income", "type": "income", "amount": 3200.0},
+      {"date": "03/18/2026", "description": "Home Maintenance", "category": "Housing", "type": "expense", "amount": 1200.0},
+      {"date": "03/15/2026", "description": "Travel Insurance", "category": "Travel", "type": "expense", "amount": 180.0},
+      {"date": "03/10/2026", "description": "Utility Bills", "category": "Utilities", "type": "expense", "amount": 320.0},
+      {"date": "03/05/2026", "description": "Pharmacy", "category": "Health", "type": "expense", "amount": 95.0}
     ],
     "clientSummary": "Seasoned investor focused on income generation and wealth preservation strategies.",
     "opportunities": ["Charitable planning", "Tax-loss harvesting", "Distribution planning"],

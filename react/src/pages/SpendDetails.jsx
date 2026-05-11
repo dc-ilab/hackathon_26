@@ -1,22 +1,21 @@
 import { useState } from 'react';
 
-
-
 const buildMonthlyTotals = (transactions) => {
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
 
   const totals = {};
 
   transactions.forEach((tx) => {
-    const [month] = tx.date.split('/');
-    const monthIndex = parseInt(month, 10) - 1;
+    // Parse date format YYYY-MM-DD
+    const dateParts = tx.date.split('-');
+    const monthIndex = parseInt(dateParts[1], 10) - 1;
     const label = months[monthIndex] || months[months.length - 1];
 
     if (!totals[label]) {
       totals[label] = { month: label, income: 0, expense: 0 };
     }
 
-    if (tx.type === 'income') {
+    if (tx.type === 'deposit') {
       totals[label].income += tx.amount;
     } else {
       totals[label].expense += tx.amount;
@@ -31,9 +30,7 @@ const buildMonthlyTotals = (transactions) => {
       expense: 6500 + i * 250,
     }
   );
-
 };
-
 
 const formatCurrency = (value) =>
   new Intl.NumberFormat('en-US', {
@@ -42,24 +39,14 @@ const formatCurrency = (value) =>
     maximumFractionDigits: 0,
   }).format(value);
 
-
-
-const spendTransactions = [
-  { date: '04/02/2026', description: 'Whole Foods', category: 'Food', type: 'expense', amount: 126.0 },
-  { date: '04/01/2026', description: 'Stripe Payroll', category: 'Income', type: 'income', amount: 3200.0 },
-  { date: '03/29/2026', description: 'Uber', category: 'Transport', type: 'expense', amount: 42.5 },
-  { date: '03/27/2026', description: 'Netflix', category: 'Entertainment', type: 'expense', amount: 15.99 },
-  { date: '03/22/2026', description: 'Chipotle', category: 'Food', type: 'expense', amount: 88.75 },
-  { date: '03/15/2026', description: 'Freelance Client', category: 'Income', type: 'income', amount: 1400.0 },
-  { date: '03/12/2026', description: 'Shell', category: 'Transport', type: 'expense', amount: 52.0 },
-  { date: '03/08/2026', description: 'Amazon', category: 'Shopping', type: 'expense', amount: 184.2 },
-  { date: '03/02/2026', description: 'Planet Fitness', category: 'Health', type: 'expense', amount: 39.99 },
-  { date: '02/27/2026', description: 'Vanguard', category: 'Income', type: 'income', amount: 320.0 },
-];
-const monthlySpendData = buildMonthlyTotals(spendTransactions);
-
+// Transform client spendTransactions to match expected transaction format
+const getSpendTransactions = (spendTransactions) => {
+  return spendTransactions || [];
+};
 
 function SpendDetails({ selectedClient }) {
+  const spendTransactions = getSpendTransactions(selectedClient.spendTransactions);
+  const monthlySpendData = buildMonthlyTotals(spendTransactions);
   const [selectedDate, setSelectedDate] = useState(null);
   const [calendarMonth, setCalendarMonth] = useState(new Date(2026, 3, 1));
   const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -145,7 +132,7 @@ function SpendDetails({ selectedClient }) {
             </div>
           </section>
 
-          <section className="spend-graph-card">
+          {/* <section className="spend-graph-card">
             <div className="section-header">
               <h2>Income vs Expense</h2>
               <span className="muted">Monthly performance for the last six months.</span>
@@ -176,8 +163,8 @@ function SpendDetails({ selectedClient }) {
                 ))}
               </div>
             </div>
-          </section>
-        </div>
+          </section> */}
+        </div> 
 
         <aside className="spend-calendar-card">
           <div className="calendar-card">

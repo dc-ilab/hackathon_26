@@ -11,13 +11,13 @@ function InteractionPage({ selectedClient }) {
               <div className="insight-item">
                 <h3>Client Summary</h3>
                 <p className="muted">
-                  {selectedClient.name} is a {selectedClient.relationship} of PNC, {selectedClient.clientSummary.toLowerCase()}
+                  {selectedClient.name} is a {selectedClient.relationship || 'client'} of PNC, {String(selectedClient.clientSummary || '').toLowerCase()}
                 </p>
               </div>
               <div className="insight-item">
                 <h3>Possible Opportunities</h3>
                 <ul className="opportunities-list">
-                  {selectedClient.opportunities.map((opp, index) => (
+                  {(selectedClient.opportunities || []).map((opp, index) => (
                     <li key={index}>{opp}</li>
                   ))}
                 </ul>
@@ -65,7 +65,7 @@ function InteractionPage({ selectedClient }) {
           <h2 className="module__title">Campaign Referrals</h2>
           <div className="module__content">
             <ul className="campaigns-list">
-              {selectedClient.campaignReferrals.map((campaign, index) => (
+              {(selectedClient.campaignReferrals || []).map((campaign, index) => (
                 <li key={index} className={`campaign-item ${campaign.eligible ? 'eligible' : 'not-eligible'}`}>
                   <h3>{campaign.type}</h3>
                   <p>{campaign.description}</p>
