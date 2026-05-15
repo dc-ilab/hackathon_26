@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useCallback } from 'react';
+import { useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import logo from './assets/pnclogo.png';
 import Homepage from './pages/Homepage';
 import Accounts from './pages/Accounts';
@@ -24,6 +24,7 @@ function App() {
   const [showDropdown, setShowDropdown] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const contentRef = useRef(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -112,6 +113,14 @@ function App() {
 
   const contentBackground = activeTab === 'homepage' ? '#F4EFE7' : '#BDDDBD';
 
+  useEffect(() => {
+    if (!activeTab) return;
+    window.scrollTo({ top: 0, behavior: 'auto' });
+    if(contentRef.current) {
+      contentRef.current.scrollTop = 0;
+    }
+  }, [activeTab]);
+
   if (loading) {
     return (
       <div className="page">
@@ -164,7 +173,7 @@ function App() {
             type="text"
             placeholder="Search clients..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {setSearch(e.target.value); setShowDropdown(true);}}
             onFocus={() => setShowDropdown(true)}
             onBlur={() => setTimeout(() => setShowDropdown(false), 100)} // delay to allow click
             className="client-search"
@@ -172,7 +181,11 @@ function App() {
           {showDropdown && search.trim() && filteredClients.length > 0 && (
             <div className="client-search-dropdown">
               {filteredClients.slice(0, 5).map(client => (
-                <div key={client.id} className="dropdown-item" onClick={() => { setSelectedId(client.id); setSearch(''); setShowDropdown(false); }}>
+                <div
+                 key={client.id} className="dropdown-item"
+                 onMouseDown={(event) => {
+                  event.preventDefault();
+                  setSelectedId(client.id); setSearch(''); setShowDropdown(false); }}>
                   {client.name}
                 </div>
               ))}
@@ -251,13 +264,13 @@ function App() {
         {tabs.map((tab) => (
           <div key={tab.id} className={`tab ${activeTab === tab.id ? 'active' : ''} ${tab.id}`} onClick={() => setActiveTab(tab.id)}>
             {tab.name}
-            {tab.closable && <button onClick={(e) => { e.stopPropagation(); closeTab(tab.id); }}>x</button>}
+            {tab.closable && <button className="tab-close-btn" onClick={(e) => { e.stopPropagation(); closeTab(tab.id); }}>×</button>}
           </div>
         ))}
       </nav>
 
       {/* content */}
-      <div className="content" style={{ background: contentBackground }}>
+      <div ref={contentRef} className="content" style={{ background: contentBackground }}>
         {ActiveTabComponent ? <ActiveTabComponent {...tabProps} /> : null}
       </div>
     </div>
