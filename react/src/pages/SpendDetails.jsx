@@ -1,39 +1,84 @@
 import { useState } from 'react';
 
-
-
 const buildMonthlyTotals = (transactions) => {
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+
+  const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+  // Anchor the 6-month window to the most recent spend transaction
+  let anchor = new Date();
+  if (transactions.length > 0) {
+    const dates = transactions.map((tx) => {
+      const [m, d, y] = tx.date.split('/');
+      return new Date(parseInt(y, 10), parseInt(m, 10) - 1, parseInt(d, 10));
+    });
+    anchor = new Date(Math.max(...dates));
+  }
+
+  const months = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(anchor.getFullYear(), anchor.getMonth() - i, 1);
+    months.push({ index: d.getMonth(), year: d.getFullYear(), label: monthLabels[d.getMonth()] });
+  }
 
   const totals = {};
+  months.forEach((m) => {
+    const key = `${m.year}-${String(m.index + 1).padStart(2, '0')}`;
+    totals[key] = { month: m.label, income: 0, expense: 0, hasData: false, txCount: 0 };
+  });
+
 
   transactions.forEach((tx) => {
-    const [month] = tx.date.split('/');
+    const [month, , year] = tx.date.split('/');
     const monthIndex = parseInt(month, 10) - 1;
-    const label = months[monthIndex] || months[months.length - 1];
+    const yearNumber = parseInt(year, 10);
+    const match = months.find((m) => m.index === monthIndex && m.year === yearNumber);
+    if (!match) return;
 
-    if (!totals[label]) {
-      totals[label] = { month: label, income: 0, expense: 0 };
-    }
+    const key = `${match.year}-${String(match.index + 1).padStart(2, '0')}`;
+    totals[key].hasData = true;
+    totals[key].txCount += 1;
 
     if (tx.type === 'income') {
-      totals[label].income += tx.amount;
+      totals[key].income += tx.amount;
     } else {
-      totals[label].expense += tx.amount;
+      totals[key].expense += tx.amount;
     }
   });
 
-  // Fill missing months with mock data
-  return months.map((month, i) =>
-    totals[month] || {
-      month,
-      income: 9000 + i * 300,
-      expense: 6500 + i * 250,
+  const monthEntries = months.map((m, i) => {
+    const key = `${m.year}-${String(m.index + 1).padStart(2, '0')}`;
+    return { ...m, order: i, key, ...totals[key] };
+  });
+ 
+// Find full month from spend data
+  const fullMonth = [...monthEntries]
+    .reverse()
+    .find((entry) => entry.txCount >= 6 && entry.income > 0 && entry.expense > 0)
+    || [...monthEntries].reverse().find((entry) => entry.hasData && entry.income > 0 && entry.expense > 0)
+    || [...monthEntries].reverse().find((entry) => entry.hasData)
+    || { income: 6500, expense: 4200, order: 0 };
+
+
+  // Fill missing months with mock data; leave real months untouched
+  return months.map((m, i) => {
+    const key = `${m.year}-${String(m.index + 1).padStart(2, '0')}`;
+    const entry = totals[key];
+    if (entry.hasData) {
+      return { month: entry.month, income: entry.income, expense: entry.expense };
     }
-  );
 
+    // Deterministic slight variation around the last full month
+    const distance = fullMonth.order - i;
+    const incomeFactor = 1 + ((distance % 3) - 1) * 0.035;
+    const expenseFactor = 1 + (((distance + 1) % 3) - 1) * 0.04;
+ 
+    return {
+      month: entry.month,
+      income: Math.round(Math.max(0, fullMonth.income * incomeFactor)),
+      expense: Math.round(Math.max(0, fullMonth.expense * expenseFactor)),
+    };
+  });
 };
-
 
 const formatCurrency = (value) =>
   new Intl.NumberFormat('en-US', {
@@ -42,26 +87,17 @@ const formatCurrency = (value) =>
     maximumFractionDigits: 0,
   }).format(value);
 
-
-
-const spendTransactions = [
-  { date: '04/02/2026', description: 'Whole Foods', category: 'Food', type: 'expense', amount: 126.0 },
-  { date: '04/01/2026', description: 'Stripe Payroll', category: 'Income', type: 'income', amount: 3200.0 },
-  { date: '03/29/2026', description: 'Uber', category: 'Transport', type: 'expense', amount: 42.5 },
-  { date: '03/27/2026', description: 'Netflix', category: 'Entertainment', type: 'expense', amount: 15.99 },
-  { date: '03/22/2026', description: 'Chipotle', category: 'Food', type: 'expense', amount: 88.75 },
-  { date: '03/15/2026', description: 'Freelance Client', category: 'Income', type: 'income', amount: 1400.0 },
-  { date: '03/12/2026', description: 'Shell', category: 'Transport', type: 'expense', amount: 52.0 },
-  { date: '03/08/2026', description: 'Amazon', category: 'Shopping', type: 'expense', amount: 184.2 },
-  { date: '03/02/2026', description: 'Planet Fitness', category: 'Health', type: 'expense', amount: 39.99 },
-  { date: '02/27/2026', description: 'Vanguard', category: 'Income', type: 'income', amount: 320.0 },
-];
-const monthlySpendData = buildMonthlyTotals(spendTransactions);
-
+// Transform client spendTransactions to match expected transaction format
+const getSpendTransactions = (spendTransactions) => {
+  return spendTransactions || [];
+};
 
 function SpendDetails({ selectedClient }) {
+  const spendTransactions = getSpendTransactions(selectedClient.spendTransactions);
+  const monthlySpendData = buildMonthlyTotals(spendTransactions);
   const [selectedDate, setSelectedDate] = useState(null);
   const [calendarMonth, setCalendarMonth] = useState(new Date(2026, 3, 1));
+  const [showAllTransactions, setShowAllTransactions] = useState(false);
   const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const daysInMonth = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + 1, 0).getDate();
@@ -147,37 +183,61 @@ function SpendDetails({ selectedClient }) {
 
           <section className="spend-graph-card">
             <div className="section-header">
-              <h2>Income vs Expense</h2>
-              <span className="muted">Monthly performance for the last six months.</span>
+              <div>
+                <h2>Income vs Expense</h2>
+                <span className="muted">Monthly performance for the last six months.</span>
+              </div>
+              <div className="chart-legend">
+                <span className="legend-item"><span className="legend-swatch income" />Income</span>
+                <span className="legend-item"><span className="legend-swatch expense" />Expense</span>
+              </div>
             </div>
             <div className="spend-bar-chart">
-              <div className="chart-axis-labels">
-                {[8000, 6000, 4000, 2000, 0].map((value) => (
-                  <span key={value} className="axis-label">{formatCurrency(value)}</span>
-                ))}
+              <div className="chart-y-axis">
+                {(() => {
+                  const steps = 5;
+                  const labels = [];
+                  for (let i = steps; i >= 0; i--) {
+                    labels.push(Math.round((highestMonthlyValue / steps) * i));
+                  }
+                  return labels.map((value) => (
+                    <span key={value} className="axis-label">{formatCurrency(value)}</span>
+                  ));
+                })()}
               </div>
-              <div className="chart-grid">
-                {monthlySpendData.map((item) => (
-                  <div key={item.month} className="chart-column">
-                    <div className="bar-stack">
-                      <div
-                        className="bar-column expense"
-                        style={{ height: `${(item.expense / highestMonthlyValue) * 100}%` }}
-                        title={`Expense ${formatCurrency(item.expense)}`}
-                      />
-                      <div
-                        className="bar-column income"
-                        style={{ height: `${(item.income / highestMonthlyValue) * 100}%` }}
-                        title={`Income ${formatCurrency(item.income)}`}
-                      />
+              <div className="chart-area">
+                <div className="chart-grid-lines">
+                  {[0, 1, 2, 3, 4, 5].map((i) => (
+                    <div key={i} className="grid-line" />
+                  ))}
+                </div>
+                <div className="chart-bars">
+                  {monthlySpendData.map((item) => (
+                    <div key={item.month} className="chart-column">
+                      <div className="bar-group">
+                        <div
+                          className="bar income"
+                          style={{ height: `${(item.income / highestMonthlyValue) * 100}%` }}
+                          title={`Income: ${formatCurrency(item.income)}`}
+                        >
+                          <span className="bar-tooltip">{formatCurrency(item.income)}</span>
+                        </div>
+                        <div
+                          className="bar expense"
+                          style={{ height: `${(item.expense / highestMonthlyValue) * 100}%` }}
+                          title={`Expense: ${formatCurrency(item.expense)}`}
+                        >
+                          <span className="bar-tooltip">{formatCurrency(item.expense)}</span>
+                        </div>
+                      </div>
+                      <div className="chart-label">{item.month}</div>
                     </div>
-                    <div className="chart-label">{item.month}</div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
           </section>
-        </div>
+        </div> 
 
         <aside className="spend-calendar-card">
           <div className="calendar-card">
@@ -235,7 +295,7 @@ function SpendDetails({ selectedClient }) {
                     <thead>
                       <tr>
                         <th>Date</th>
-                        <th>Name of Institution</th>
+                        <th>Name</th>
                         <th>Amount</th>
                       </tr>
                     </thead>
@@ -274,7 +334,7 @@ function SpendDetails({ selectedClient }) {
                 </tr>
               </thead>
               <tbody>
-                {spendTransactions.map((item, index) => {
+                {(showAllTransactions ? spendTransactions : spendTransactions.slice(0, 10)).map((item, index) => {
                   const isPositive = item.type === 'income';
                   return (
                     <tr key={index}>
@@ -288,6 +348,15 @@ function SpendDetails({ selectedClient }) {
                 })}
               </tbody>
             </table>
+            {spendTransactions.length > 10 && (
+              <button 
+                className="btn show-more-button" 
+                onClick={() => setShowAllTransactions(!showAllTransactions)}
+                type="button"
+              >
+                {showAllTransactions ? 'Show Less' : `Show More`}
+              </button>
+            )}
           </section>
       </div>
     </div>
