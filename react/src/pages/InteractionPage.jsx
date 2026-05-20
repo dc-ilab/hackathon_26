@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useEffect } from 'react';
 
 
-function InteractionPage({ selectedClient, saveInteractionDocument, submitInteractionDocument, draft, interactionDraft}) {
+function InteractionPage({ selectedClient, saveInteractionDocument, submitInteractionDocument, draft, interactionDraft, clientGoals}) {
   
   const activeDraft = draft || interactionDraft;
   const [isGroupingOpen, setIsGroupingOpen] = useState(false);
@@ -20,6 +20,7 @@ function InteractionPage({ selectedClient, saveInteractionDocument, submitIntera
   const [pncNotes, setPncNotes] = useState('');
   const [incomeInput, setIncomeInput] = useState('');
   const [purchaseInput, setPurchaseInput] = useState('');
+  const goals = clientGoals[selectedClient.id] || [];
 
   
   useEffect(() => {
@@ -265,12 +266,50 @@ function InteractionPage({ selectedClient, saveInteractionDocument, submitIntera
               <div className="module module--goals card">
                 <h2 className="module__title">Financial Goals</h2>
                 <div className="module__content">
-                  <ul className="goals-list">
-                    {selectedClient.clientGoals.map((goal, index) => (
-                      <li key={index} className={`goal-item ${goal.completed ? 'completed' : ''}`}>
-                        {goal.goal}
-                      </li>
-                    ))}
+                  <ul className="interaction-goals-grid">
+                    {goals.map((goal, index) => {
+                      const progressPercent =
+                        goal.targetAmount && goal.currentAmount
+                          ? Math.min(
+                              100,
+                              Math.round(
+                                (goal.currentAmount / goal.targetAmount) * 100
+                              )
+                            )
+                          : 0;
+
+                      return (
+                        <li className="interaction-goal-item">
+  <div className="interaction-goal-content">
+
+    <h3 className="goal-title">{goal.description || goal.goal}</h3>
+
+    <div className="goal-type">
+      {goal.targetAmount ? 'Savings goal' : 'Milestone goal'}
+    </div>
+
+    <div className="goal-dates-row">
+      <span>Start: {goal.startDate || 'Today'}</span>
+      <span>Due: {goal.date || 'TBD'}</span>
+    </div>
+
+    {goal.targetAmount && (
+      <>
+        <progress
+          value={goal.currentAmount || 0}
+          max={goal.targetAmount}
+        />
+        <div className="goal-progress-percentage">
+          {progressPercent}%
+        </div>
+      </>
+    )}
+
+  </div>
+</li>
+
+                      );
+                    })}
                   </ul>
                 </div>
               </div>
@@ -580,10 +619,16 @@ function InteractionPage({ selectedClient, saveInteractionDocument, submitIntera
 
           </div>
 
+          {/* Goals */} 
+          <div className="module--interaction-goal-update-card">
+            <h2 className="module--interaction-goal-update">Update Client Goals...?</h2>
+          </div>    
+
+
           {/* Action Buttons */}
           <div className="interaction-actions">
             
-            <button onClick={handleSaveDocument}>Save Draft</button>
+            <button className="btn" onClick={handleSaveDocument}>Save Draft</button>
 
             <button className="btn" onClick={submitInteractionDocument}>Submit</button>
           </div>
