@@ -294,7 +294,7 @@ header {
 
 .loan-balance {
   font-weight: bold;
-  color: var(--green);
+  color: var(--color-accent);
   margin-bottom: 4px;
 }
 
@@ -477,7 +477,7 @@ header {
 .account-balance {
   font-size: 1.5rem;
   font-weight: bold;
-  color: var(--color-accent);
+  color: var(--green);
   margin: 8px 0;
 }
 
@@ -1290,7 +1290,7 @@ header {
 .account-card {
   border: 1px solid var(--color-border);
   border-radius: 8px;
-  padding: 16px;
+  padding: 12px;
   background: #ffffff;
 }
 
@@ -1303,7 +1303,7 @@ header {
 .account-balance {
   font-size: 1.2rem;
   font-weight: bold;
-  color: var(--color-accent);
+  color: var(--green);
   margin: 8px 0;
 }
 
@@ -2266,10 +2266,6 @@ header {
     gap: 12px;
   }
 
-  .card {
-    padding: 14px;
-  }
-
   .accounts-content {
     flex-direction: column;
   }
@@ -2511,6 +2507,8 @@ body{
 }
 
 .module__title{
+  /* color: var(--slate); */
+  color: rgb(40 53 95);
   margin: 0 0 10px;
   font-size: 30px;
   font-weight: 950;
@@ -2526,7 +2524,7 @@ body{
 /* Insights */
 .dashboard .module--insights { grid-area: insights; }
 .module--insights .module__title{
-  color: var(--ink);
+  color: var(--slate);
 }
 .split{
   display: grid;
@@ -3368,4 +3366,54 @@ a:hover,
 .interaction-document {
   margin-top: 12px;
   transition: all 0.2s ease;
+}
+
+.interaction-form-grouping{
+  padding: 12px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.5); 
+  backdrop-filter: blur(10px) saturate(150%); 
+  -webkit-backdrop-filter: blur(10px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.interaction-form-grouping-titles
+{
+  color: var(--color-text-secondary);
+  margin: 0 0 12px;
+  font-size: 30px;
+  font-weight: 950;
+  letter-spacing: .2px;
+}
+
+.interaction-form-grouping-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+
+.grouping-arrow {
+  font-size: 16px;
+  transition: transform 0.2s ease;
+}
+
+.grouping-arrow.open {
+  transform: rotate(180deg);
+}
+
+
+.interaction-form-grouping-content {
+  margin-top: 12px;
+}
+
+.interaction-form-input-grouping{
+  padding: 12px;
+  border-radius: 20px;
+  background: rgb(30, 48, 109, 0.25);
+  backdrop-filter: blur(10px) saturate(150%); 
+  -webkit-backdrop-filter: blur(10px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
 }
