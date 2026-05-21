@@ -107,22 +107,6 @@ function PieChart({ accounts }) {
 function Homepage({ selectedClient, setSelectedId, filteredClients, openTab }) {
   return (
     <>
-      {/* Client selector dropdown
-      {filteredClients.length > 1 && (
-        <div className="client-selector">
-          <label>Viewing client: </label>
-          <select
-            value={selectedClient.id}
-            onChange={(e) => setSelectedId(e.target.value)}
-          >
-            {filteredClients.map((client) => (
-              <option key={client.id} value={client.id}>
-                {client.name}
-              </option>
-            ))}
-          </select>
-        </div>
-      )} */}
 
       {/* dashboard */}
       <main className="dashboard">
