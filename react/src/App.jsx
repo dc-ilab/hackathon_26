@@ -25,6 +25,8 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const contentRef = useRef(null);
+  const [interactionDraft, setInteractionDraft] = useState(null);
+
 
   useEffect(() => {
     const controller = new AbortController();
@@ -76,12 +78,12 @@ function App() {
     return clients.find((client) => client.id === selectedId) || filteredClients[0] || clients[0];
   }, [clients, selectedId, filteredClients]);
 
-  const openTab = useCallback((id, name, Component) => {
+  const openTab = useCallback((id, name, Component, extraProps = {}) => {
     setTabs((prevTabs) => {
       if (prevTabs.some((tab) => tab.id === id)) {
         return prevTabs;
       }
-      return [...prevTabs, { id, name, Component, closable: true }];
+      return [...prevTabs, { id, name, Component, closable: true, extraProps }];
     });
     setActiveTab(id);
   }, []);
@@ -104,11 +106,29 @@ function App() {
     openTab(id, name, Component);
   };
 
+  
+  const saveInteractionDocument = (document) => {
+    setInteractionDraft({
+      id: interactionDraft?.id || Date.now(),
+      createdAt: interactionDraft?.createdAt || new Date().toISOString(),
+      ...document,
+    });
+  };
+
+  const submitInteractionDocument = () => {
+    // later: send to backend if needed
+
+    setInteractionDraft(null);
+  };
+  
   const tabProps = {
     selectedClient,
     setSelectedId,
     filteredClients,
     openTab,
+    interactionDraft,
+    saveInteractionDocument,
+    submitInteractionDocument,
   };
 
   const contentBackground = activeTab === 'homepage' ? '#F4EFE7' : '#BDDDBD';
@@ -315,7 +335,7 @@ function App() {
 
       {/* content */}
       <div ref={contentRef} className="content" style={{ background: contentBackground }}>
-        {ActiveTabComponent ? <ActiveTabComponent {...tabProps} /> : null}
+        {ActiveTabComponent ? <ActiveTabComponent {...tabProps} {...activeTabObj?.extraProps} /> : null}
       </div>
     </div>
   );

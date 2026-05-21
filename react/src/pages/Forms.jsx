@@ -1,6 +1,10 @@
 import InteractionPage from './InteractionPage';
+import { useState } from 'react';
 
-function Forms({ selectedClient, openTab }) {
+function Forms({ selectedClient, openTab, interactionDraft }) {
+
+  const [isExpanded, setIsExpanded] = useState(false);
+
   return (
     <div className="forms-page">
       {/* Client Interaction Form */}
@@ -22,11 +26,68 @@ function Forms({ selectedClient, openTab }) {
             </div>
           </div>
           <div className="form-actions">
-            <button className="btn btn--ghost" aria-label="Call">
-              ☎ Call Client
-            </button>
             <button className="btn" onClick={() => openTab('interaction', 'Client Interaction', InteractionPage)}>Start Interaction</button>
           </div>
+          <div className="module module--interaction card">
+            <div className="interaction-header">
+              <h4>Saved Interaction Draft</h4>
+            </div>
+
+            {/* CONTENT (collapsible) */}
+            {isExpanded && (
+              <div className="interaction-document">
+
+                {!interactionDraft && (
+                  <p>No active draft.</p>
+                )}
+
+                {interactionDraft && (
+                  <>
+                    <div>
+                      <strong>
+                        {new Date(
+                          interactionDraft.createdAt
+                        ).toLocaleString()}
+                      </strong>
+                    </div>
+
+                    <pre>{interactionDraft.documentText}</pre>
+                  </>
+                )}
+
+              </div>
+            )}
+
+            <div className="interaction-header-actions">
+
+                {/* Continue Draft button (always visible) */}
+                {interactionDraft && (
+                  <button
+                    className="btn"
+                    onClick={() =>
+                      openTab(
+                        'interaction',
+                        'Continue Interaction',
+                        InteractionPage,
+                        { draft: interactionDraft }
+                      )
+                    }
+                  >
+                    Continue Draft
+                  </button>
+                )}
+
+                {/* Toggle arrow */}
+                <button
+                  className="btn btn--toggle-arrow"
+                  onClick={() => setIsExpanded((prev) => !prev)}
+                >
+                  {isExpanded ? '▲' : '▼'}
+                </button>
+
+              </div>
+          </div>
+
         </div>
       </div>
 

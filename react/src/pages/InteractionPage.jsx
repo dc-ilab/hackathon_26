@@ -1,4 +1,136 @@
-function InteractionPage({ selectedClient }) {
+import { useState } from 'react';
+import { useEffect } from 'react';
+
+function InteractionPage({ selectedClient, saveInteractionDocument, submitInteractionDocument, draft, interactionDraft}) {
+  
+  const activeDraft = draft || interactionDraft;
+
+
+  const [answers, setAnswers] = useState({
+    tracksExpenses: { choice: '', details: '' },
+    borrowsMoney: { choice: '', details: '' },
+    retirementSaving: { choice: '', details: '' },
+    incomeSources: [],
+    currentSaving: { choice: '', details: '' },
+    purchaseMethod: []
+  });
+
+  const [bankerNotes, setBankerNotes] = useState(activeDraft?.bankerNotes || '');
+  const [pncNotes, setPncNotes] = useState('');
+  const [incomeInput, setIncomeInput] = useState('');
+  const [purchaseInput, setPurchaseInput] = useState('');
+
+  
+  useEffect(() => {
+      if (!draft && !interactionDraft) return;
+
+      const data = draft || interactionDraft;
+
+      setAnswers({
+        tracksExpenses: {
+          choice: data.questions?.tracksExpenses?.choice || '',
+          details: data.questions?.tracksExpenses?.details || '',
+        },
+        borrowsMoney: {
+          choice: data.questions?.borrowsMoney?.choice || '',
+          details: data.questions?.borrowsMoney?.details || '',
+        },
+        retirementSaving: {
+          choice: data.questions?.retirementSaving?.choice || '',
+          details: data.questions?.retirementSaving?.details || '',
+        },
+        incomeSources: data.questions?.incomeSources || [],
+
+        currentSaving: {
+          choice: data.questions?.currentSaving?.choice || '',
+          details: data.questions?.currentSaving?.details || '',
+        },
+        purchaseMethod: data.questions?.purchaseMethod || []
+      });
+
+      setBankerNotes(data.bankerNotes || '');
+      setPncNotes(data.pncNotes || '');
+  }, [draft, interactionDraft]);
+
+
+  const handleAnswerChange = (field, key, value) => {
+    setAnswers((prev) => ({
+      ...prev,
+      [field]: {
+        ...prev[field],
+        [key]: value,
+      },
+    }));
+  };
+
+
+  const handleListKeyDown = (field, value, setValue, e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+
+      const trimmed = value.trim();
+      if (!trimmed) return;
+
+      setAnswers((prev) => ({
+        ...prev,
+        [field]: [...prev[field], trimmed],
+      }));
+
+      setValue('');
+    }
+  };
+
+  const removeItem = (field, index) => {
+    setAnswers((prev) => ({
+      ...prev,
+      [field]: prev[field].filter((_, i) => i !== index),
+    }));
+  };
+
+
+  const handleSaveDocument = () => {
+    saveInteractionDocument({
+      clientId: selectedClient.id,
+      clientName: selectedClient.name,
+
+      questions: answers,
+
+      bankerNotes,
+
+      pncNotes,
+
+      documentText: `
+      Client: ${selectedClient.name}
+
+      QUESTIONS
+      Track Expenses: 
+        ${answers.tracksExpenses.choice}
+        ${answers.tracksExpenses.details}
+      Borrow Money: 
+        ${answers.borrowsMoney.choice}
+        ${answers.borrowsMoney.details}
+      Saving for Retirement: 
+        ${answers.retirementSaving.choice}
+        ${answers.retirementSaving.details}
+      Income Sources:
+        ${answers.incomeSources.join(', ')}
+      Currently Saving: 
+        ${answers.currentSaving.choice}
+        ${answers.currentSaving.details}
+      Purchase Methods: 
+        ${answers.purchaseMethod.join(', ')}
+
+      BANKER NOTES
+      ${bankerNotes}
+
+      PNC NOTES
+      ${pncNotes}
+          `,
+    });
+  };
+
+  console.log(saveInteractionDocument);
+
   return (
     <div className="interaction-page">
       {/* Section 1: Insights and Accounts Overviews */}
@@ -169,10 +301,6 @@ function InteractionPage({ selectedClient }) {
               placeholder="Add preparation notes for this interaction..."
               rows="6"
             ></textarea>
-            <div className="prep-actions">
-              <button className="btn btn--secondary">Save Draft</button>
-              <button className="btn">Finalize Prep</button>
-            </div>
           </div>
         </div>
 
@@ -185,31 +313,89 @@ function InteractionPage({ selectedClient }) {
               <div className="question-row">
                 <div className="question-block">
                   <label className="question-label">Do you track your expenses?</label>
-                  <div className="question-inputs">
-                    <div className="question-buttons">
-                      <button className="btn btn--toggle">Yes</button>
-                      <button className="btn btn--toggle btn--secondary">No</button>
+                    <div className="question-inputs">
+                      <div className="question-buttons">
+                        <button
+                          type="button"
+                          className={`btn btn--toggle ${
+                            answers.tracksExpenses.choice === 'Yes' ? 'active' : ''
+                          }`}
+                          onClick={() =>
+                            handleAnswerChange('tracksExpenses', 'choice', 'Yes')
+                          }
+                        >
+                          Yes
+                        </button>
+
+                        <button
+                          type="button"
+                          className={`btn btn--toggle btn--secondary ${
+                            answers.tracksExpenses.choice === 'No' ? 'active' : ''
+                          }`}
+                          onClick={() =>
+                            handleAnswerChange('tracksExpenses', 'choice', 'No')
+                          }
+                        >
+                          No
+                        </button>
+                      </div>
+                      <input
+                        type="text"
+                        className="input-small"
+                        placeholder="Additional details..."
+                        value={answers.tracksExpenses.details}
+                        onChange={(e) =>
+                          handleAnswerChange(
+                            'tracksExpenses',
+                            'details',
+                            e.target.value
+                          )
+                        }
+                      />
                     </div>
-                    <input
-                      type="text"
-                      className="input-small"
-                      placeholder="Additional details..."
-                    />
-                  </div>
                 </div>
                 <div className="question-block">
                   <label className="question-label">Do you borrow money?</label>
-                  <div className="question-inputs">
-                    <div className="question-buttons">
-                      <button className="btn btn--toggle">Yes</button>
-                      <button className="btn btn--toggle btn--secondary">No</button>
+                    <div className="question-inputs">
+                      <div className="question-buttons">
+                        <button
+                          type="button"
+                          className={`btn btn--toggle ${
+                            answers.borrowsMoney.choice === 'Yes' ? 'active' : ''
+                          }`}
+                          onClick={() =>
+                            handleAnswerChange('borrowsMoney', 'choice', 'Yes')
+                          }
+                        >
+                          Yes
+                        </button>
+
+                        <button
+                          type="button"
+                          className={`btn btn--toggle btn--secondary ${
+                            answers.borrowsMoney.choice === 'No' ? 'active' : ''
+                          }`}
+                          onClick={() =>
+                            handleAnswerChange('borrowsMoney', 'choice', 'No')
+                          }
+                        >
+                          No
+                        </button>
+                      </div>
+                      <input
+                        type="text"
+                        className="input-small"
+                        placeholder="Additional details..."
+                        value={answers.borrowsMoney.details}
+                        onChange={(e) =>
+                          handleAnswerChange(
+                            'borrowsMoney',
+                            'details',
+                            e.target.value
+                          )
+                        }
+                      />
                     </div>
-                    <input
-                      type="text"
-                      className="input-small"
-                      placeholder="Additional details..."
-                    />
-                  </div>
                 </div>
               </div>
 
@@ -217,25 +403,84 @@ function InteractionPage({ selectedClient }) {
               <div className="question-row">
                 <div className="question-block">
                   <label className="question-label">Are you saving for retirement?</label>
-                  <div className="question-inputs">
-                    <div className="question-buttons">
-                      <button className="btn btn--toggle">Yes</button>
-                      <button className="btn btn--toggle btn--secondary">No</button>
+                    <div className="question-inputs">
+                      <div className="question-buttons">
+                        <button
+                          type="button"
+                          className={`btn btn--toggle ${
+                            answers.retirementSaving.choice === 'Yes' ? 'active' : ''
+                          }`}
+                          onClick={() =>
+                            handleAnswerChange('retirementSaving', 'choice', 'Yes')
+                          }
+                        >
+                          Yes
+                        </button>
+
+                        <button
+                          type="button"
+                          className={`btn btn--toggle btn--secondary ${
+                            answers.retirementSaving.choice === 'No' ? 'active' : ''
+                          }`}
+                          onClick={() =>
+                            handleAnswerChange('retirementSaving', 'choice', 'No')
+                          }
+                        >
+                          No
+                        </button>
+                      </div>
+                      <input
+                        type="text"
+                        className="input-small"
+                        placeholder="Additional details..."
+                        value={answers.retirementSaving.details}
+                        onChange={(e) =>
+                          handleAnswerChange(
+                            'retirementSaving',
+                            'details',
+                            e.target.value
+                          )
+                        }
+                      />
                     </div>
-                    <input
-                      type="text"
-                      className="input-small"
-                      placeholder="Additional details..."
-                    />
-                  </div>
                 </div>
                 <div className="question-block">
                   <label className="question-label">What are your sources of income?</label>
-                  <input
-                    type="text"
-                    className="input-text"
-                    placeholder="Enter sources of income..."
-                  />
+
+                  <div className="tag-input-container">
+                    {/* TAGS */}
+                    <div className="tag-list">
+                      {answers.incomeSources.map((item, index) => (
+                        <span key={index} className="tag">
+                          {item}
+                          <button
+                            type="button"
+                            onClick={() => removeItem('incomeSources', index)}
+                            className="tag-remove"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+
+                    {/* INPUT */}
+                    <input
+                      type="text"
+                      value={incomeInput}
+                      onChange={(e) => setIncomeInput(e.target.value)}
+                      onKeyDown={(e) =>
+                        handleListKeyDown(
+                          'incomeSources',
+                          incomeInput,
+                          setIncomeInput,
+                          e
+                        )
+                      }
+                      placeholder="Type and press Enter..."
+                      className="input-small"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -243,19 +488,58 @@ function InteractionPage({ selectedClient }) {
               <div className="question-row">
                 <div className="question-block">
                   <label className="question-label">What are you currently saving?</label>
-                  <input
-                    type="text"
-                    className="input-text"
-                    placeholder="Enter savings goals..."
-                  />
+                    <div className="question-inputs">
+                      <input
+                        type="text"
+                        className="input-small"
+                        placeholder="Additional details..."
+                        value={answers.currentSaving.details}
+                        onChange={(e) =>
+                          handleAnswerChange(
+                            'currentSaving',
+                            'details',
+                            e.target.value
+                          )
+                        }
+                      />
+                    </div>
                 </div>
                 <div className="question-block">
                   <label className="question-label">How do you typically make purchases?</label>
-                  <input
-                    type="text"
-                    className="input-text"
-                    placeholder="Enter purchase methods..."
-                  />
+                  <div className="tag-input-container">
+                    {/* TAGS */}
+                    <div className="tag-list">
+                      {answers.purchaseMethod.map((item, index) => (
+                        <span key={index} className="tag">
+                          {item}
+                          <button
+                            type="button"
+                            onClick={() => removeItem('purchaseMethod', index)}
+                            className="tag-remove"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+
+                    {/* INPUT */}
+                    <input
+                      type="text"
+                      value={purchaseInput}
+                      onChange={(e) => setPurchaseInput(e.target.value)}
+                      onKeyDown={(e) =>
+                        handleListKeyDown(
+                          'purchaseMethod',
+                          purchaseInput,
+                          setPurchaseInput,
+                          e
+                        )
+                      }
+                      placeholder="Type and press Enter..."
+                      className="input-small"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -273,11 +557,14 @@ function InteractionPage({ selectedClient }) {
                 Notes written in this section will only be shown to branch bankers, and saved under the client note page.
                 </p>
 
-                <textarea
-                className="notes-textarea"
-                placeholder="Add banker notes..."
-                rows="8"
-                ></textarea>
+                
+              <textarea
+              className="notes-textarea"
+              value={bankerNotes}
+                onChange={(e) => setBankerNotes(e.target.value)}
+                placeholder="Enter banker notes..."
+              />
+
             </div>
             </div>
 
@@ -291,10 +578,11 @@ function InteractionPage({ selectedClient }) {
                 </p>
 
                 <textarea
-                className="notes-textarea"
-                placeholder="Add PNC notes..."
-                rows="8"
-                ></textarea>
+                  className="notes-textarea"
+                  value={pncNotes}
+                  onChange={(e) => setPncNotes(e.target.value)}
+                  placeholder="Enter PNC notes..."
+                />
             </div>
             </div>
 
@@ -302,8 +590,10 @@ function InteractionPage({ selectedClient }) {
 
         {/* Action Buttons */}
         <div className="interaction-actions">
-          <button className="btn btn--secondary">Save Draft</button>
-          <button className="btn">Submit</button>
+          
+          <button onClick={handleSaveDocument}>Save Draft</button>
+
+          <button className="btn" onClick={submitInteractionDocument}>Submit</button>
         </div>
         </div>
 
