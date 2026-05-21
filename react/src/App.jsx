@@ -169,7 +169,7 @@ function App() {
             <span></span>
             <span></span>
           </button>
-          <input
+          {/* <input
             type="text"
             placeholder="Search clients..."
             value={search}
@@ -191,6 +191,7 @@ function App() {
               ))}
             </div>
           )}
+            */}
         </div>
         {isMenuOpen && (
           <div className="menu-overlay" onClick={() => setIsMenuOpen(false)}></div>
@@ -212,6 +213,49 @@ function App() {
             Client Interaction
           </button>
         </nav>
+      </div>
+
+      {/* Top Search Bar */}
+      <div className="top-search-bar">
+        <div className="top-search-inner">
+          
+          <div className="liquid-search-wrapper">
+            <span className="search-icon">⌕</span>
+
+            <input
+              type="text"
+              placeholder="Search clients..."
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setShowDropdown(true);
+              }}
+              onFocus={() => setShowDropdown(true)}
+              onBlur={() => setTimeout(() => setShowDropdown(false), 100)}
+              className="liquid-search with-icon"
+            />
+
+            {showDropdown && search.trim() && filteredClients.length > 0 && (
+              <div className="client-search-dropdown NEW">
+                {filteredClients.slice(0, 5).map(client => (
+                  <div
+                    key={client.id}
+                    className="dropdown-item"
+                    onMouseDown={(event) => {
+                      event.preventDefault();
+                      setSelectedId(client.id);
+                      setSearch('');
+                      setShowDropdown(false);
+                    }}
+                  >
+                    {client.name}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+        </div>
       </div>
 
       {/* header container */}
