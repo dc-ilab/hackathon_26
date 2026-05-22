@@ -449,20 +449,6 @@ header {
   color: var(--muted);
 }
 
-.client-avatar {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #71B48D, #404E7C);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #ffffff;
-  font-size: 1.8rem;
-  font-weight: 700;
-  flex-shrink: 0;
-}
-
 .client-info h2 {
   margin: 0 0 4px;
   color: --ink;
@@ -2462,18 +2448,21 @@ body{
   transform: translateX(-50%);
   background: #97d5b8;
 }
+
 .avatar::before {
-  width: 34px;
-  height: 34px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
-  top: 16px;
+  top: 14px;
 }
+
 .avatar::after {
-  width: 48px;
-  height: 24px;
-  border-radius: 24px 24px 20px 20px;
-  bottom: 12px;
+  width: 40px;
+  height: 20px;
+  border-radius: 20px 20px 10px 10px;
+  bottom: 2px;
 }
+
 .pronouns{
   font-weight: 700;
   color: white;
@@ -2749,14 +2738,14 @@ body{
   height: 140px !important;
 }
 
-.accounts-link {
+.accounts-link, .forms-link{
   cursor: pointer;
   text-underline-offset: 4px;
   transition: text-decoration-color 0.2s ease;
   color: white !important;
 }
 
-.accounts-link:hover {
+.accounts-link:hover, .forms-link:hover {
   color: var(--ink) !important;
 }
 
