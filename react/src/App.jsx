@@ -26,6 +26,8 @@ function App() {
   const [error, setError] = useState(null);
   const contentRef = useRef(null);
   const [interactionDraft, setInteractionDraft] = useState(null);
+  const [clientGoals, setClientGoals] = useState({});
+
 
 
   useEffect(() => {
@@ -129,6 +131,8 @@ function App() {
     interactionDraft,
     saveInteractionDocument,
     submitInteractionDocument,
+    clientGoals,
+    setClientGoals,
   };
 
   const contentBackground = activeTab === 'homepage' ? '#F4EFE7' : '#BDDDBD';
