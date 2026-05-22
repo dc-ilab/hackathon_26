@@ -27,7 +27,7 @@ function App() {
   const contentRef = useRef(null);
   const [interactionDraft, setInteractionDraft] = useState(null);
   const [clientGoals, setClientGoals] = useState({});
-
+  const [isAccountsOpen, setIsAccountsOpen] = useState(false);
 
 
   useEffect(() => {
@@ -104,8 +104,9 @@ function App() {
   };
 
   const handleMenuItemClick = (id, name, Component) => {
-    setIsMenuOpen(false);
-    openTab(id, name, Component);
+  setIsMenuOpen(false);
+  setIsAccountsOpen(false);  
+  openTab(id, name, Component);
   };
 
   
@@ -227,9 +228,40 @@ function App() {
           <button className="menu-item" onClick={() => handleMenuItemClick('forms', 'Forms', Forms)}>
             Forms
           </button>
-          <button className="menu-item" onClick={() => handleMenuItemClick('accounts', 'Accounts', Accounts)}>
+          <div className={`menu-item has-submenu ${isAccountsOpen ? 'open' : ''}`}>
+          <div
+            className="menu-item-main"
+            onClick={() => setIsAccountsOpen(prev => !prev)}
+          >
             Accounts
-          </button>
+            <span className="submenu-arrow">▸</span>
+          </div>
+
+          {isAccountsOpen && (
+            <div className="submenu">
+              <button
+                className="submenu-item"
+                onClick={() => handleMenuItemClick('account-overview', 'Overview', Accounts)}
+              >
+                Overview
+              </button>
+              <button
+                className="submenu-item"
+                onClick={() => handleMenuItemClick('spend', 'Spend', SpendDetails)}
+              >
+                Spend
+              </button>
+
+              <button className="submenu-item">
+                Reserve
+              </button>
+
+              <button className="submenu-item">
+                Growth
+              </button>
+            </div>
+          )}
+        </div>
           <button className="menu-item" onClick={() => handleMenuItemClick('client-profile', 'Client Profile', ClientProfile)}>
             Client Profile
           </button>

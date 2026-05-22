@@ -1099,6 +1099,58 @@ header {
   align-items: center;
 }
 
+.has-submenu {
+  display: flex;
+  flex-direction: column;
+}
+
+.menu-item-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  font-weight: 500;
+  color: var(--color-heading);
+  transition: all 0.2s ease;
+}
+
+.menu-item-main:hover {
+  background: var(--color-bg-secondary);
+  color: var(--color-accent);
+}
+
+
+.submenu-arrow {
+  transition: transform 0.2s ease;
+}
+
+.has-submenu.open .submenu-arrow {
+  transform: rotate(90deg);
+}
+
+.submenu {
+  display: flex;
+  flex-direction: column;
+  background: rgba(0,0,0,0.03);
+}
+.submenu-item {
+  padding: 14px 32px;   /* indent */
+  background: none;
+  border: none;
+  text-align: left;
+  font-size: 15px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.submenu-item:hover {
+  background: var(--color-bg-secondary);
+  color: var(--color-accent);
+  padding-left: 36px; /* slight slide */
+}
+
+
 .client-search {
   width: 200px;
   height: 50px;
