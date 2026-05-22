@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useEffect } from 'react';
 
 
-function InteractionPage({ selectedClient, saveInteractionDocument, submitInteractionDocument, draft, interactionDraft, clientGoals}) {
+function InteractionPage({ selectedClient, saveInteractionDocument, submitInteractionDocument, draft, interactionDraft, clientGoals, setClientGoals}) {
   
   const activeDraft = draft || interactionDraft;
   const [isGroupingOpen, setIsGroupingOpen] = useState(false);
@@ -20,8 +20,10 @@ function InteractionPage({ selectedClient, saveInteractionDocument, submitIntera
   const [pncNotes, setPncNotes] = useState('');
   const [incomeInput, setIncomeInput] = useState('');
   const [purchaseInput, setPurchaseInput] = useState('');
+  const [isGoalUpdateOpen, setIsGoalUpdateOpen] = useState(false);
   const goals = clientGoals[selectedClient.id] || [];
 
+  
   
   useEffect(() => {
       if (!draft && !interactionDraft) return;
@@ -131,7 +133,96 @@ function InteractionPage({ selectedClient, saveInteractionDocument, submitIntera
     });
   };
 
-  console.log(saveInteractionDocument);
+  const toggleCompletion = (index) => {
+    setClientGoals((prev) => ({
+      ...prev,
+      [selectedClient.id]: prev[selectedClient.id].map((goal, i) =>
+        i === index ? { ...goal, completed: !goal.completed } : goal
+      ),
+    }));
+  };
+
+  const deleteGoal = (index) => {
+    setClientGoals((prev) => ({
+      ...prev,
+      [selectedClient.id]: prev[selectedClient.id].filter(
+        (_, i) => i !== index
+      ),
+    }));
+  };
+
+  const [editingIndex, setEditingIndex] = useState(null);
+  const [goalForm, setGoalForm] = useState({
+    description: '',
+    date: '',
+    isSavingsGoal: true,
+    startAmount: '0',
+    targetAmount: '10000',
+  });
+
+  const startEditGoal = (index) => {
+    const goal = goals[index];
+
+    setGoalForm({
+      description: goal.description,
+      date: goal.date,
+      isSavingsGoal: goal.isSavingsGoal,
+      startAmount: goal.currentAmount?.toString() || '0',
+      targetAmount: goal.targetAmount?.toString() || '10000',
+    });
+
+    setEditingIndex(index);
+  };
+
+  const submitGoal = () => {
+    if (!goalForm.description.trim() || !goalForm.date) return;
+
+    const startAmount = Number(goalForm.startAmount || 0);
+    const targetAmount = Number(goalForm.targetAmount || 0);
+
+    const goalData = {
+      description: goalForm.description,
+      date: goalForm.date,
+      startDate: new Date().toLocaleDateString(),
+      isSavingsGoal: goalForm.isSavingsGoal,
+      targetAmount: goalForm.isSavingsGoal ? targetAmount : null,
+      currentAmount: goalForm.isSavingsGoal ? startAmount : null,
+      completed: goalForm.isSavingsGoal
+        ? startAmount >= targetAmount
+        : false,
+    };
+
+    setClientGoals((prev) => ({
+      ...prev,
+      [selectedClient.id]:
+        editingIndex !== null
+          ? prev[selectedClient.id].map((g, i) =>
+              i === editingIndex ? goalData : g
+            )
+          : [...(prev[selectedClient.id] || []), goalData],
+    }));
+
+    setEditingIndex(null);
+    setGoalForm({
+      description: '',
+      date: '',
+      isSavingsGoal: true,
+      startAmount: '0',
+      targetAmount: '10000',
+    });
+  };
+
+  const activeGoal =
+  editingIndex !== null
+    ? {
+        ...goals[editingIndex],
+        description: goalForm.description,
+        date: goalForm.date,
+        currentAmount: Number(goalForm.startAmount || 0),
+        targetAmount: Number(goalForm.targetAmount || 0),
+      }
+    : null;
+
 
   return (
     <div className="interaction-page">
@@ -146,11 +237,8 @@ function InteractionPage({ selectedClient, saveInteractionDocument, submitIntera
 
           {/* Arrow */}
           <span
-            className={`grouping-arrow ${
-              isGroupingOpen ? 'open' : ''
-            }`}
-          >
-            ▼
+            className={`grouping-arrow ${isGroupingOpen ? 'open' : ''}`}>
+            🛆
           </span>
         </div>
 
@@ -304,10 +392,8 @@ function InteractionPage({ selectedClient, saveInteractionDocument, submitIntera
         </div>
       </>
     )}
-
   </div>
 </li>
-
                       );
                     })}
                   </ul>
@@ -620,8 +706,210 @@ function InteractionPage({ selectedClient, saveInteractionDocument, submitIntera
           </div>
 
           {/* Goals */} 
-          <div className="module--interaction-goal-update-card">
-            <h2 className="module--interaction-goal-update">Update Client Goals...?</h2>
+          <div className="module module--interaction-goal-update-card card">
+            {/* HEADER (CLICKABLE) */}
+            <div
+              className="module--interaction-goal-update"
+              onClick={() =>
+                setIsGoalUpdateOpen((prev) => !prev)
+              }
+            >
+              <h2 className='update-goals-title'>Update Client Goals...?</h2>
+              <span
+            className={`goal-update-arrow ${isGoalUpdateOpen ? 'open' : ''}`}>
+            🛆
+          </span>
+            </div>
+
+            {/* CONTENT */}
+            {isGoalUpdateOpen && (
+              <div className="module__content">
+
+                {/* GOAL FORM */}
+                <ul className="goals-list">
+                  {goals.map((goal, index) => {
+                    const isEditing = editingIndex === index;
+
+                    const progressPercent =
+                      goal.isSavingsGoal && goal.targetAmount
+                        ? Math.min(
+                            100,
+                            Math.round(
+                              (goal.currentAmount / goal.targetAmount) * 100
+                            )
+                          )
+                        : 0;
+
+                    return (
+                      <li key={index} className={`goal-item ${goal.completed ? 'completed' : ''}`}>
+                        <div className="goal-card-header">
+                          <div className="goal-card-title">
+                            <label className="goal-checkbox">
+                              <input
+                                type="checkbox"
+                                checked={goal.completed}
+                                onChange={() => {
+                                  setClientGoals((prev) => ({
+                                    ...prev,
+                                    [selectedClient.id]: prev[selectedClient.id].map((g, i) =>
+                                      i === index
+                                        ? { ...g, completed: !g.completed }
+                                        : g
+                                    ),
+                                  }));
+                                }}
+                              />
+                            </label>
+                            {/* TITLE (EDITABLE) */}
+                            {isEditing ? (
+                              <input
+                                type="text"
+                                value={goalForm.description}
+                                onChange={(e) =>
+                                  setGoalForm((prev) => ({
+                                    ...prev,
+                                    description: e.target.value,
+                                  }))
+                                }
+                              />
+                            ) : (
+                              <div className="goal-card-title-text">
+                                <h3>{goal.description}</h3>
+                                <div className="goal-meta-row">
+                                  <span>{goal.isSavingsGoal ? 'Savings Goal' : 'Milestone Goal'}</span>
+                                </div>
+                                {isEditing ? (
+                                  <input
+                                    type="date"
+                                    value={goalForm.date}
+                                    onChange={(e) =>
+                                      setGoalForm((prev) => ({
+                                        ...prev,
+                                        date: e.target.value,
+                                      }))
+                                    }
+                                  />
+                                ) : (
+                                  <div className="goal-dates">
+                                    <span>Start: {goal.startDate || 'Today'}</span>
+                                    <span>Due: {goal.date || 'TBD'}</span>
+                                  </div>
+                                )}  
+                              </div>
+                            )}
+                            <span className={`goal-status-tag ${goal.completed ? 'completed' : ''}`}>
+                              {goal.completed ? 'Completed' : goal.isSavingsGoal ? `${progressPercent}%` : 'Pending'}
+                            </span>
+                            </div>
+                            <div className="goal-card-actions">
+                              {isEditing ? (
+                              <button
+                                className="goal-save-btn"
+                                onClick={() => {
+                                  const updatedGoal = {
+                                    ...goal,
+                                    description: goalForm.description,
+                                    date: goalForm.date,
+                                    currentAmount: Number(goalForm.startAmount),
+                                    targetAmount: Number(goalForm.targetAmount),
+                                  };
+
+                                  setClientGoals((prev) => ({
+                                    ...prev,
+                                    [selectedClient.id]: prev[selectedClient.id].map((g, i) =>
+                                      i === index ? updatedGoal : g
+                                    ),
+                                  }));
+
+                                  setEditingIndex(null);
+                                }}
+                              >
+                                Save
+                              </button>
+                            ) : (
+                              <button
+                                className="goal-edit-btn"
+                                onClick={() => {
+                                  setGoalForm({
+                                    description: goal.description,
+                                    date: goal.date,
+                                    startAmount: goal.currentAmount?.toString() || '0',
+                                    targetAmount: goal.targetAmount?.toString() || '10000',
+                                    isSavingsGoal: goal.isSavingsGoal,
+                                  });
+
+                                  setEditingIndex(index);
+                                }}
+                              >
+                                Edit
+                              </button>
+                            )}
+
+                            {/* DELETE */}
+                            <button
+                              className="delete-goal-btn"
+                              onClick={() => {
+                                setClientGoals((prev) => ({
+                                  ...prev,
+                                  [selectedClient.id]: prev[selectedClient.id].filter(
+                                    (_, i) => i !== index
+                                  ),
+                                }));
+                              }}
+                            >
+                              ×
+                            </button> 
+                          </div>
+                        </div>
+                        {/* PROGRESS */}
+                        {goal.isSavingsGoal && (
+                          <div className="goal-progress-block">
+                            {isEditing ? (
+                              <>
+                                <input
+                                  type="number"
+                                  value={goalForm.startAmount}
+                                  onChange={(e) =>
+                                    setGoalForm((prev) => ({
+                                      ...prev,
+                                      startAmount: e.target.value,
+                                    }))
+                                  }
+                                />
+
+                                <input
+                                  type="number"
+                                  value={goalForm.targetAmount}
+                                  onChange={(e) =>
+                                    setGoalForm((prev) => ({
+                                      ...prev,
+                                      targetAmount: e.target.value,
+                                    }))
+                                  }
+                                />
+                              </>
+                            ) : (
+                              <div className="goal-progress-block">
+                                <progress
+                                  value={goal.currentAmount || 0}
+                                  max={goal.targetAmount}
+                                />
+                                <div className="goal-progress-info">
+                                 <span>{formatCurrency(goal.currentAmount)} saved</span>
+                                  <span>of {formatCurrency(goal.targetAmount)}</span>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
+
           </div>    
 
 
