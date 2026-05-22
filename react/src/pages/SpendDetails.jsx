@@ -142,222 +142,224 @@ function SpendDetails({ selectedClient }) {
   }
 
   return (
-    <div className="spend-details-page">
-      <div className="spend-header">
-        <div>
-          <p className="eyebrow">Spend Account</p>
-          <h1>Spend account insights</h1>
-          <p className="muted">A snapshot of your spending trends, cash flow, and recent activity for the Spend account.</p>
-        </div>
-        <div className="spend-balance-card">
-          <span className="spend-balance-label">Current Balance</span>
-          <span className="spend-balance-value">{formatCurrency(spendAccount.balance)}</span>
-          <span className="spend-balance-note">Account is healthy and operating within budget.</span>
-        </div>
-      </div>
-
-      <div className="spend-main-grid">
-        <div className="spend-left-column">
-          <section className="spend-insights-card">
-            <div className="section-header">
-              <div>
-                <h2>Account Insights</h2>
-                <p className="muted">Overview of spending habits and account cash flow.</p>
-              </div>
-            </div>
-            <p>
-              Over the last six months, this account has averaged <strong>{formatCurrency(averageExpense)}</strong> in expenses per month while receiving an average income of <strong>{formatCurrency(Math.round(totalIncome / monthlySpendData.length))}</strong>.
-              Most spending was on food, transport, and subscriptions, with income comfortably covering expenses each month.
-            </p>
-            <div className="insight-stat-row">
-              <div>
-                <span className="insight-label">Total income</span>
-                <strong>{formatCurrency(totalIncome)}</strong>
-              </div>
-              <div>
-                <span className="insight-label">Total expense</span>
-                <strong>{formatCurrency(totalExpense)}</strong>
-              </div>
-            </div>
-          </section>
-
-          <section className="spend-graph-card">
-            <div className="section-header">
-              <div>
-                <h2>Income vs Expense</h2>
-                <span className="muted">Monthly performance for the last six months.</span>
-              </div>
-              <div className="chart-legend">
-                <span className="legend-item"><span className="legend-swatch income" />Income</span>
-                <span className="legend-item"><span className="legend-swatch expense" />Expense</span>
-              </div>
-            </div>
-            <div className="spend-bar-chart">
-              <div className="chart-y-axis">
-                {(() => {
-                  const steps = 5;
-                  const labels = [];
-                  for (let i = steps; i >= 0; i--) {
-                    labels.push(Math.round((highestMonthlyValue / steps) * i));
-                  }
-                  return labels.map((value) => (
-                    <span key={value} className="axis-label">{formatCurrency(value)}</span>
-                  ));
-                })()}
-              </div>
-              <div className="chart-area">
-                <div className="chart-grid-lines">
-                  {[0, 1, 2, 3, 4, 5].map((i) => (
-                    <div key={i} className="grid-line" />
-                  ))}
-                </div>
-                <div className="chart-bars">
-                  {monthlySpendData.map((item) => (
-                    <div key={item.month} className="chart-column">
-                      <div className="bar-group">
-                        <div
-                          className="bar income"
-                          style={{ height: `${(item.income / highestMonthlyValue) * 100}%` }}
-                          title={`Income: ${formatCurrency(item.income)}`}
-                        >
-                          <span className="bar-tooltip">{formatCurrency(item.income)}</span>
-                        </div>
-                        <div
-                          className="bar expense"
-                          style={{ height: `${(item.expense / highestMonthlyValue) * 100}%` }}
-                          title={`Expense: ${formatCurrency(item.expense)}`}
-                        >
-                          <span className="bar-tooltip">{formatCurrency(item.expense)}</span>
-                        </div>
-                      </div>
-                      <div className="chart-label">{item.month}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </section>
-        </div> 
-
-        <aside className="spend-calendar-card">
-          <div className="calendar-card">
-            <div className="calendar-header">
-              <div className="calendar-header-top">
-                <button className="calendar-nav-button" onClick={handlePrevMonth} type="button">
-                  ←
-                </button>
-                <div>
-                  <p className="eyebrow">Calendar</p>
-                  <h2>{currentMonthLabel}</h2>
-                </div>
-              </div>
-              <button className="calendar-action" onClick={handleToday} type="button">Today</button>
-            </div>
-            <div className="calendar-grid">
-              {dayNames.map((day) => (
-                <div key={day} className="calendar-day-label">{day}</div>
-              ))}
-              {calendarCells.map((dateNumber, index) => {
-                const isValidDate = dateNumber > 0 && dateNumber <= daysInMonth;
-                const isCurrent = isValidDate && isTodayDate(dateNumber);
-                const dateString = isValidDate ? `${String(calendarMonth.getMonth() + 1).padStart(2, '0')}/${String(dateNumber).padStart(2, '0')}/${calendarMonth.getFullYear()}` : null;
-                return (
-                  <div
-                    key={index}
-                    className={`calendar-cell ${isCurrent ? 'today' : ''} ${isValidDate ? 'clickable' : 'inactive'} ${selectedDate === dateString ? 'selected' : ''}`}
-                    onClick={() => isValidDate && handleDateClick(dateNumber)}
-                    role={isValidDate ? 'button' : undefined}
-                    tabIndex={isValidDate ? 0 : -1}
-                    onKeyDown={(event) => {
-                      if (event.key === 'Enter' && isValidDate) {
-                        handleDateClick(dateNumber);
-                      }
-                    }}
-                  >
-                    {isValidDate ? dateNumber : ''}
-                  </div>
-                );
-              })}
-            </div>
-            <div className="calendar-footer">
-              {/* <div className="calendar-note">Upcoming payments and spend reminders are highlighted here.</div> */}
-            </div>
-            {selectedDate && (
-              <div className="calendar-transactions-section">
-                <div className="section-header">
-                  <div>
-                    <h3>Transactions on {selectedDate}</h3>
-                    <p className="muted">Showing activity for the selected calendar date.</p>
-                  </div>
-                </div>
-                {selectedTransactions.length > 0 ? (
-                  <table className="calendar-transaction-table">
-                    <thead>
-                      <tr>
-                        <th>Date</th>
-                        <th>Name</th>
-                        <th>Amount</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {selectedTransactions.map((item, index) => (
-                        <tr key={index}>
-                          <td>{item.date}</td>
-                          <td>{item.description}</td>
-                          <td className={`transaction-amount ${item.type === 'income' ? 'positive' : 'expense'}`}>
-                            {item.type === 'income' ? '+' : '-'}{formatCurrency(item.amount)}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                ) : (
-                  <p className="muted">No transactions found for this date.</p>
-                )}
-              </div>
-            )}
+    <div className="background-card">
+      <div className="spend-details-page">
+        <div className="spend-header">
+          <div>
+            <p className="eyebrow">Spend Account</p>
+            <h1>Spend account insights</h1>
+            <p className="muted">A snapshot of your spending trends, cash flow, and recent activity for the Spend account.</p>
           </div>
-        </aside>
-        <section className="spend-transactions-card">
-            <div className="section-header">
-              <div>
-                <h2>Transactions</h2>
-                <p className="muted">All recent transactions for your Spend account.</p>
+          <div className="spend-balance-card">
+            <span className="spend-balance-label">Current Balance</span>
+            <span className="spend-balance-value">{formatCurrency(spendAccount.balance)}</span>
+            <span className="spend-balance-note">Account is healthy and operating within budget.</span>
+          </div>
+        </div>
+
+        <div className="spend-main-grid">
+          <div className="spend-left-column">
+            <section className="spend-insights-card">
+              <div className="section-header">
+                <div>
+                  <h2>Account Insights</h2>
+                  <p className="muted">Overview of spending habits and account cash flow.</p>
+                </div>
               </div>
-            </div>
-            <table className="transaction-table">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Name of Institution</th>
-                  <th>Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                {(showAllTransactions ? spendTransactions : spendTransactions.slice(0, 10)).map((item, index) => {
-                  const isPositive = item.type === 'income';
+              <p>
+                Over the last six months, this account has averaged <strong>{formatCurrency(averageExpense)}</strong> in expenses per month while receiving an average income of <strong>{formatCurrency(Math.round(totalIncome / monthlySpendData.length))}</strong>.
+                Most spending was on food, transport, and subscriptions, with income comfortably covering expenses each month.
+              </p>
+              <div className="insight-stat-row">
+                <div>
+                  <span className="insight-label">Total income</span>
+                  <strong>{formatCurrency(totalIncome)}</strong>
+                </div>
+                <div>
+                  <span className="insight-label">Total expense</span>
+                  <strong>{formatCurrency(totalExpense)}</strong>
+                </div>
+              </div>
+            </section>
+
+            <section className="spend-graph-card">
+              <div className="section-header">
+                <div>
+                  <h2>Income vs Expense</h2>
+                  <span className="muted">Monthly performance for the last six months.</span>
+                </div>
+                <div className="chart-legend">
+                  <span className="legend-item"><span className="legend-swatch income" />Income</span>
+                  <span className="legend-item"><span className="legend-swatch expense" />Expense</span>
+                </div>
+              </div>
+              <div className="spend-bar-chart">
+                <div className="chart-y-axis">
+                  {(() => {
+                    const steps = 5;
+                    const labels = [];
+                    for (let i = steps; i >= 0; i--) {
+                      labels.push(Math.round((highestMonthlyValue / steps) * i));
+                    }
+                    return labels.map((value) => (
+                      <span key={value} className="axis-label">{formatCurrency(value)}</span>
+                    ));
+                  })()}
+                </div>
+                <div className="chart-area">
+                  <div className="chart-grid-lines">
+                    {[0, 1, 2, 3, 4, 5].map((i) => (
+                      <div key={i} className="grid-line" />
+                    ))}
+                  </div>
+                  <div className="chart-bars">
+                    {monthlySpendData.map((item) => (
+                      <div key={item.month} className="chart-column">
+                        <div className="bar-group">
+                          <div
+                            className="bar income"
+                            style={{ height: `${(item.income / highestMonthlyValue) * 100}%` }}
+                            title={`Income: ${formatCurrency(item.income)}`}
+                          >
+                            <span className="bar-tooltip">{formatCurrency(item.income)}</span>
+                          </div>
+                          <div
+                            className="bar expense"
+                            style={{ height: `${(item.expense / highestMonthlyValue) * 100}%` }}
+                            title={`Expense: ${formatCurrency(item.expense)}`}
+                          >
+                            <span className="bar-tooltip">{formatCurrency(item.expense)}</span>
+                          </div>
+                        </div>
+                        <div className="chart-label">{item.month}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div> 
+
+          <aside className="spend-calendar-card">
+            <div className="calendar-card">
+              <div className="calendar-header">
+                <div className="calendar-header-top">
+                  <button className="calendar-nav-button" onClick={handlePrevMonth} type="button">
+                    ←
+                  </button>
+                  <div>
+                    <p className="eyebrow">Calendar</p>
+                    <h2>{currentMonthLabel}</h2>
+                  </div>
+                </div>
+                <button className="calendar-action" onClick={handleToday} type="button">Today</button>
+              </div>
+              <div className="calendar-grid">
+                {dayNames.map((day) => (
+                  <div key={day} className="calendar-day-label">{day}</div>
+                ))}
+                {calendarCells.map((dateNumber, index) => {
+                  const isValidDate = dateNumber > 0 && dateNumber <= daysInMonth;
+                  const isCurrent = isValidDate && isTodayDate(dateNumber);
+                  const dateString = isValidDate ? `${String(calendarMonth.getMonth() + 1).padStart(2, '0')}/${String(dateNumber).padStart(2, '0')}/${calendarMonth.getFullYear()}` : null;
                   return (
-                    <tr key={index}>
-                      <td>{item.date}</td>
-                      <td>{item.description}</td>
-                      <td className={`transaction-amount ${isPositive ? 'positive' : 'expense'}`}>
-                        {isPositive ? '+' : '-'}{formatCurrency(item.amount)}
-                      </td>
-                    </tr>
+                    <div
+                      key={index}
+                      className={`calendar-cell ${isCurrent ? 'today' : ''} ${isValidDate ? 'clickable' : 'inactive'} ${selectedDate === dateString ? 'selected' : ''}`}
+                      onClick={() => isValidDate && handleDateClick(dateNumber)}
+                      role={isValidDate ? 'button' : undefined}
+                      tabIndex={isValidDate ? 0 : -1}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' && isValidDate) {
+                          handleDateClick(dateNumber);
+                        }
+                      }}
+                    >
+                      {isValidDate ? dateNumber : ''}
+                    </div>
                   );
                 })}
-              </tbody>
-            </table>
-            {spendTransactions.length > 10 && (
-              <button 
-                className="btn show-more-button" 
-                onClick={() => setShowAllTransactions(!showAllTransactions)}
-                type="button"
-              >
-                {showAllTransactions ? 'Show Less' : `Show More`}
-              </button>
-            )}
-          </section>
+              </div>
+              <div className="calendar-footer">
+                {/* <div className="calendar-note">Upcoming payments and spend reminders are highlighted here.</div> */}
+              </div>
+              {selectedDate && (
+                <div className="calendar-transactions-section">
+                  <div className="section-header">
+                    <div>
+                      <h3>Transactions on {selectedDate}</h3>
+                      <p className="muted">Showing activity for the selected calendar date.</p>
+                    </div>
+                  </div>
+                  {selectedTransactions.length > 0 ? (
+                    <table className="calendar-transaction-table">
+                      <thead>
+                        <tr>
+                          <th>Date</th>
+                          <th>Name</th>
+                          <th>Amount</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {selectedTransactions.map((item, index) => (
+                          <tr key={index}>
+                            <td>{item.date}</td>
+                            <td>{item.description}</td>
+                            <td className={`transaction-amount ${item.type === 'income' ? 'positive' : 'expense'}`}>
+                              {item.type === 'income' ? '+' : '-'}{formatCurrency(item.amount)}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  ) : (
+                    <p className="muted">No transactions found for this date.</p>
+                  )}
+                </div>
+              )}
+            </div>
+          </aside>
+          <section className="spend-transactions-card">
+              <div className="section-header">
+                <div>
+                  <h2>Transactions</h2>
+                  <p className="muted">All recent transactions for your Spend account.</p>
+                </div>
+              </div>
+              <table className="transaction-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Name of Institution</th>
+                    <th>Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(showAllTransactions ? spendTransactions : spendTransactions.slice(0, 10)).map((item, index) => {
+                    const isPositive = item.type === 'income';
+                    return (
+                      <tr key={index}>
+                        <td>{item.date}</td>
+                        <td>{item.description}</td>
+                        <td className={`transaction-amount ${isPositive ? 'positive' : 'expense'}`}>
+                          {isPositive ? '+' : '-'}{formatCurrency(item.amount)}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+              {spendTransactions.length > 10 && (
+                <button 
+                  className="btn show-more-button" 
+                  onClick={() => setShowAllTransactions(!showAllTransactions)}
+                  type="button"
+                >
+                  {showAllTransactions ? 'Show Less' : `Show More`}
+                </button>
+              )}
+            </section>
+        </div>
       </div>
     </div>
   );

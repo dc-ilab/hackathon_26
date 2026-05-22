@@ -293,110 +293,112 @@ function Accounts({ selectedClient, openTab }) {
   }, [selectedClient]);
 
   return (
-    <div className="accounts-page">
-      {/* Overview Insight Section */}
-      <section className="overview-insight-section">
-        <h2>Overview Insight</h2>
-        <p className="insight-description">
-          This chart displays the trends across your accounts, showing how each account's balance changed over the last six months.
-        </p>
+    <div className="background-card">
+      <div className="accounts-page">
+        {/* Overview Insight Section */}
+        <section className="overview-insight-section">
+          <h2>Overview Insight</h2>
+          <p className="insight-description">
+            This chart displays the trends across your accounts, showing how each account's balance changed over the last six months.
+          </p>
 
-        <div className="overview-grid">
-          <article className="overview-summary-card">
-            <h3>Account totals</h3>
-            <div className="overview-summary-list">
-              {selectedClient.accounts.map((account, i) => (
-                <div key={account.type} className="overview-summary-item">
-                  <div>
-                    <div className="summary-label">{account.type} Account</div>
-                    <div className="summary-value">{formatCurrency(account.balance)}</div>
+          <div className="overview-grid">
+            <article className="overview-summary-card">
+              <h3>Account totals</h3>
+              <div className="overview-summary-list">
+                {selectedClient.accounts.map((account, i) => (
+                  <div key={account.type} className="overview-summary-item">
+                    <div>
+                      <div className="summary-label">{account.type} Account</div>
+                      <div className="summary-value">{formatCurrency(account.balance)}</div>
+                    </div>
+                    <div className="summary-pill" style={{ backgroundColor: ['#71B48D', '#BDDDBD', '#404E7C'][i] }} />
                   </div>
-                  <div className="summary-pill" style={{ backgroundColor: ['#71B48D', '#BDDDBD', '#404E7C'][i] }} />
-                </div>
-              ))}
-            </div>
-            <p className="overview-summary-note">
-              The graph shows monthly balances for each account type over the last six months, using sample totals for Spend, Reserve, and Growth accounts.
-            </p>
-          </article>
+                ))}
+              </div>
+              <p className="overview-summary-note">
+                The graph shows monthly balances for each account type over the last six months, using sample totals for Spend, Reserve, and Growth accounts.
+              </p>
+            </article>
 
-          <article className="overview-chart-card">
-            <div className="chart-wrapper">
-              <LineChart data={accountHistory} />
-            </div>
+            <article className="overview-chart-card">
+              <div className="chart-wrapper">
+                <LineChart data={accountHistory} />
+              </div>
 
-            <div className="chart-legend">
-              {selectedClient.accounts.map((account, i) => (
-                <div key={account.type} className="legend-item">
-                  <div
-                    className="legend-color"
-                    style={{ backgroundColor: ['#71B48D', '#BDDDBD', '#404E7C', '#db8c4f', '#eeceb6'][i] }}
-                  ></div>
-                  <span>{account.type}</span>
-                </div>
-              ))}
-            </div>
-          </article>
-        </div>
-      </section>
-
-      {/* Accounts Breakdown Section */}
-      <section className="accounts-breakdown-section">
-        <h2>Accounts Breakdown</h2>
-        <div className="breakdown-grid">
-          <div className="breakdown-chart">
-            <PieChart accounts={selectedClient.accounts} />
+              <div className="chart-legend">
+                {selectedClient.accounts.map((account, i) => (
+                  <div key={account.type} className="legend-item">
+                    <div
+                      className="legend-color"
+                      style={{ backgroundColor: ['#71B48D', '#BDDDBD', '#404E7C', '#db8c4f', '#eeceb6'][i] }}
+                    ></div>
+                    <span>{account.type}</span>
+                  </div>
+                ))}
+              </div>
+            </article>
           </div>
-          <div className="breakdown-table">
-            <table className="accounts-table">
-              <thead>
-                <tr>
-                  <th>Account Type</th>
-                  <th>Balance</th>
-                  <th>Percentage</th>
-                  <th>Last Transaction</th>
-                </tr>
-              </thead>
-              <tbody>
-                {selectedClient.accounts.map((account, i) => {
-                  const lastActivity = selectedClient.recentActivity[i] || selectedClient.recentActivity[0];
-                  return (
-                    <tr key={account.type}>
-                          <td>
-                        <div
-                          className={`account-name ${account.type === 'Spend' ? 'account-link' : ''}`}
-                          onClick={() => account.type === 'Spend' && openTab('spend-account', 'Spend Account', SpendDetails)}
-                          onKeyDown={(event) => {
-                            if (account.type === 'Spend' && (event.key === 'Enter' || event.key === ' ')) {
-                              openTab('spend-account', 'Spend Account', SpendDetails);
-                            }
-                          }}
-                          role={account.type === 'Spend' ? 'button' : undefined}
-                          tabIndex={account.type === 'Spend' ? 0 : undefined}
-                        >
+        </section>
+
+        {/* Accounts Breakdown Section */}
+        <section className="accounts-breakdown-section">
+          <h2>Accounts Breakdown</h2>
+          <div className="breakdown-grid">
+            <div className="breakdown-chart">
+              <PieChart accounts={selectedClient.accounts} />
+            </div>
+            <div className="breakdown-table">
+              <table className="accounts-table">
+                <thead>
+                  <tr>
+                    <th>Account Type</th>
+                    <th>Balance</th>
+                    <th>Percentage</th>
+                    <th>Last Transaction</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {selectedClient.accounts.map((account, i) => {
+                    const lastActivity = selectedClient.recentActivity[i] || selectedClient.recentActivity[0];
+                    return (
+                      <tr key={account.type}>
+                            <td>
                           <div
-                            className="account-indicator"
-                            style={{ backgroundColor: ['#71B48D', '#BDDDBD', '#404E7C', '#db8c4f', '#eeceb6'][i] }}
-                          ></div>
-                          {account.type}
-                        </div>
-                      </td>
-                      <td>{formatCurrency(account.balance)}</td>
-                      <td>{account.percentage}%</td>
-                      <td>
-                        {lastActivity.type === 'deposit' && '+'}
-                        {lastActivity.type === 'withdrawal' && '-'}
-                        {lastActivity.type !== 'deposit' && lastActivity.type !== 'withdrawal' && ''}
-                        {formatCurrency(lastActivity.amount)} ({lastActivity.date})
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                            className={`account-name ${account.type === 'Spend' ? 'account-link' : ''}`}
+                            onClick={() => account.type === 'Spend' && openTab('spend-account', 'Spend Account', SpendDetails)}
+                            onKeyDown={(event) => {
+                              if (account.type === 'Spend' && (event.key === 'Enter' || event.key === ' ')) {
+                                openTab('spend-account', 'Spend Account', SpendDetails);
+                              }
+                            }}
+                            role={account.type === 'Spend' ? 'button' : undefined}
+                            tabIndex={account.type === 'Spend' ? 0 : undefined}
+                          >
+                            <div
+                              className="account-indicator"
+                              style={{ backgroundColor: ['#71B48D', '#BDDDBD', '#404E7C', '#db8c4f', '#eeceb6'][i] }}
+                            ></div>
+                            {account.type}
+                          </div>
+                        </td>
+                        <td>{formatCurrency(account.balance)}</td>
+                        <td>{account.percentage}%</td>
+                        <td>
+                          {lastActivity.type === 'deposit' && '+'}
+                          {lastActivity.type === 'withdrawal' && '-'}
+                          {lastActivity.type !== 'deposit' && lastActivity.type !== 'withdrawal' && ''}
+                          {formatCurrency(lastActivity.amount)} ({lastActivity.date})
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
     </div>
   );
 }

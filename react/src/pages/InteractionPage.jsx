@@ -225,139 +225,513 @@ function InteractionPage({ selectedClient, saveInteractionDocument, submitIntera
 
 
   return (
-    <div className="interaction-page">
-      <div className="interaction-form-grouping">
+    <div className="background-card">
+      <div className="interaction-page">
+        <div className="interaction-form-grouping">
 
-        {/* HEADER */}
-        <div
-          className="interaction-form-grouping-header"
-          onClick={() => setIsGroupingOpen((prev) => !prev)}
-        >
-          <h2 className="interaction-form-grouping-titles">Preparation Information</h2>
+          {/* HEADER */}
+          <div
+            className="interaction-form-grouping-header"
+            onClick={() => setIsGroupingOpen((prev) => !prev)}
+          >
+            <h2 className="interaction-form-grouping-titles">Preparation Information</h2>
 
-          {/* Arrow */}
-          <span
-            className={`grouping-arrow ${isGroupingOpen ? 'open' : ''}`}>
-            🛆
-          </span>
-        </div>
+            {/* Arrow */}
+            <span
+              className={`grouping-arrow ${isGroupingOpen ? 'open' : ''}`}>
+              🛆
+            </span>
+          </div>
 
-        {/* CONTENT */}
-        {isGroupingOpen && (
-          <div className="interaction-form-grouping-content">
-            <div className="interaction-section section-1">
-            <div className="section-row">
-              {/* Insights Overview */}
-              <div className="module module--insights card">
-                <h2 className="module__title">Insights</h2>
-                <div className="module__content">
-                  <div className="insight-item">
-                    <h3>Client Summary</h3>
-                    <p className="muted">
-                      {selectedClient.name} is a {selectedClient.relationship || 'client'} of PNC, {String(selectedClient.clientSummary || '').toLowerCase()}
-                    </p>
+          {/* CONTENT */}
+          {isGroupingOpen && (
+            <div className="interaction-form-grouping-content">
+              <div className="interaction-section section-1">
+              <div className="section-row">
+                {/* Insights Overview */}
+                <div className="module module--insights card">
+                  <h2 className="module__title">Insights</h2>
+                  <div className="module__content">
+                    <div className="insight-item">
+                      <h3>Client Summary</h3>
+                      <p className="muted">
+                        {selectedClient.name} is a {selectedClient.relationship || 'client'} of PNC, {String(selectedClient.clientSummary || '').toLowerCase()}
+                      </p>
+                    </div>
+                    <div className="insight-item">
+                      <h3>Possible Opportunities</h3>
+                      <ul className="opportunities-list">
+                        {(selectedClient.opportunities || []).map((opp, index) => (
+                          <li key={index}>{opp}</li>
+                        ))}
+                      </ul>
+                    </div>
                   </div>
-                  <div className="insight-item">
-                    <h3>Possible Opportunities</h3>
-                    <ul className="opportunities-list">
-                      {(selectedClient.opportunities || []).map((opp, index) => (
-                        <li key={index}>{opp}</li>
+                </div>
+
+                {/* Accounts Overview */}
+                <div className="module module--accounts-overview card">
+                  <h2 className="module__title">Accounts Overview</h2>
+                  <div className="module__content">
+                    <div className="accounts-grid">
+                      {selectedClient.accounts.filter(account => account.percentage !== null).map((account, index) => (
+                        <div key={index} className="account-card">
+                          <h3>{account.type}</h3>
+                          <div className="account-balance">{formatCurrency(account.balance)}</div>
+                          <div className="account-percentage">{account.percentage}% of total</div>
+                          <div
+                            className="account-indicator"
+                            style={{ backgroundColor: account.color }}
+                          ></div>
+                        </div>
                       ))}
+                    </div>
+                    <div className="loans-section">
+                      <h3>Loans & Credit</h3>
+                      <div className="loans-grid">
+                        {selectedClient.accounts.filter(account => account.percentage === null).map((account, index) => (
+                          <div key={index} className="loan-card">
+                            <h4>{account.type}</h4>
+                            <div className="loan-balance">{formatCurrency(account.balance)}</div>
+                            <div className="loan-rate">Interest Rate: {account.interestRate}%</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Campaign Referrals */}
+            <div className="interaction-section section-campaigns">
+              <div className="module module--campaigns card">
+                <h2 className="module__title">Campaign Referrals</h2>
+                <div className="module__content">
+                  <ul className="campaigns-list">
+                    {(selectedClient.campaignReferrals || []).map((campaign, index) => (
+                      <li key={index} className={`campaign-item ${campaign.eligible ? 'eligible' : 'not-eligible'}`}>
+                        <h3>{campaign.type}</h3>
+                        <p>{campaign.description}</p>
+                        <span className="eligibility">{campaign.eligible ? 'Eligible' : 'Not Eligible'}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* Section 2: Recent Interaction Notes and Financial Goals */}
+            <div className="interaction-section section-2">
+              <div className="section-row">
+                {/* Recent Interaction Notes */}
+                <div className="module module--recent-notes card">
+                  <h2 className="module__title">Recent Interaction Notes</h2>
+                  <div className="module__content">
+                    <div className="notes-timeline">
+                      <div className="note-item">
+                        <div className="note-date">2026-04-15</div>
+                        <div className="note-content">
+                          <p>Discussed retirement planning options. Client interested in 401k rollover.</p>
+                        </div>
+                      </div>
+                      <div className="note-item">
+                        <div className="note-date">2026-03-22</div>
+                        <div className="note-content">
+                          <p>Reviewed investment portfolio performance. Suggested diversification.</p>
+                        </div>
+                      </div>
+                      <div className="note-item">
+                        <div className="note-date">2026-02-10</div>
+                        <div className="note-content">
+                          <p>Updated contact information and discussed mortgage refinancing options.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Financial Goals */}
+                <div className="module module--goals card">
+                  <h2 className="module__title">Financial Goals</h2>
+                  <div className="module__content">
+                    <ul className="interaction-goals-grid">
+                      {goals.map((goal, index) => {
+                        const progressPercent =
+                          goal.targetAmount && goal.currentAmount
+                            ? Math.min(
+                                100,
+                                Math.round(
+                                  (goal.currentAmount / goal.targetAmount) * 100
+                                )
+                              )
+                            : 0;
+
+                        return (
+                          <li className="interaction-goal-item">
+    <div className="interaction-goal-content">
+
+      <h3 className="goal-title">{goal.description || goal.goal}</h3>
+
+      <div className="goal-type">
+        {goal.targetAmount ? 'Savings goal' : 'Milestone goal'}
+      </div>
+
+      <div className="goal-dates-row">
+        <span>Start: {goal.startDate || 'Today'}</span>
+        <span>Due: {goal.date || 'TBD'}</span>
+      </div>
+
+      {goal.targetAmount && (
+        <>
+          <progress
+            value={goal.currentAmount || 0}
+            max={goal.targetAmount}
+          />
+          <div className="goal-progress-percentage">
+            {progressPercent}%
+          </div>
+        </>
+      )}
+    </div>
+  </li>
+                        );
+                      })}
                     </ul>
                   </div>
                 </div>
               </div>
-
-              {/* Accounts Overview */}
-              <div className="module module--accounts-overview card">
-                <h2 className="module__title">Accounts Overview</h2>
-                <div className="module__content">
-                  <div className="accounts-grid">
-                    {selectedClient.accounts.filter(account => account.percentage !== null).map((account, index) => (
-                      <div key={index} className="account-card">
-                        <h3>{account.type}</h3>
-                        <div className="account-balance">{formatCurrency(account.balance)}</div>
-                        <div className="account-percentage">{account.percentage}% of total</div>
-                        <div
-                          className="account-indicator"
-                          style={{ backgroundColor: account.color }}
-                        ></div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="loans-section">
-                    <h3>Loans & Credit</h3>
-                    <div className="loans-grid">
-                      {selectedClient.accounts.filter(account => account.percentage === null).map((account, index) => (
-                        <div key={index} className="loan-card">
-                          <h4>{account.type}</h4>
-                          <div className="loan-balance">{formatCurrency(account.balance)}</div>
-                          <div className="loan-rate">Interest Rate: {account.interestRate}%</div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
-          </div>
+            </div>
+          )}
 
-          {/* Campaign Referrals */}
-          <div className="interaction-section section-campaigns">
-            <div className="module module--campaigns card">
-              <h2 className="module__title">Campaign Referrals</h2>
+        </div>
+
+        {/* Section 3: Interaction Preparation Notes + Questions + Banker Notes */}
+          <div className="interaction-section section-3">
+            {/* Interaction Preparation Notes */}
+            <div className="module module--prep-notes card">
+              <h2 className="module__title">Interaction Preparation Notes</h2>
               <div className="module__content">
-                <ul className="campaigns-list">
-                  {(selectedClient.campaignReferrals || []).map((campaign, index) => (
-                    <li key={index} className={`campaign-item ${campaign.eligible ? 'eligible' : 'not-eligible'}`}>
-                      <h3>{campaign.type}</h3>
-                      <p>{campaign.description}</p>
-                      <span className="eligibility">{campaign.eligible ? 'Eligible' : 'Not Eligible'}</span>
-                    </li>
-                  ))}
-                </ul>
+                <textarea
+                  className="notes-textarea"
+                  placeholder="Add preparation notes for this interaction..."
+                  rows="6"
+                ></textarea>
               </div>
             </div>
-          </div>
 
-          {/* Section 2: Recent Interaction Notes and Financial Goals */}
-          <div className="interaction-section section-2">
-            <div className="section-row">
-              {/* Recent Interaction Notes */}
-              <div className="module module--recent-notes card">
-                <h2 className="module__title">Recent Interaction Notes</h2>
-                <div className="module__content">
-                  <div className="notes-timeline">
-                    <div className="note-item">
-                      <div className="note-date">2026-04-15</div>
-                      <div className="note-content">
-                        <p>Discussed retirement planning options. Client interested in 401k rollover.</p>
+            {/* Interaction Questions Module */}
+            <div className="module module--interaction-questions card">
+              <h2 className="module__title">Interaction Questions</h2>
+              <div className="module__content">
+                <div className="questions-grid">
+                  {/* Row 1 */}
+                  <div className="question-row">
+                    <div className="question-block">
+                      <label className="question-label">Do you track your expenses?</label>
+                        <div className="question-inputs">
+                          <div className="question-buttons">
+                            <button
+                              type="button"
+                              className={`btn btn--toggle ${
+                                answers.tracksExpenses.choice === 'Yes' ? 'active' : ''
+                              }`}
+                              onClick={() =>
+                                handleAnswerChange('tracksExpenses', 'choice', 'Yes')
+                              }
+                            >
+                              Yes
+                            </button>
+
+                            <button
+                              type="button"
+                              className={`btn btn--toggle btn--secondary ${
+                                answers.tracksExpenses.choice === 'No' ? 'active' : ''
+                              }`}
+                              onClick={() =>
+                                handleAnswerChange('tracksExpenses', 'choice', 'No')
+                              }
+                            >
+                              No
+                            </button>
+                          </div>
+                          <input
+                            type="text"
+                            className="input-small"
+                            placeholder="Additional details..."
+                            value={answers.tracksExpenses.details}
+                            onChange={(e) =>
+                              handleAnswerChange(
+                                'tracksExpenses',
+                                'details',
+                                e.target.value
+                              )
+                            }
+                          />
+                        </div>
+                    </div>
+                    <div className="question-block">
+                      <label className="question-label">Do you borrow money?</label>
+                        <div className="question-inputs">
+                          <div className="question-buttons">
+                            <button
+                              type="button"
+                              className={`btn btn--toggle ${
+                                answers.borrowsMoney.choice === 'Yes' ? 'active' : ''
+                              }`}
+                              onClick={() =>
+                                handleAnswerChange('borrowsMoney', 'choice', 'Yes')
+                              }
+                            >
+                              Yes
+                            </button>
+
+                            <button
+                              type="button"
+                              className={`btn btn--toggle btn--secondary ${
+                                answers.borrowsMoney.choice === 'No' ? 'active' : ''
+                              }`}
+                              onClick={() =>
+                                handleAnswerChange('borrowsMoney', 'choice', 'No')
+                              }
+                            >
+                              No
+                            </button>
+                          </div>
+                          <input
+                            type="text"
+                            className="input-small"
+                            placeholder="Additional details..."
+                            value={answers.borrowsMoney.details}
+                            onChange={(e) =>
+                              handleAnswerChange(
+                                'borrowsMoney',
+                                'details',
+                                e.target.value
+                              )
+                            }
+                          />
+                        </div>
+                    </div>
+                  </div>
+
+                  {/* Row 2 */}
+                  <div className="question-row">
+                    <div className="question-block">
+                      <label className="question-label">Are you saving for retirement?</label>
+                        <div className="question-inputs">
+                          <div className="question-buttons">
+                            <button
+                              type="button"
+                              className={`btn btn--toggle ${
+                                answers.retirementSaving.choice === 'Yes' ? 'active' : ''
+                              }`}
+                              onClick={() =>
+                                handleAnswerChange('retirementSaving', 'choice', 'Yes')
+                              }
+                            >
+                              Yes
+                            </button>
+
+                            <button
+                              type="button"
+                              className={`btn btn--toggle btn--secondary ${
+                                answers.retirementSaving.choice === 'No' ? 'active' : ''
+                              }`}
+                              onClick={() =>
+                                handleAnswerChange('retirementSaving', 'choice', 'No')
+                              }
+                            >
+                              No
+                            </button>
+                          </div>
+                          <input
+                            type="text"
+                            className="input-small"
+                            placeholder="Additional details..."
+                            value={answers.retirementSaving.details}
+                            onChange={(e) =>
+                              handleAnswerChange(
+                                'retirementSaving',
+                                'details',
+                                e.target.value
+                              )
+                            }
+                          />
+                        </div>
+                    </div>
+                    <div className="question-block">
+                      <label className="question-label">What are your sources of income?</label>
+
+                      <div className="tag-input-container">
+                        {/* TAGS */}
+                        <div className="tag-list">
+                          {answers.incomeSources.map((item, index) => (
+                            <span key={index} className="tag">
+                              {item}
+                              <button
+                                type="button"
+                                onClick={() => removeItem('incomeSources', index)}
+                                className="tag-remove"
+                              >
+                                ×
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+
+                        {/* INPUT */}
+                        <input
+                          type="text"
+                          value={incomeInput}
+                          onChange={(e) => setIncomeInput(e.target.value)}
+                          onKeyDown={(e) =>
+                            handleListKeyDown(
+                              'incomeSources',
+                              incomeInput,
+                              setIncomeInput,
+                              e
+                            )
+                          }
+                          placeholder="Type and press Enter..."
+                          className="input-small"
+                        />
                       </div>
                     </div>
-                    <div className="note-item">
-                      <div className="note-date">2026-03-22</div>
-                      <div className="note-content">
-                        <p>Reviewed investment portfolio performance. Suggested diversification.</p>
-                      </div>
+                  </div>
+
+                  {/* Row 3 */}
+                  <div className="question-row">
+                    <div className="question-block">
+                      <label className="question-label">What are you currently saving?</label>
+                        <div className="question-inputs">
+                          <input
+                            type="text"
+                            className="input-small"
+                            placeholder="Additional details..."
+                            value={answers.currentSaving.details}
+                            onChange={(e) =>
+                              handleAnswerChange(
+                                'currentSaving',
+                                'details',
+                                e.target.value
+                              )
+                            }
+                          />
+                        </div>
                     </div>
-                    <div className="note-item">
-                      <div className="note-date">2026-02-10</div>
-                      <div className="note-content">
-                        <p>Updated contact information and discussed mortgage refinancing options.</p>
+                    <div className="question-block">
+                      <label className="question-label">How do you typically make purchases?</label>
+                      <div className="tag-input-container">
+                        {/* TAGS */}
+                        <div className="tag-list">
+                          {answers.purchaseMethod.map((item, index) => (
+                            <span key={index} className="tag">
+                              {item}
+                              <button
+                                type="button"
+                                onClick={() => removeItem('purchaseMethod', index)}
+                                className="tag-remove"
+                              >
+                                ×
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+
+                        {/* INPUT */}
+                        <input
+                          type="text"
+                          value={purchaseInput}
+                          onChange={(e) => setPurchaseInput(e.target.value)}
+                          onKeyDown={(e) =>
+                            handleListKeyDown(
+                              'purchaseMethod',
+                              purchaseInput,
+                              setPurchaseInput,
+                              e
+                            )
+                          }
+                          placeholder="Type and press Enter..."
+                          className="input-small"
+                        />
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
+            </div>
 
-              {/* Financial Goals */}
-              <div className="module module--goals card">
-                <h2 className="module__title">Financial Goals</h2>
+            <div className="section-row">
+
+                {/* Banker Notes Module */}
+                <div className="module module--banker-notes card">
+                <h2 className="module__title">Banker Notes</h2>
+
                 <div className="module__content">
-                  <ul className="interaction-goals-grid">
+                    <p className="muted helper-text">
+                    Notes written in this section will only be shown to branch bankers, and saved under the client note page.
+                    </p>
+
+                    
+                  <textarea
+                  className="notes-textarea"
+                  value={bankerNotes}
+                    onChange={(e) => setBankerNotes(e.target.value)}
+                    placeholder="Enter banker notes..."
+                  />
+
+                </div>
+                </div>
+
+                {/* PNC Notes Module */}
+                <div className="module module--pnc-notes card">
+                <h2 className="module__title">PNC Notes</h2>
+
+                <div className="module__content">
+                    <p className="muted helper-text">
+                    Notes written in this section will be shared to teams across from PNC. Anything written in this section will also be saved to Banker Notes.
+                    </p>
+
+                    <textarea
+                      className="notes-textarea"
+                      value={pncNotes}
+                      onChange={(e) => setPncNotes(e.target.value)}
+                      placeholder="Enter PNC notes..."
+                    />
+                </div>
+                </div>
+
+            </div>
+
+            {/* Goals */} 
+            <div className="module module--interaction-goal-update-card card">
+              {/* HEADER (CLICKABLE) */}
+              <div
+                className="module--interaction-goal-update"
+                onClick={() =>
+                  setIsGoalUpdateOpen((prev) => !prev)
+                }
+              >
+                <h2 className='update-goals-title'>Update Client Goals...?</h2>
+                <span
+              className={`goal-update-arrow ${isGoalUpdateOpen ? 'open' : ''}`}>
+              🛆
+            </span>
+              </div>
+
+              {/* CONTENT */}
+              {isGoalUpdateOpen && (
+                <div className="module__content">
+
+                  {/* GOAL FORM */}
+                  <ul className="goals-list">
                     {goals.map((goal, index) => {
+                      const isEditing = editingIndex === index;
+
                       const progressPercent =
-                        goal.targetAmount && goal.currentAmount
+                        goal.isSavingsGoal && goal.targetAmount
                           ? Math.min(
                               100,
                               Math.round(
@@ -367,561 +741,187 @@ function InteractionPage({ selectedClient, saveInteractionDocument, submitIntera
                           : 0;
 
                       return (
-                        <li className="interaction-goal-item">
-  <div className="interaction-goal-content">
+                        <li key={index} className={`goal-item ${goal.completed ? 'completed' : ''}`}>
+                          <div className="goal-card-header">
+                            <div className="goal-card-title">
+                              <label className="goal-checkbox">
+                                <input
+                                  type="checkbox"
+                                  checked={goal.completed}
+                                  onChange={() => {
+                                    setClientGoals((prev) => ({
+                                      ...prev,
+                                      [selectedClient.id]: prev[selectedClient.id].map((g, i) =>
+                                        i === index
+                                          ? { ...g, completed: !g.completed }
+                                          : g
+                                      ),
+                                    }));
+                                  }}
+                                />
+                              </label>
+                              {/* TITLE (EDITABLE) */}
+                              {isEditing ? (
+                                <input
+                                  type="text"
+                                  value={goalForm.description}
+                                  onChange={(e) =>
+                                    setGoalForm((prev) => ({
+                                      ...prev,
+                                      description: e.target.value,
+                                    }))
+                                  }
+                                />
+                              ) : (
+                                <div className="goal-card-title-text">
+                                  <h3>{goal.description}</h3>
+                                  <div className="goal-meta-row">
+                                    <span>{goal.isSavingsGoal ? 'Savings Goal' : 'Milestone Goal'}</span>
+                                  </div>
+                                  {isEditing ? (
+                                    <input
+                                      type="date"
+                                      value={goalForm.date}
+                                      onChange={(e) =>
+                                        setGoalForm((prev) => ({
+                                          ...prev,
+                                          date: e.target.value,
+                                        }))
+                                      }
+                                    />
+                                  ) : (
+                                    <div className="goal-dates">
+                                      <span>Start: {goal.startDate || 'Today'}</span>
+                                      <span>Due: {goal.date || 'TBD'}</span>
+                                    </div>
+                                  )}  
+                                </div>
+                              )}
+                              <span className={`goal-status-tag ${goal.completed ? 'completed' : ''}`}>
+                                {goal.completed ? 'Completed' : goal.isSavingsGoal ? `${progressPercent}%` : 'Pending'}
+                              </span>
+                              </div>
+                              <div className="goal-card-actions">
+                                {isEditing ? (
+                                <button
+                                  className="goal-save-btn"
+                                  onClick={() => {
+                                    const updatedGoal = {
+                                      ...goal,
+                                      description: goalForm.description,
+                                      date: goalForm.date,
+                                      currentAmount: Number(goalForm.startAmount),
+                                      targetAmount: Number(goalForm.targetAmount),
+                                    };
 
-    <h3 className="goal-title">{goal.description || goal.goal}</h3>
+                                    setClientGoals((prev) => ({
+                                      ...prev,
+                                      [selectedClient.id]: prev[selectedClient.id].map((g, i) =>
+                                        i === index ? updatedGoal : g
+                                      ),
+                                    }));
 
-    <div className="goal-type">
-      {goal.targetAmount ? 'Savings goal' : 'Milestone goal'}
-    </div>
+                                    setEditingIndex(null);
+                                  }}
+                                >
+                                  Save
+                                </button>
+                              ) : (
+                                <button
+                                  className="goal-edit-btn"
+                                  onClick={() => {
+                                    setGoalForm({
+                                      description: goal.description,
+                                      date: goal.date,
+                                      startAmount: goal.currentAmount?.toString() || '0',
+                                      targetAmount: goal.targetAmount?.toString() || '10000',
+                                      isSavingsGoal: goal.isSavingsGoal,
+                                    });
 
-    <div className="goal-dates-row">
-      <span>Start: {goal.startDate || 'Today'}</span>
-      <span>Due: {goal.date || 'TBD'}</span>
-    </div>
+                                    setEditingIndex(index);
+                                  }}
+                                >
+                                  Edit
+                                </button>
+                              )}
 
-    {goal.targetAmount && (
-      <>
-        <progress
-          value={goal.currentAmount || 0}
-          max={goal.targetAmount}
-        />
-        <div className="goal-progress-percentage">
-          {progressPercent}%
-        </div>
-      </>
-    )}
-  </div>
-</li>
+                              {/* DELETE */}
+                              <button
+                                className="delete-goal-btn"
+                                onClick={() => {
+                                  setClientGoals((prev) => ({
+                                    ...prev,
+                                    [selectedClient.id]: prev[selectedClient.id].filter(
+                                      (_, i) => i !== index
+                                    ),
+                                  }));
+                                }}
+                              >
+                                ×
+                              </button> 
+                            </div>
+                          </div>
+                          {/* PROGRESS */}
+                          {goal.isSavingsGoal && (
+                            <div className="goal-progress-block">
+                              {isEditing ? (
+                                <>
+                                  <input
+                                    type="number"
+                                    value={goalForm.startAmount}
+                                    onChange={(e) =>
+                                      setGoalForm((prev) => ({
+                                        ...prev,
+                                        startAmount: e.target.value,
+                                      }))
+                                    }
+                                  />
+
+                                  <input
+                                    type="number"
+                                    value={goalForm.targetAmount}
+                                    onChange={(e) =>
+                                      setGoalForm((prev) => ({
+                                        ...prev,
+                                        targetAmount: e.target.value,
+                                      }))
+                                    }
+                                  />
+                                </>
+                              ) : (
+                                <div className="goal-progress-block">
+                                  <progress
+                                    value={goal.currentAmount || 0}
+                                    max={goal.targetAmount}
+                                  />
+                                  <div className="goal-progress-info">
+                                  <span>{formatCurrency(goal.currentAmount)} saved</span>
+                                    <span>of {formatCurrency(goal.targetAmount)}</span>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                        </li>
                       );
                     })}
                   </ul>
                 </div>
-              </div>
+              )}
+
+            </div>    
+
+
+            {/* Action Buttons */}
+            <div className="interaction-actions">
+              
+              <button className="btn" onClick={handleSaveDocument}>Save Draft</button>
+
+              <button className="btn" onClick={submitInteractionDocument}>Submit</button>
             </div>
           </div>
-          </div>
-        )}
-
       </div>
-
-      {/* Section 3: Interaction Preparation Notes + Questions + Banker Notes */}
-      <div className="interaction-form-input-grouping">
-        <div className="interaction-section section-3">
-          {/* Interaction Preparation Notes */}
-          <div className="module module--prep-notes card">
-            <h2 className="module__title">Interaction Preparation Notes</h2>
-            <div className="module__content">
-              <textarea
-                className="notes-textarea"
-                placeholder="Add preparation notes for this interaction..."
-                rows="6"
-              ></textarea>
-            </div>
-          </div>
-
-          {/* Interaction Questions Module */}
-          <div className="module module--interaction-questions card">
-            <h2 className="module__title">Interaction Questions</h2>
-            <div className="module__content">
-              <div className="questions-grid">
-                {/* Row 1 */}
-                <div className="question-row">
-                  <div className="question-block">
-                    <label className="question-label">Do you track your expenses?</label>
-                      <div className="question-inputs">
-                        <div className="question-buttons">
-                          <button
-                            type="button"
-                            className={`btn btn--toggle ${
-                              answers.tracksExpenses.choice === 'Yes' ? 'active' : ''
-                            }`}
-                            onClick={() =>
-                              handleAnswerChange('tracksExpenses', 'choice', 'Yes')
-                            }
-                          >
-                            Yes
-                          </button>
-
-                          <button
-                            type="button"
-                            className={`btn btn--toggle btn--secondary ${
-                              answers.tracksExpenses.choice === 'No' ? 'active' : ''
-                            }`}
-                            onClick={() =>
-                              handleAnswerChange('tracksExpenses', 'choice', 'No')
-                            }
-                          >
-                            No
-                          </button>
-                        </div>
-                        <input
-                          type="text"
-                          className="input-small"
-                          placeholder="Additional details..."
-                          value={answers.tracksExpenses.details}
-                          onChange={(e) =>
-                            handleAnswerChange(
-                              'tracksExpenses',
-                              'details',
-                              e.target.value
-                            )
-                          }
-                        />
-                      </div>
-                  </div>
-                  <div className="question-block">
-                    <label className="question-label">Do you borrow money?</label>
-                      <div className="question-inputs">
-                        <div className="question-buttons">
-                          <button
-                            type="button"
-                            className={`btn btn--toggle ${
-                              answers.borrowsMoney.choice === 'Yes' ? 'active' : ''
-                            }`}
-                            onClick={() =>
-                              handleAnswerChange('borrowsMoney', 'choice', 'Yes')
-                            }
-                          >
-                            Yes
-                          </button>
-
-                          <button
-                            type="button"
-                            className={`btn btn--toggle btn--secondary ${
-                              answers.borrowsMoney.choice === 'No' ? 'active' : ''
-                            }`}
-                            onClick={() =>
-                              handleAnswerChange('borrowsMoney', 'choice', 'No')
-                            }
-                          >
-                            No
-                          </button>
-                        </div>
-                        <input
-                          type="text"
-                          className="input-small"
-                          placeholder="Additional details..."
-                          value={answers.borrowsMoney.details}
-                          onChange={(e) =>
-                            handleAnswerChange(
-                              'borrowsMoney',
-                              'details',
-                              e.target.value
-                            )
-                          }
-                        />
-                      </div>
-                  </div>
-                </div>
-
-                {/* Row 2 */}
-                <div className="question-row">
-                  <div className="question-block">
-                    <label className="question-label">Are you saving for retirement?</label>
-                      <div className="question-inputs">
-                        <div className="question-buttons">
-                          <button
-                            type="button"
-                            className={`btn btn--toggle ${
-                              answers.retirementSaving.choice === 'Yes' ? 'active' : ''
-                            }`}
-                            onClick={() =>
-                              handleAnswerChange('retirementSaving', 'choice', 'Yes')
-                            }
-                          >
-                            Yes
-                          </button>
-
-                          <button
-                            type="button"
-                            className={`btn btn--toggle btn--secondary ${
-                              answers.retirementSaving.choice === 'No' ? 'active' : ''
-                            }`}
-                            onClick={() =>
-                              handleAnswerChange('retirementSaving', 'choice', 'No')
-                            }
-                          >
-                            No
-                          </button>
-                        </div>
-                        <input
-                          type="text"
-                          className="input-small"
-                          placeholder="Additional details..."
-                          value={answers.retirementSaving.details}
-                          onChange={(e) =>
-                            handleAnswerChange(
-                              'retirementSaving',
-                              'details',
-                              e.target.value
-                            )
-                          }
-                        />
-                      </div>
-                  </div>
-                  <div className="question-block">
-                    <label className="question-label">What are your sources of income?</label>
-
-                    <div className="tag-input-container">
-                      {/* TAGS */}
-                      <div className="tag-list">
-                        {answers.incomeSources.map((item, index) => (
-                          <span key={index} className="tag">
-                            {item}
-                            <button
-                              type="button"
-                              onClick={() => removeItem('incomeSources', index)}
-                              className="tag-remove"
-                            >
-                              ×
-                            </button>
-                          </span>
-                        ))}
-                      </div>
-
-                      {/* INPUT */}
-                      <input
-                        type="text"
-                        value={incomeInput}
-                        onChange={(e) => setIncomeInput(e.target.value)}
-                        onKeyDown={(e) =>
-                          handleListKeyDown(
-                            'incomeSources',
-                            incomeInput,
-                            setIncomeInput,
-                            e
-                          )
-                        }
-                        placeholder="Type and press Enter..."
-                        className="input-small"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Row 3 */}
-                <div className="question-row">
-                  <div className="question-block">
-                    <label className="question-label">What are you currently saving?</label>
-                      <div className="question-inputs">
-                        <input
-                          type="text"
-                          className="input-small"
-                          placeholder="Additional details..."
-                          value={answers.currentSaving.details}
-                          onChange={(e) =>
-                            handleAnswerChange(
-                              'currentSaving',
-                              'details',
-                              e.target.value
-                            )
-                          }
-                        />
-                      </div>
-                  </div>
-                  <div className="question-block">
-                    <label className="question-label">How do you typically make purchases?</label>
-                    <div className="tag-input-container">
-                      {/* TAGS */}
-                      <div className="tag-list">
-                        {answers.purchaseMethod.map((item, index) => (
-                          <span key={index} className="tag">
-                            {item}
-                            <button
-                              type="button"
-                              onClick={() => removeItem('purchaseMethod', index)}
-                              className="tag-remove"
-                            >
-                              ×
-                            </button>
-                          </span>
-                        ))}
-                      </div>
-
-                      {/* INPUT */}
-                      <input
-                        type="text"
-                        value={purchaseInput}
-                        onChange={(e) => setPurchaseInput(e.target.value)}
-                        onKeyDown={(e) =>
-                          handleListKeyDown(
-                            'purchaseMethod',
-                            purchaseInput,
-                            setPurchaseInput,
-                            e
-                          )
-                        }
-                        placeholder="Type and press Enter..."
-                        className="input-small"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="section-row">
-
-              {/* Banker Notes Module */}
-              <div className="module module--banker-notes card">
-              <h2 className="module__title">Banker Notes</h2>
-
-              <div className="module__content">
-                  <p className="muted helper-text">
-                  Notes written in this section will only be shown to branch bankers, and saved under the client note page.
-                  </p>
-
-                  
-                <textarea
-                className="notes-textarea"
-                value={bankerNotes}
-                  onChange={(e) => setBankerNotes(e.target.value)}
-                  placeholder="Enter banker notes..."
-                />
-
-              </div>
-              </div>
-
-              {/* PNC Notes Module */}
-              <div className="module module--pnc-notes card">
-              <h2 className="module__title">PNC Notes</h2>
-
-              <div className="module__content">
-                  <p className="muted helper-text">
-                  Notes written in this section will be shared to teams across from PNC. Anything written in this section will also be saved to Banker Notes.
-                  </p>
-
-                  <textarea
-                    className="notes-textarea"
-                    value={pncNotes}
-                    onChange={(e) => setPncNotes(e.target.value)}
-                    placeholder="Enter PNC notes..."
-                  />
-              </div>
-              </div>
-
-          </div>
-
-          {/* Goals */} 
-          <div className="module module--interaction-goal-update-card card">
-            {/* HEADER (CLICKABLE) */}
-            <div
-              className="module--interaction-goal-update"
-              onClick={() =>
-                setIsGoalUpdateOpen((prev) => !prev)
-              }
-            >
-              <h2 className='update-goals-title'>Update Client Goals...?</h2>
-              <span
-            className={`goal-update-arrow ${isGoalUpdateOpen ? 'open' : ''}`}>
-            🛆
-          </span>
-            </div>
-
-            {/* CONTENT */}
-            {isGoalUpdateOpen && (
-              <div className="module__content">
-
-                {/* GOAL FORM */}
-                <ul className="goals-list">
-                  {goals.map((goal, index) => {
-                    const isEditing = editingIndex === index;
-
-                    const progressPercent =
-                      goal.isSavingsGoal && goal.targetAmount
-                        ? Math.min(
-                            100,
-                            Math.round(
-                              (goal.currentAmount / goal.targetAmount) * 100
-                            )
-                          )
-                        : 0;
-
-                    return (
-                      <li key={index} className={`goal-item ${goal.completed ? 'completed' : ''}`}>
-                        <div className="goal-card-header">
-                          <div className="goal-card-title">
-                            <label className="goal-checkbox">
-                              <input
-                                type="checkbox"
-                                checked={goal.completed}
-                                onChange={() => {
-                                  setClientGoals((prev) => ({
-                                    ...prev,
-                                    [selectedClient.id]: prev[selectedClient.id].map((g, i) =>
-                                      i === index
-                                        ? { ...g, completed: !g.completed }
-                                        : g
-                                    ),
-                                  }));
-                                }}
-                              />
-                            </label>
-                            {/* TITLE (EDITABLE) */}
-                            {isEditing ? (
-                              <input
-                                type="text"
-                                value={goalForm.description}
-                                onChange={(e) =>
-                                  setGoalForm((prev) => ({
-                                    ...prev,
-                                    description: e.target.value,
-                                  }))
-                                }
-                              />
-                            ) : (
-                              <div className="goal-card-title-text">
-                                <h3>{goal.description}</h3>
-                                <div className="goal-meta-row">
-                                  <span>{goal.isSavingsGoal ? 'Savings Goal' : 'Milestone Goal'}</span>
-                                </div>
-                                {isEditing ? (
-                                  <input
-                                    type="date"
-                                    value={goalForm.date}
-                                    onChange={(e) =>
-                                      setGoalForm((prev) => ({
-                                        ...prev,
-                                        date: e.target.value,
-                                      }))
-                                    }
-                                  />
-                                ) : (
-                                  <div className="goal-dates">
-                                    <span>Start: {goal.startDate || 'Today'}</span>
-                                    <span>Due: {goal.date || 'TBD'}</span>
-                                  </div>
-                                )}  
-                              </div>
-                            )}
-                            <span className={`goal-status-tag ${goal.completed ? 'completed' : ''}`}>
-                              {goal.completed ? 'Completed' : goal.isSavingsGoal ? `${progressPercent}%` : 'Pending'}
-                            </span>
-                            </div>
-                            <div className="goal-card-actions">
-                              {isEditing ? (
-                              <button
-                                className="goal-save-btn"
-                                onClick={() => {
-                                  const updatedGoal = {
-                                    ...goal,
-                                    description: goalForm.description,
-                                    date: goalForm.date,
-                                    currentAmount: Number(goalForm.startAmount),
-                                    targetAmount: Number(goalForm.targetAmount),
-                                  };
-
-                                  setClientGoals((prev) => ({
-                                    ...prev,
-                                    [selectedClient.id]: prev[selectedClient.id].map((g, i) =>
-                                      i === index ? updatedGoal : g
-                                    ),
-                                  }));
-
-                                  setEditingIndex(null);
-                                }}
-                              >
-                                Save
-                              </button>
-                            ) : (
-                              <button
-                                className="goal-edit-btn"
-                                onClick={() => {
-                                  setGoalForm({
-                                    description: goal.description,
-                                    date: goal.date,
-                                    startAmount: goal.currentAmount?.toString() || '0',
-                                    targetAmount: goal.targetAmount?.toString() || '10000',
-                                    isSavingsGoal: goal.isSavingsGoal,
-                                  });
-
-                                  setEditingIndex(index);
-                                }}
-                              >
-                                Edit
-                              </button>
-                            )}
-
-                            {/* DELETE */}
-                            <button
-                              className="delete-goal-btn"
-                              onClick={() => {
-                                setClientGoals((prev) => ({
-                                  ...prev,
-                                  [selectedClient.id]: prev[selectedClient.id].filter(
-                                    (_, i) => i !== index
-                                  ),
-                                }));
-                              }}
-                            >
-                              ×
-                            </button> 
-                          </div>
-                        </div>
-                        {/* PROGRESS */}
-                        {goal.isSavingsGoal && (
-                          <div className="goal-progress-block">
-                            {isEditing ? (
-                              <>
-                                <input
-                                  type="number"
-                                  value={goalForm.startAmount}
-                                  onChange={(e) =>
-                                    setGoalForm((prev) => ({
-                                      ...prev,
-                                      startAmount: e.target.value,
-                                    }))
-                                  }
-                                />
-
-                                <input
-                                  type="number"
-                                  value={goalForm.targetAmount}
-                                  onChange={(e) =>
-                                    setGoalForm((prev) => ({
-                                      ...prev,
-                                      targetAmount: e.target.value,
-                                    }))
-                                  }
-                                />
-                              </>
-                            ) : (
-                              <div className="goal-progress-block">
-                                <progress
-                                  value={goal.currentAmount || 0}
-                                  max={goal.targetAmount}
-                                />
-                                <div className="goal-progress-info">
-                                 <span>{formatCurrency(goal.currentAmount)} saved</span>
-                                  <span>of {formatCurrency(goal.targetAmount)}</span>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        )}
-
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            )}
-
-          </div>    
-
-
-          {/* Action Buttons */}
-          <div className="interaction-actions">
-            
-            <button className="btn" onClick={handleSaveDocument}>Save Draft</button>
-
-            <button className="btn" onClick={submitInteractionDocument}>Submit</button>
-          </div>
-        </div>
-      </div>                  
     </div>
   );
 }
