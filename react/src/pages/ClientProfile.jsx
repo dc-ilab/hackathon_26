@@ -17,7 +17,7 @@ const formatDate = (value) => {
   return new Intl.DateTimeFormat('en-US').format(date);
 };
 
-function ClientProfile({ selectedClient, openTab }) {
+function ClientProfile({ selectedClient, openTab, clientGoals, setClientGoals }) {
   const normalizeGoals = (goalList) =>
     goalList.map((goal) => {
       const isSavingsGoal = typeof goal.targetAmount === 'number' && goal.targetAmount > 0;
@@ -38,7 +38,8 @@ function ClientProfile({ selectedClient, openTab }) {
       };
     });
 
-  const [goals, setGoals] = useState(() => normalizeGoals(selectedClient.clientGoals));
+  const goals = clientGoals[selectedClient.id] || [];
+
   const [showGoalForm, setShowGoalForm] = useState(false);
   const [editingIndex, setEditingIndex] = useState(null);
   const [goalForm, setGoalForm] = useState({
@@ -82,10 +83,22 @@ function ClientProfile({ selectedClient, openTab }) {
     };
 
     if (editingIndex !== null) {
-      setGoals((prev) => prev.map((goal, i) => (i === editingIndex ? goalData : goal)));
+      setClientGoals((prev) => ({
+  ...prev,
+  [selectedClient.id]: prev[selectedClient.id].map((goal, i) =>
+    i === editingIndex ? goalData : goal
+  ),
+}));
+
       setEditingIndex(null);
     } else {
-      setGoals((prev) => [...prev, goalData]);
+      setClientGoals((prev) => ({
+  ...prev,
+  [selectedClient.id]: [
+    ...(prev[selectedClient.id] || []),
+    goalData
+  ],
+}));
     }
 
     setShowGoalForm(false);
@@ -99,24 +112,27 @@ function ClientProfile({ selectedClient, openTab }) {
   };
 
   const toggleCompletion = (index) => {
-    setGoals((prev) =>
-      prev.map((goal, i) =>
+    setClientGoals((prev) => ({
+      ...prev,
+      [selectedClient.id]: prev[selectedClient.id].map((goal, i) =>
         i === index
-          ? {
-              ...goal,
-              completed: !goal.completed,
-            }
+          ? { ...goal, completed: !goal.completed }
           : goal
-      )
-    );
+      ),
+    }));
   };
 
-  const deleteGoal = (index) => {
-    setGoals((prev) => prev.filter((_, i) => i !== index));
-  };
+const deleteGoal = (index) => {
+  setClientGoals((prev) => ({
+    ...prev,
+    [selectedClient.id]: prev[selectedClient.id].filter(
+      (_, i) => i !== index
+    ),
+  }));
+};
 
   return (
-    <>
+    <div className="background-card">
       <div className="client-profile-top">
         <div className="module module--goals-top card">
           <div className="goals-header-row">
@@ -403,7 +419,7 @@ function ClientProfile({ selectedClient, openTab }) {
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }
 
