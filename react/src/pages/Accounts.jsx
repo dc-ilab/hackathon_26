@@ -365,7 +365,7 @@ function Accounts({ selectedClient, openTab }) {
                       <tr key={account.type}>
                             <td>
                           <div
-                            className={`account-name ${account.type === 'Spend' ? 'account-link' : ''}`}
+                            className={`breakdown-account-name ${account.type === 'Spend' ? 'account-link' : ''}`}
                             onClick={() => account.type === 'Spend' && openTab('spend-account', 'Spend Account', SpendDetails)}
                             onKeyDown={(event) => {
                               if (account.type === 'Spend' && (event.key === 'Enter' || event.key === ' ')) {

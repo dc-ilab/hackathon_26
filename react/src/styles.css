@@ -2262,14 +2262,22 @@ header {
   color: white;
 }
 
+.breakdown-account-name {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  font-weight: 600;
+  color: var(--ink);
+}
+
 .account-name.account-link {
   cursor: pointer;
   color: white;
 }
 
-.account-name.account-link:hover {
+.account-name.account-link:hover{
   opacity: 0.85;
-  color: var(--ink);
+  color: rgb(0, 43, 21);
 }
 
 .account-name.account-link:focus {
