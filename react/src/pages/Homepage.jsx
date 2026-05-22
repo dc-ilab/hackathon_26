@@ -163,9 +163,6 @@ function Homepage({ selectedClient, setSelectedId, filteredClients, openTab }) {
               previous interaction summaries.
             </p>
             <div className="formPanel__actions">
-              <button className="btn btn--ghost" aria-label="Call">
-                ☎
-              </button>
               <button className="btn" onClick={() => openTab('interaction', 'Client Interaction', InteractionPage)}>Start</button>
             </div>
           </div>
