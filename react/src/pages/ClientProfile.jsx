@@ -132,7 +132,7 @@ const deleteGoal = (index) => {
 };
 
   return (
-    <>
+    <div className="background-card">
       <div className="client-profile-top">
         <div className="module module--goals-top card">
           <div className="goals-header-row">
@@ -419,7 +419,7 @@ const deleteGoal = (index) => {
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }
 

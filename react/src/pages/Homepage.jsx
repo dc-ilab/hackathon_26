@@ -106,7 +106,7 @@ function PieChart({ accounts }) {
 
 function Homepage({ selectedClient, setSelectedId, filteredClients, openTab }) {
   return (
-    <>
+    <div className="background-card">
 
       {/* dashboard */}
       <main className="dashboard">
@@ -247,7 +247,7 @@ function Homepage({ selectedClient, setSelectedId, filteredClients, openTab }) {
           </div>
         </section>
       </main>
-    </>
+    </div>
   );
 }
 
