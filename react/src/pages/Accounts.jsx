@@ -11,22 +11,40 @@ const formatCurrency = (value) =>
 // Line chart component for Overview Insight
 function LineChart({ data }) {
   const width = 560;
-  const height = 280;
+  const height = 450;
   const padding = 40;
   const graphWidth = width - padding * 2;
   const graphHeight = height - padding * 2;
+  const hasAutoLoan = data.some(row => Math.abs(row.AutoLoan) > 0);
+  const hasHELOC = data.some(row => Math.abs(row.HELOC) > 0);
 
-  const values = data.flatMap((row) => [row.Spend, row.Reserve, row.Growth]);
-  const minValue = Math.min(...values);
-  const maxValue = Math.max(...values);
+
+  const values = data.flatMap((row) => [
+    row.Spend, 
+    row.Reserve, 
+    row.Growth,
+    
+    row.AutoLoan,
+    row.HELOC,
+  ]);
+
+
+  const maxValueRaw = Math.max(...values);
+  const minValueRaw = Math.min(...values);
+
+  // padding space
+  const maxValue = Math.max(maxValueRaw * 1.5, 0);
+  const minValue = Math.min(minValueRaw * 1.0, 0);
   const range = maxValue - minValue || 1;
-
-  const normalizeY = (value) => graphHeight - ((value - minValue) / range) * graphHeight;
 
   const series = [
     { key: 'Spend', color: '#71B48D' },
     { key: 'Reserve', color: '#BDDDBD' },
     { key: 'Growth', color: '#404E7C' },
+    
+    
+    ...(hasAutoLoan ? [{ key: 'AutoLoan', color: '#db8c4f' }] : []),
+    ...(hasHELOC ? [{ key: 'HELOC', color: '#eeceb6' }] : []),
   ];
 
   const xStep = data.length > 1 ? graphWidth / (data.length - 1) : 0;
@@ -35,7 +53,6 @@ function LineChart({ data }) {
     x: padding + index * xStep,
     y: padding + normalizeY(value),
   });
-
   const [hoverPoint, setHoverPoint] = useState(null);
 
   const getPath = (key) =>
@@ -46,15 +63,24 @@ function LineChart({ data }) {
       })
       .join(' ');
 
-  const tickCount = 5;
-  const tickValues = Array.from({ length: tickCount }, (_, i) =>
-    Math.round((maxValue - (range / (tickCount - 1)) * i) / 1000)
-  );
+  const tickCount = 6;
+
+  const tickValues = Array.from({ length: tickCount }, (_, i) => maxValue - (range / (tickCount - 1)) * i);
+  const zeroIndex = tickValues.findIndex(v => Math.abs(v) < range / 100);
+
+  // Force 0 into ticks if missing
+  if (!tickValues.some(v => Math.abs(v) < 1)) {
+    tickValues.push(0);
+  }
+
+
+  const normalizeY = (value) => graphHeight - ((value - minValue) / range) * graphHeight;
+  const zeroY = padding + normalizeY(0);
+
 
   return (
-    <svg viewBox={`0 0 ${width} ${height}`} width="100%" height="100%">
-      {tickValues.map((value, i) => {
-        const y = padding + (graphHeight / (tickCount - 1)) * i;
+    <svg id="accounts-line-chart" viewBox={`0 0 ${width} ${height}`} width="100%" height="100%">
+      {tickValues.map((value, i) => { const y = padding + normalizeY(value);
         return (
           <g key={`y-tick-${i}`}>
             <line
@@ -62,18 +88,35 @@ function LineChart({ data }) {
               y1={y}
               x2={width - padding}
               y2={y}
-              stroke="#f0f0f0"
-              strokeWidth="1"
+              stroke={Math.abs(tickValues[i]) < range / 100 ? "#333" : "#f0f0f0"}
+              strokeWidth={Math.abs(tickValues[i]) < range / 100 ? "2" : "1"}
             />
             <text x={padding - 10} y={y + 4} textAnchor="end" fontSize="12" fill="#666">
-              ${value}k
+              {Math.abs(value) < 1
+                ? "$0"
+                : `$${Math.round(value / 1000)}k`
+                }
             </text>
           </g>
         );
       })}
 
-      <line x1={padding} y1={padding} x2={padding} y2={height - padding} stroke="#999" strokeWidth="2" />
-      <line x1={padding} y1={height - padding} x2={width - padding} y2={height - padding} stroke="#999" strokeWidth="2" />
+      <line id='y-axis-line'
+        x1={padding} 
+        y1={padding} 
+        x2={padding} 
+        y2={height - padding} 
+        stroke="#999" 
+        strokeWidth="2" 
+      />
+      {/* <line id='zero-axis-line'
+        x1={padding} 
+        y1={zeroY} 
+        x2={width - padding} 
+        y2={zeroY} 
+        stroke="#999" 
+        strokeWidth="2" 
+      /> */}
 
       {series.map((seriesItem) => (
         <path
@@ -275,6 +318,10 @@ function Accounts({ selectedClient, openTab }) {
     const reserve = selectedClient.accounts.find((account) => account.type === 'Reserve')?.balance || 0;
     const growth = selectedClient.accounts.find((account) => account.type === 'Growth')?.balance || 0;
 
+    const autoLoan = selectedClient.accounts.find(a => a.type === 'Auto Loan')?.balance || 0;
+    const heloc = selectedClient.accounts.find(a => a.type === 'Home Equity Line of Credit')?.balance || 0;
+
+
     const factors = [
       { month: 'Nov', Spend: 0.78, Reserve: 0.74, Growth: 0.66 },
       { month: 'Dec', Spend: 0.82, Reserve: 0.78, Growth: 0.70 },
@@ -289,6 +336,9 @@ function Accounts({ selectedClient, openTab }) {
       Spend: Math.round(spend * factor.Spend),
       Reserve: Math.round(reserve * factor.Reserve),
       Growth: Math.round(growth * factor.Growth),
+      
+      AutoLoan: Math.round(autoLoan * factor.Spend),
+      HELOC: Math.round(heloc * factor.Reserve),
     }));
   }, [selectedClient]);
 
