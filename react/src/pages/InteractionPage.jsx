@@ -162,6 +162,7 @@ function InteractionPage({ selectedClient, saveInteractionDocument, submitIntera
 
   const startEditGoal = (index) => {
     const goal = goals[index];
+    setShowGoalForm(true);
 
     setGoalForm({
       description: goal.description,
@@ -223,6 +224,7 @@ function InteractionPage({ selectedClient, saveInteractionDocument, submitIntera
       }
     : null;
 
+  const [showGoalForm, setShowGoalForm] = useState(false);
 
   return (
     <div className="background-card">
@@ -235,7 +237,6 @@ function InteractionPage({ selectedClient, saveInteractionDocument, submitIntera
             onClick={() => setIsGroupingOpen((prev) => !prev)}
           >
             <h2 className="interaction-form-grouping-titles">Preparation Information</h2>
-
             {/* Arrow */}
             <span
               className={`grouping-arrow ${isGroupingOpen ? 'open' : ''}`}>
@@ -247,7 +248,7 @@ function InteractionPage({ selectedClient, saveInteractionDocument, submitIntera
           {isGroupingOpen && (
             <div className="interaction-form-grouping-content">
               <div className="interaction-section section-1">
-              <div className="section-row">
+              <div className="top-section-row">
                 {/* Insights Overview */}
                 <div className="module module--insights card">
                   <h2 className="module__title">Insights</h2>
@@ -355,49 +356,59 @@ function InteractionPage({ selectedClient, saveInteractionDocument, submitIntera
                 <div className="module module--goals card">
                   <h2 className="module__title">Financial Goals</h2>
                   <div className="module__content">
-                    <ul className="interaction-goals-grid">
-                      {goals.map((goal, index) => {
-                        const progressPercent =
-                          goal.targetAmount && goal.currentAmount
-                            ? Math.min(
-                                100,
-                                Math.round(
-                                  (goal.currentAmount / goal.targetAmount) * 100
+                    {goals.length === 0 ? (
+                      <div className="goals-empty-state">
+                        <p>No client goals yet.</p>
+                        <span>Add goals in the section below to get started.</span>
+                      </div>
+                    ) : (
+                      <ul className="interaction-goals-grid">
+                        {goals.map((goal, index) => {
+                          const progressPercent =
+                            goal.targetAmount && goal.currentAmount
+                              ? Math.min(
+                                  100,
+                                  Math.round(
+                                    (goal.currentAmount / goal.targetAmount) * 100
+                                  )
                                 )
-                              )
-                            : 0;
+                              : 0;
 
-                        return (
-                          <li className="interaction-goal-item">
-    <div className="interaction-goal-content">
+                          return (
+                            <li key={index} className="interaction-goal-item">
+                              <div className="interaction-goal-content">
+                                <h3 className="goal-title">
+                                  {goal.description || goal.goal}
+                                </h3>
 
-      <h3 className="goal-title">{goal.description || goal.goal}</h3>
+                                <div className="goal-type">
+                                  {goal.targetAmount
+                                    ? 'Savings goal'
+                                    : 'Milestone goal'}
+                                </div>
 
-      <div className="goal-type">
-        {goal.targetAmount ? 'Savings goal' : 'Milestone goal'}
-      </div>
+                                <div className="goal-dates-row">
+                                  <span>Start: {goal.startDate || 'Today'}</span>
+                                  <span>Due: {goal.date || 'TBD'}</span>
+                                </div>
 
-      <div className="goal-dates-row">
-        <span>Start: {goal.startDate || 'Today'}</span>
-        <span>Due: {goal.date || 'TBD'}</span>
-      </div>
-
-      {goal.targetAmount && (
-        <>
-          <progress
-            value={goal.currentAmount || 0}
-            max={goal.targetAmount}
-          />
-          <div className="goal-progress-percentage">
-            {progressPercent}%
-          </div>
-        </>
-      )}
-    </div>
-  </li>
-                        );
-                      })}
-                    </ul>
+                                {goal.targetAmount && (
+                                  <>
+                                    <progress
+                                      value={goal.currentAmount || 0}
+                                      max={goal.targetAmount}
+                                    />
+                                    <div className="goal-progress-percentage">
+                                      {progressPercent}%
+                                    </div>
+                                  </>
+                                )}
+                              </div>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
                   </div>
                 </div>
               </div>
@@ -716,16 +727,117 @@ function InteractionPage({ selectedClient, saveInteractionDocument, submitIntera
               >
                 <h2 className='update-goals-title'>Update Client Goals...?</h2>
                 <span
-              className={`goal-update-arrow ${isGoalUpdateOpen ? 'open' : ''}`}>
-              🛆
-            </span>
+                  className={`goal-update-arrow ${isGoalUpdateOpen ? 'open' : ''}`}>
+                  🛆
+                </span>            
+                
               </div>
-
+              
               {/* CONTENT */}
+              
               {isGoalUpdateOpen && (
+                
                 <div className="module__content">
+                  <button
+                    className="update-new-goal-btn"
+                    onClick={(e) => {
+                      e.stopPropagation(); 
 
-                  {/* GOAL FORM */}
+                      setShowGoalForm(true);
+                      setEditingIndex(null);
+
+                      setGoalForm({
+                        description: '',
+                        date: '',
+                        isSavingsGoal: true,
+                        startAmount: '0',
+                        targetAmount: '10000',
+                      });
+                    }}
+                  >
+                    New Goal
+                  </button>
+                  {showGoalForm && (
+                  <section className="update-goal-form-panel">
+
+                    <input
+                      type="text"
+                      placeholder="Goal description"
+                      value={goalForm.description}
+                      onChange={(e) =>
+                        setGoalForm((prev) => ({
+                          ...prev,
+                          description: e.target.value,
+                        }))
+                      }
+                    />
+
+                    <input
+                      type="date"
+                      value={goalForm.date}
+                      onChange={(e) =>
+                        setGoalForm((prev) => ({
+                          ...prev,
+                          date: e.target.value,
+                        }))
+                      }
+                    />
+
+                    <input
+                      type="number"
+                      placeholder="Starting amount"
+                      value={goalForm.startAmount}
+                      onChange={(e) =>
+                        setGoalForm((prev) => ({
+                          ...prev,
+                          startAmount: e.target.value,
+                        }))
+                      }
+                    />
+
+                    <input
+                      type="number"
+                      placeholder="Target amount"
+                      value={goalForm.targetAmount}
+                      onChange={(e) =>
+                        setGoalForm((prev) => ({
+                          ...prev,
+                          targetAmount: e.target.value,
+                        }))
+                      }
+                    />
+
+                    <div className="goal-form-actions">
+
+                      <button
+                        className="goal-save-btn"
+                        onClick={() => {
+                          submitGoal();         
+                          setShowGoalForm(false);
+                        }}
+                      >
+                        Save Goal
+                      </button>
+
+                      <button
+                        className="btn-ghost"
+                        onClick={() => {
+                          setShowGoalForm(false);
+                        }}
+                      >
+                        Cancel
+                      </button>
+
+                    </div>
+
+                  </section>
+                  )}
+                  {goals.length === 0 ? (
+                  <div className="update-goals-empty-state">
+                    <p>No goals to update.</p>
+                    <span>Create your first goal below.</span>
+                  </div>
+                  ) : (
                   <ul className="goals-list">
                     {goals.map((goal, index) => {
                       const isEditing = editingIndex === index;
@@ -760,7 +872,7 @@ function InteractionPage({ selectedClient, saveInteractionDocument, submitIntera
                                   }}
                                 />
                               </label>
-                              {/* TITLE (EDITABLE) */}
+                              {/* TITLE*/}
                               {isEditing ? (
                                 <input
                                   type="text"
@@ -902,22 +1014,19 @@ function InteractionPage({ selectedClient, saveInteractionDocument, submitIntera
                               )}
                             </div>
                           )}
-
                         </li>
                       );
                     })}
                   </ul>
+                )}
                 </div>
               )}
-
             </div>    
 
 
             {/* Action Buttons */}
-            <div className="interaction-actions">
-              
+            <div className="interaction-actions"> 
               <button className="btn" onClick={handleSaveDocument}>Save Draft</button>
-
               <button className="btn" onClick={submitInteractionDocument}>Submit</button>
             </div>
           </div>
@@ -933,4 +1042,4 @@ const formatCurrency = (value) =>
     maximumFractionDigits: 0,
   }).format(value);
 
-export default InteractionPage;
+export default InteractionPage;    
