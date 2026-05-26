@@ -3,6 +3,7 @@ import Accounts from './Accounts';
 import InteractionPage from './InteractionPage';
 import Forms from './Forms';
 import SpendDetails from './SpendDetails';
+import externalLinkIcon from '../assets/external-link-icon.png';
 
 
 const formatCurrency = (value) =>
@@ -151,9 +152,10 @@ function Homepage({ selectedClient, setSelectedId, filteredClients, openTab }) {
         </section>
 
         {/* forms */}
-        <section className="module module--forms card">
+        <section className="module module--forms card with-link">
           <h2 className="module__title forms-link" onClick={() => openTab('forms', 'Forms', Forms)}>
             Forms
+            <img src={externalLinkIcon} alt="" className="link-icon" />
           </h2>
 
           <div className="formPanel">
@@ -163,9 +165,6 @@ function Homepage({ selectedClient, setSelectedId, filteredClients, openTab }) {
               previous interaction summaries.
             </p>
             <div className="formPanel__actions">
-              <button className="btn btn--ghost" aria-label="Call">
-                ☎
-              </button>
               <button className="btn" onClick={() => openTab('interaction', 'Client Interaction', InteractionPage)}>Start</button>
             </div>
           </div>
@@ -201,9 +200,10 @@ function Homepage({ selectedClient, setSelectedId, filteredClients, openTab }) {
         </section>
 
         {/* accounts & chart */}
-        <section className="module module--accounts card">
+        <section className="module module--accounts card with-link">
           <h2 className="module__title accounts-link" onClick={() => openTab('accounts', 'Accounts', Accounts)}>
             Accounts
+            <img src={externalLinkIcon} alt="" className="link-icon" />
           </h2>
 
           <div className="module__content accountsLayout">
