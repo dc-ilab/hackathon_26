@@ -8,6 +8,13 @@ const formatCurrency = (value) =>
     maximumFractionDigits: 0,
   }).format(value);
 
+const formatDate = (value) => {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat('en-US').format(date);
+};
+
 // Line chart component for Overview Insight
 function LineChart({ data }) {
   const width = 560;
@@ -23,12 +30,9 @@ function LineChart({ data }) {
     row.Spend, 
     row.Reserve, 
     row.Growth,
-    
     row.AutoLoan,
     row.HELOC,
   ]);
-
-
   const maxValueRaw = Math.max(...values);
   const minValueRaw = Math.min(...values);
 
@@ -41,8 +45,6 @@ function LineChart({ data }) {
     { key: 'Spend', color: '#71B48D' },
     { key: 'Reserve', color: '#BDDDBD' },
     { key: 'Growth', color: '#404E7C' },
-    
-    
     ...(hasAutoLoan ? [{ key: 'AutoLoan', color: '#db8c4f' }] : []),
     ...(hasHELOC ? [{ key: 'HELOC', color: '#eeceb6' }] : []),
   ];
@@ -64,19 +66,14 @@ function LineChart({ data }) {
       .join(' ');
 
   const tickCount = 6;
-
   const tickValues = Array.from({ length: tickCount }, (_, i) => maxValue - (range / (tickCount - 1)) * i);
   const zeroIndex = tickValues.findIndex(v => Math.abs(v) < range / 100);
-
   // Force 0 into ticks if missing
   if (!tickValues.some(v => Math.abs(v) < 1)) {
     tickValues.push(0);
   }
-
-
   const normalizeY = (value) => graphHeight - ((value - minValue) / range) * graphHeight;
   const zeroY = padding + normalizeY(0);
-
 
   return (
     <svg id="accounts-line-chart" viewBox={`0 0 ${width} ${height}`} width="100%" height="100%">
@@ -88,7 +85,7 @@ function LineChart({ data }) {
               y1={y}
               x2={width - padding}
               y2={y}
-              stroke={Math.abs(tickValues[i]) < range / 100 ? "#333" : "#f0f0f0"}
+              stroke={Math.abs(tickValues[i]) < range / 100 ? "rgb(153,153,153)" : "#f0f0f0"}
               strokeWidth={Math.abs(tickValues[i]) < range / 100 ? "2" : "1"}
             />
             <text x={padding - 10} y={y + 4} textAnchor="end" fontSize="12" fill="#666">
@@ -109,14 +106,6 @@ function LineChart({ data }) {
         stroke="#999" 
         strokeWidth="2" 
       />
-      {/* <line id='zero-axis-line'
-        x1={padding} 
-        y1={zeroY} 
-        x2={width - padding} 
-        y2={zeroY} 
-        stroke="#999" 
-        strokeWidth="2" 
-      /> */}
 
       {series.map((seriesItem) => (
         <path
@@ -220,17 +209,39 @@ function LineChart({ data }) {
 }
 
 // Pie chart component for account distribution
-function PieChart({ accounts }) {
+function PieChart({ accounts, type = 'asset'}) {
   const width = 200;
   const height = 200;
   const radius = 80;
   const centerX = width / 2;
   const centerY = height / 2;
 
-  const total = accounts.reduce((sum, account) => sum + Math.abs(account.balance), 0);
+  const normalizedAccounts = accounts.map(acc => ({
+    ...acc,
+    normalizedBalance:
+      type === 'liability'
+        ? Math.abs(acc.balance)
+        : acc.balance
+  }));
+
+  const total = accounts.reduce(
+    (sum, account) => sum + Math.abs(account.balance),
+    0
+  );
+  const filteredAccounts = accounts.filter(
+  (acc) => Math.abs(acc.balance) > 0
+);
+
+if (!filteredAccounts.length) {
+  return null;
+}
+
   let currentAngle = -Math.PI / 2; // Start from top
 
-  const colors = ['#71B48D', '#BDDDBD', '#404E7C', '#db8c4f', '#eeceb6'];
+  const colors =
+  type === 'liability'
+    ? ['#db8c4f', '#eeceb6']
+    : ['#71B48D', '#BDDDBD', '#404E7C'];
 
   const [hoverSlice, setHoverSlice] = useState(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -250,12 +261,14 @@ function PieChart({ accounts }) {
     }
   };
 
+
   return (
     <div className="pie-chart-container" onMouseMove={handleMouseMove}>
-      <svg viewBox={`0 0 ${width} ${height}`} width="100%" height="100%">
-        {accounts.map((account, index) => {
-          const percentage = Math.abs(account.balance) / total;
-          const angle = percentage * 2 * Math.PI;
+      <svg id="pie-chart" viewBox={`0 0 ${width} ${height}`} width="100%" height="100%">
+        {filteredAccounts.map((account, index) => {
+          const percentage = total > 0 ? Math.abs(account.balance) / total: 0;
+          const angle = isNaN(percentage) ? 0 : percentage * 2 * Math.PI;
+
           const startAngle = currentAngle;
           const endAngle = currentAngle + angle;
 
@@ -303,7 +316,12 @@ function PieChart({ accounts }) {
         >
           <div className="pie-tooltip-content">
             <div className="pie-tooltip-title">{hoverSlice.type} Account</div>
-            <div className="pie-tooltip-value">{formatCurrency(hoverSlice.balance)}</div>
+            <div className="pie-tooltip-value">
+              {type === 'liability'
+                ? `-${formatCurrency(Math.abs(hoverSlice.balance))}`
+                : formatCurrency(hoverSlice.balance)}
+            </div>
+
           </div>
         </div>
       )}
@@ -312,6 +330,9 @@ function PieChart({ accounts }) {
 }
 
 function Accounts({ selectedClient, openTab }) {
+  const assetAccounts = selectedClient.accounts.filter((account) => account.balance > 0);
+  const liabilityAccounts = selectedClient.accounts.filter((account) => account.balance < 0);
+  const totalLiabilities = liabilityAccounts.reduce((sum, acc) => sum + Math.abs(acc.balance),0);
 
   const accountHistory = useMemo(() => {
     const spend = selectedClient.accounts.find((account) => account.type === 'Spend')?.balance || 0;
@@ -341,6 +362,8 @@ function Accounts({ selectedClient, openTab }) {
       HELOC: Math.round(heloc * factor.Reserve),
     }));
   }, [selectedClient]);
+
+
 
   return (
     <div className="background-card">
@@ -391,13 +414,84 @@ function Accounts({ selectedClient, openTab }) {
           </div>
         </section>
 
-        {/* Accounts Breakdown Section */}
         <section className="accounts-breakdown-section">
           <h2>Accounts Breakdown</h2>
+
+          {/* Asset section */}
+          <div className="breakdown-group">
+            <h3>Accounts</h3>
+
+            <div className="breakdown-grid">
+              <div className="breakdown-chart">
+                <PieChart accounts={assetAccounts} type="asset" />
+              </div>
+
+              <div className="breakdown-table">
+                <table className="accounts-table">
+                  <thead>
+                    <tr>
+                      <th>Account Type</th>
+                      <th>Balance</th>
+                      <th>Percentage</th>
+                      <th>Last Transaction</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {assetAccounts.map((account, i) => {
+                      const lastActivity = selectedClient.recentActivity[i] ?? selectedClient.recentActivity[0];
+                      return (
+                        <tr key={account.type}>
+                          
+                          <td>
+                            <div
+                              className={`breakdown-account-name ${account.type === 'Spend' ? 'account-link' : ''}`}
+                              onClick={() => account.type === 'Spend' && openTab('spend-account', 'Spend Account', SpendDetails)}
+                              onKeyDown={(event) => {
+                                if (account.type === 'Spend' && (event.key === 'Enter' || event.key === ' ')) {
+                                  openTab('spend-account', 'Spend Account', SpendDetails);
+                                }
+                              }}
+                              role={account.type === 'Spend' ? 'button' : undefined}
+                              tabIndex={account.type === 'Spend' ? 0 : undefined}
+                            >
+                            <div
+                              className="account-indicator"
+                              style={{ backgroundColor: ['#71B48D', '#BDDDBD', '#404E7C', '#78afcd', '#4a3974'][i] }}
+                            ></div>
+                            {account.type}
+                          </div>
+                          </td>
+                          <td>{formatCurrency(account.balance)}</td>
+                          <td>{account.percentage}%</td>
+                          <td>
+                            {lastActivity.type === 'deposit' && '+'}
+                            {lastActivity.type === 'withdrawal' && '-'}
+                            {lastActivity.type !== 'deposit' && lastActivity.type !== 'withdrawal' && ''}
+                            {formatCurrency(lastActivity.amount)} ({formatDate(lastActivity.date)})
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          {/* loans section */}
+          {liabilityAccounts.length > 0 && (
+          <div className="breakdown-group">
+            <h3>Loans</h3>
+
           <div className="breakdown-grid">
             <div className="breakdown-chart">
-              <PieChart accounts={selectedClient.accounts} />
+              <PieChart
+                accounts={liabilityAccounts}
+                type="liability"
+              />
             </div>
+
             <div className="breakdown-table">
               <table className="accounts-table">
                 <thead>
@@ -408,37 +502,50 @@ function Accounts({ selectedClient, openTab }) {
                     <th>Last Transaction</th>
                   </tr>
                 </thead>
+
                 <tbody>
-                  {selectedClient.accounts.map((account, i) => {
-                    const lastActivity = selectedClient.recentActivity[i] || selectedClient.recentActivity[0];
+                  {liabilityAccounts.map((account, i) => {
+                    const lastActivity =
+                      selectedClient.recentActivity[i] ??
+                      selectedClient.recentActivity[0];
                     return (
                       <tr key={account.type}>
-                            <td>
+                        <td>
                           <div
-                            className={`breakdown-account-name ${account.type === 'Spend' ? 'account-link' : ''}`}
-                            onClick={() => account.type === 'Spend' && openTab('spend-account', 'Spend Account', SpendDetails)}
-                            onKeyDown={(event) => {
-                              if (account.type === 'Spend' && (event.key === 'Enter' || event.key === ' ')) {
-                                openTab('spend-account', 'Spend Account', SpendDetails);
-                              }
-                            }}
-                            role={account.type === 'Spend' ? 'button' : undefined}
-                            tabIndex={account.type === 'Spend' ? 0 : undefined}
-                          >
+                              className={`breakdown-account-name ${account.type === 'Spend' ? 'account-link' : ''}`}
+                              onClick={() => account.type === 'Spend' && openTab('spend-account', 'Spend Account', SpendDetails)}
+                              onKeyDown={(event) => {
+                                if (account.type === 'Spend' && (event.key === 'Enter' || event.key === ' ')) {
+                                  openTab('spend-account', 'Spend Account', SpendDetails);
+                                }
+                              }}
+                              role={account.type === 'Spend' ? 'button' : undefined}
+                              tabIndex={account.type === 'Spend' ? 0 : undefined}
+                            >
                             <div
                               className="account-indicator"
-                              style={{ backgroundColor: ['#71B48D', '#BDDDBD', '#404E7C', '#db8c4f', '#eeceb6'][i] }}
+                              style={{ backgroundColor: [ '#db8c4f', '#eeceb6', '#905122', '#e3af87'][i] }}
                             ></div>
                             {account.type}
                           </div>
                         </td>
-                        <td>{formatCurrency(account.balance)}</td>
-                        <td>{account.percentage}%</td>
+                        <td>
+                          -{formatCurrency(Math.abs(account.balance))}
+                        </td>
+                        <td>
+                          {totalLiabilities > 0
+                            ? 
+                            `${(
+                              (Math.abs(account.balance) / totalLiabilities) * 100
+                            ).toFixed(1)}%
+                            `
+                            : '-'}
+                        </td>
                         <td>
                           {lastActivity.type === 'deposit' && '+'}
                           {lastActivity.type === 'withdrawal' && '-'}
                           {lastActivity.type !== 'deposit' && lastActivity.type !== 'withdrawal' && ''}
-                          {formatCurrency(lastActivity.amount)} ({lastActivity.date})
+                          {formatCurrency(lastActivity.amount)} ({formatDate(lastActivity.date)})
                         </td>
                       </tr>
                     );
@@ -447,6 +554,8 @@ function Accounts({ selectedClient, openTab }) {
               </table>
             </div>
           </div>
+          </div>
+          )}
         </section>
       </div>
     </div>
