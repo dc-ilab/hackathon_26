@@ -95,7 +95,10 @@ const getSpendTransactions = (spendTransactions) => {
 function SpendDetails({ selectedClient }) {
   const spendTransactions = getSpendTransactions(selectedClient.spendTransactions);
   const monthlySpendData = buildMonthlyTotals(spendTransactions);
-  const [selectedDate, setSelectedDate] = useState(null);
+  
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+
   const [calendarMonth, setCalendarMonth] = useState(new Date(2026, 3, 1));
   const [showAllTransactions, setShowAllTransactions] = useState(false);
   const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -115,25 +118,64 @@ function SpendDetails({ selectedClient }) {
   const totalExpense = monthlySpendData.reduce((sum, item) => sum + item.expense, 0);
   const totalIncome = monthlySpendData.reduce((sum, item) => sum + item.income, 0);
   const averageExpense = Math.round(totalExpense / monthlySpendData.length);
-  const selectedTransactions = selectedDate
-    ? spendTransactions.filter((item) => item.date === selectedDate)
+  const selectedTransactions = startDate && !endDate
+    ? spendTransactions.filter((item) => item.date === startDate)
+    : startDate && endDate
+    ? spendTransactions.filter((item) => {
+        const itemDate = new Date(item.date);
+        return (
+          itemDate >= new Date(startDate) &&
+          itemDate <= new Date(endDate)
+        );
+      })
     : [];
-
   const handleDateClick = (dateNumber) => {
     if (dateNumber < 1 || dateNumber > daysInMonth) return;
+
     const monthString = String(calendarMonth.getMonth() + 1).padStart(2, '0');
     const dateString = `${monthString}/${String(dateNumber).padStart(2, '0')}/${calendarMonth.getFullYear()}`;
-    setSelectedDate(dateString);
+
+    
+if (startDate && !endDate && startDate === dateString) {
+    setStartDate(null);
+    setEndDate(null);
+    return;
+  }
+
+    // CASE 1: no start → set start
+    if (!startDate) {
+      setStartDate(dateString);
+      setEndDate(null);
+      return;
+    }
+
+    // CASE 2: start exists but no end → set range
+    if (startDate && !endDate) {
+      if (new Date(dateString) < new Date(startDate)) {
+        // swap if second click is earlier
+        setEndDate(startDate);
+        setStartDate(dateString);
+      } else {
+        setEndDate(dateString);
+      }
+      return;
+    }
+
+    // CASE 3: reset range
+    setStartDate(dateString);
+    setEndDate(null);
   };
 
   const handlePrevMonth = () => {
-    setSelectedDate(null);
+    setStartDate(null);
+    setEndDate(null);
     setCalendarMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
   };
 
   const handleToday = () => {
     const now = new Date();
-    setSelectedDate(null);
+    setStartDate(null);
+    setEndDate(null);
     setCalendarMonth(new Date(now.getFullYear(), now.getMonth(), 1));
   };
 
@@ -145,7 +187,7 @@ function SpendDetails({ selectedClient }) {
     <div className="background-card">
       <div className="spend-details-page">
         <div className="spend-header">
-          <div>
+          <div className='spend-header-info'>
             <p className="eyebrow">Spend Account</p>
             <h1>Spend account insights</h1>
             <p className="muted">A snapshot of your spending trends, cash flow, and recent activity for the Spend account.</p>
@@ -265,7 +307,17 @@ function SpendDetails({ selectedClient }) {
                   return (
                     <div
                       key={index}
-                      className={`calendar-cell ${isCurrent ? 'today' : ''} ${isValidDate ? 'clickable' : 'inactive'} ${selectedDate === dateString ? 'selected' : ''}`}
+                      className={`
+                        calendar-cell ${isCurrent ? 'today' : ''} 
+                        ${isValidDate ? 'clickable' : 'inactive'} 
+                        ${startDate === dateString || endDate === dateString ? 'selected' : ''}
+                        ${startDate && endDate && dateString &&
+                          new Date(dateString) > new Date(startDate) &&
+                          new Date(dateString) < new Date(endDate)
+                            ? 'range'
+                            : ''
+                        }
+                      `}
                       onClick={() => isValidDate && handleDateClick(dateNumber)}
                       role={isValidDate ? 'button' : undefined}
                       tabIndex={isValidDate ? 0 : -1}
@@ -283,11 +335,17 @@ function SpendDetails({ selectedClient }) {
               <div className="calendar-footer">
                 {/* <div className="calendar-note">Upcoming payments and spend reminders are highlighted here.</div> */}
               </div>
-              {selectedDate && (
+              {startDate && (
                 <div className="calendar-transactions-section">
                   <div className="section-header">
                     <div>
-                      <h3>Transactions on {selectedDate}</h3>
+                      <h3>
+                        {startDate && !endDate
+                          ? `Transactions on ${startDate}`
+                          : startDate && endDate
+                          ? `Transactions from ${startDate} to ${endDate}`
+                          : ''}
+                      </h3>
                       <p className="muted">Showing activity for the selected calendar date.</p>
                     </div>
                   </div>
@@ -322,7 +380,7 @@ function SpendDetails({ selectedClient }) {
           <section className="spend-transactions-card">
               <div className="section-header">
                 <div>
-                  <h2>Transactions</h2>
+                  <h2>Transactions Table</h2>
                   <p className="muted">All recent transactions for your Spend account.</p>
                 </div>
               </div>

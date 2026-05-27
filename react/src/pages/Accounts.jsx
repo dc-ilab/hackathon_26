@@ -370,7 +370,7 @@ function Accounts({ selectedClient, openTab }) {
       <div className="accounts-page">
         {/* Overview Insight Section */}
         <section className="overview-insight-section">
-          <h2>Overview Insight</h2>
+          <h2>Accounts Overview</h2>
           <p className="insight-description">
             This chart displays the trends across your accounts, showing how each account's balance changed over the last six months.
           </p>
@@ -389,12 +389,11 @@ function Accounts({ selectedClient, openTab }) {
                   </div>
                 ))}
               </div>
-              <p className="overview-summary-note">
-                The graph shows monthly balances for each account type over the last six months, using sample totals for Spend, Reserve, and Growth accounts.
-              </p>
+              
             </article>
 
             <article className="overview-chart-card">
+              <h3>Account Trajectories</h3>
               <div className="chart-wrapper">
                 <LineChart data={accountHistory} />
               </div>
@@ -419,7 +418,7 @@ function Accounts({ selectedClient, openTab }) {
 
           {/* Asset section */}
           <div className="breakdown-group">
-            <h3>Accounts</h3>
+            <h3>Assets</h3>
 
             <div className="breakdown-grid">
               <div className="breakdown-chart">
