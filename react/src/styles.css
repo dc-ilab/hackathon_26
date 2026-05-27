@@ -2462,7 +2462,7 @@ body{
 }
 
 .page{
-  max-width: 1150px;
+  max-width: 1100px;
   margin: 15px auto;
   padding: 0 14px 30px;
 }
@@ -2962,7 +2962,7 @@ body{
 .spend-header {
   display: flex;
   justify-content: space-between;
-  gap: 24px;
+  gap: 140px;
   align-items: flex-start;
 }
 
@@ -2977,7 +2977,7 @@ body{
   border: 1px solid var(--color-border);
   border-radius: 20px;
   padding: 24px;
-  min-width: 240px;
+  min-width: 335px;
   display: grid;
   gap: 8px;
 }
@@ -3003,6 +3003,10 @@ body{
   display: grid;
   grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr);
   gap: 24px;
+  
+  grid-template-columns: 2fr 1fr;
+  align-items: stretch;
+
 }
 
 .spend-left-column {
@@ -3016,7 +3020,7 @@ body{
   background: rgba(255, 255, 255, 0.95);
   border: 1px solid var(--color-border);
   border-radius: 20px;
-  padding: 24px;
+  padding: 20px;
 }
 
 .spend-transactions-card{ 
@@ -3037,7 +3041,7 @@ body{
 
 .section-header h2 {
   margin: 0;
-  font-size: 1.2rem;
+  font-size: 25px;
   color: var(--color-heading);
 }
 
@@ -3232,11 +3236,6 @@ body{
   color: var(--color-text);
 }
 
-.calendar-card {
-  display: grid;
-  overflow: hidden;
-}
-
 .calendar-header {
   display: flex;
   justify-content: space-between;
@@ -3303,10 +3302,17 @@ body{
 .calendar-cell.clickable:hover {
   transform: translateY(-1px);
   background: rgba(113, 180, 141, 0.12);
+  color: var(--color-text);
 }
 
 .calendar-cell.inactive {
   background: transparent;
+  color: rgba(34, 15, 38, 0.25);
+}
+
+.calendar-cell.inactive.selected {
+  background: transparent;
+  border:none;
   color: rgba(34, 15, 38, 0.25);
 }
 
@@ -3962,4 +3968,41 @@ a:hover,
 #pie-chart{
   width: 70%;
   height: auto;
+}
+
+.calendar-cell.range {
+  background-color: rgba(181, 126, 71, 0.354);
+}
+
+.calendar-cell.selected {
+  border-radius: 12px;
+  cursor: pointer;
+  background-color: var(--color-accent);
+  color: white;
+}
+
+.calendar-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  display: grid;
+  overflow: hidden;
+  max-height: 720px;
+  min-width: 335px;
+}
+.calendar-transactions-section {
+  flex: 1;
+  overflow-y: auto;
+  margin-top: 12px;
+}
+.spend-calendar-card {
+  display: flex;
+  flex-direction: column;
+}
+.spend-header-info{
+  margin-left: 10px;
+}
+
+.spend-header-info h1{
+  font-size: 40px;
 }
