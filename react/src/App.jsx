@@ -318,7 +318,6 @@ function App() {
       <header className="header card">
         <div className="header__left">
           <div className="avatar" aria-hidden="true"></div>
-          <div className="pronouns">{selectedClient.pronouns || 'she/her'}</div>
         </div>
 
         <div className="header__grid">

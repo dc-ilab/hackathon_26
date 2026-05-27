@@ -90,10 +90,6 @@ body{
   background: radial-gradient(circle at 35% 35%, #97d5b8 0 35%, #71b494 36% 100%);
   border: 6px solid #e7f4ed;
 }
-.pronouns{
-  font-weight: 700;
-  color: #3b6b8a;
-}
 
 .header__grid{
   display: grid;

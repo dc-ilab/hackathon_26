@@ -2786,6 +2786,7 @@ body{
   gap: 18px;
   margin-bottom: 14px;
   margin-top: 20px;
+  
 }
 .networth-item {
   display: flex;
@@ -2793,6 +2794,9 @@ body{
   gap: 4px;
   align-items: center;
   text-align: center;
+  background-color: white;
+  border-radius: 12px;
+  padding: 12px;
 }
 
 .networth-item .label {
@@ -2827,6 +2831,9 @@ body{
   align-items: center;
   text-align: center;
   gap: 6px;
+   background-color: white;
+  border-radius: 12px;
+  padding: 12px;
   margin-top: 20px;
 }
 
