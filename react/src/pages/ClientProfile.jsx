@@ -358,7 +358,7 @@ const deleteGoal = (index) => {
           </div>
         </div>
 
-        {/* Account Overview */}
+        {/* Account Overview 
         <div className="module module--accounts-overview card">
           <h2 className="module__title">Account Overview</h2>
           <div className="module__content">
@@ -377,8 +377,9 @@ const deleteGoal = (index) => {
             </div>
           </div>
         </div>
+        */}
 
-        {/* Recent Activity */}
+        {/* Recent Activity 
         <div className="module module--recent-activity card">
           <h2 className="module__title">Recent Activity</h2>
           <div className="module__content">
@@ -405,7 +406,7 @@ const deleteGoal = (index) => {
           </div>
         </div>
 
-        {/* Opportunities */}
+        {/* Opportunities 
         <div className="module module--opportunities card">
           <h2 className="module__title">Opportunities</h2>
           <div className="module__content">
@@ -418,6 +419,7 @@ const deleteGoal = (index) => {
             </ul>
           </div>
         </div>
+        */}
       </div>
     </div>
   );
