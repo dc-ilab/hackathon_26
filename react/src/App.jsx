@@ -327,7 +327,7 @@ function App() {
           </div>
           <div className="info">
             <div className="label">Marital Status</div>
-            <div className="value">{selectedClient.maritalStatus}</div>
+            <div className="value">{selectedClient.maritalStatus} with dependents</div>
           </div>
           <div className="info">
             <div className="label">Location</div>
@@ -348,6 +348,10 @@ function App() {
           <div className="info">
             <div className="label">Employment</div>
             <div className="value">{selectedClient.employment}</div>
+          </div>
+          <div className="info">
+            <div className="label">Total Rewards Tier</div>
+            <div className="value">Gold</div>
           </div>
         </div>
 
