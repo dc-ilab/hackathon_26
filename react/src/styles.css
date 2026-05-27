@@ -2801,6 +2801,76 @@ body{
   border: 1px solid rgba(255,255,255,.25);
   color: #1f3f35;
 }
+.networth-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-bottom: 14px;
+  margin-top: 20px;
+}
+.networth-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+  text-align: center;
+}
+
+.networth-item .label {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 600;
+  align-items: center;
+  text-align: center;
+}
+
+.networth-item .value {
+  font-size: 30px;
+  font-weight: 700;
+  align-items: center;
+  text-align: center;
+}
+.value.positive {
+  color: var(--green);
+}
+
+.value.negative {
+  color: var(--color-accent);
+}
+.networth-divider {
+  height: 1px;
+  background: rgba(0,0,0,0.08);
+  margin: 8px 0 14px;
+}
+.networth-total {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+  margin-top: 20px;
+}
+
+.networth-total .label {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.total-value {
+  font-size: 36px;
+  font-weight: 900;
+  color: var(--ink);
+  margin-top: -6px;
+}
+
+.acc-loans {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  margin-top: -6px;
+  padding-bottom: 8px;
+}
 
 /* Accounts */
 .dashboard .module--accounts { grid-area: accounts;  background-color: rgba(30, 48, 109, 0.445); color: white;}
