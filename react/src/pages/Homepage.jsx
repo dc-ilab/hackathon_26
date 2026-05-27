@@ -188,15 +188,33 @@ function Homepage({ selectedClient, setSelectedId, filteredClients, openTab }) {
 
         {/* net worth */}
         <section className="module module--networth card">
-          <div className="bigMoney">{formatCurrency(selectedClient.netWorth)}</div>
-          <div className="module__subtitle">Total Net Worth</div>
-          <div className="muted">Assets</div>
-
-          <div className="iconRow" aria-hidden="true">
-            <div className="iconBox"></div>
-            <div className="iconBox"></div>
-            <div className="iconBox"></div>
-          </div>
+          <h2 className="module__title insights">
+            Balances
+          </h2>
+          
+            <div className="networth-grid">
+              <div className="networth-item">
+                <div className="label">Accounts</div>
+                <div className="value positive">
+                  {formatCurrency(selectedClient.netWorth)}
+                </div>
+              </div>
+              <div className="networth-item">
+                <div className="label">Loans</div>
+                <div className="value negative">
+                  {formatCurrency(selectedClient.netWorth)}
+                </div>
+              </div>
+            </div>
+            <div className="networth-divider" />
+            <div className="networth-total">
+              <div className="label">Net Worth</div>
+              <div className="total-value">
+                {formatCurrency(selectedClient.netWorth)}
+              </div>
+              <div className="acc-loans">Accounts − Loans</div>
+            </div>
+        
         </section>
 
         {/* accounts & chart */}
