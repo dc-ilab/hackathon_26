@@ -6,6 +6,8 @@ import ClientProfile from './pages/ClientProfile';
 import Forms from './pages/Forms';
 import InteractionPage from './pages/InteractionPage';
 import SpendDetails from './pages/SpendDetails';
+import ReserveDetails from './pages/ReserveDetails';
+import GrowthDetails from './pages/GrowthDetails';
 
 const formatCurrency = (value) =>
   new Intl.NumberFormat('en-US', {
@@ -252,11 +254,11 @@ function App() {
                 Spend
               </button>
 
-              <button className="submenu-item">
+              <button className="submenu-item" onClick={() => handleMenuItemClick('reserve', 'Reserve', ReserveDetails)}>
                 Reserve
               </button>
 
-              <button className="submenu-item">
+              <button className="submenu-item" onClick={() => handleMenuItemClick('growth', 'Growth', GrowthDetails)}>
                 Growth
               </button>
             </div>
