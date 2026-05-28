@@ -344,7 +344,7 @@ function App() {
           </div>
           <div className="info">
             <div className="label">Marital Status</div>
-            <div className="value">{selectedClient.maritalStatus} with dependents</div>
+            <div className="value">{selectedClient.maritalStatus} - dependents</div>
           </div>
           <div className="info">
             <div className="label">Location</div>

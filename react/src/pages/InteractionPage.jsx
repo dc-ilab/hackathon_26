@@ -835,7 +835,7 @@ function InteractionPage({ selectedClient, saveInteractionDocument, submitIntera
                   {goals.length === 0 ? (
                   <div className="update-goals-empty-state">
                     <p>No goals to update.</p>
-                    <span>Create your first goal below.</span>
+                    <span>Enter one by pressing the "New Goal" button.</span>
                   </div>
                   ) : (
                   <ul className="goals-list">
