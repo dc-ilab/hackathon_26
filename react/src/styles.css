@@ -2834,6 +2834,7 @@ body{
   gap: 18px;
   margin-bottom: 14px;
   margin-top: 20px;
+  
 }
 .networth-item {
   display: flex;
@@ -2841,6 +2842,9 @@ body{
   gap: 4px;
   align-items: center;
   text-align: center;
+  background-color: white;
+  border-radius: 12px;
+  padding: 12px;
 }
 
 .networth-item .label {
@@ -2875,6 +2879,9 @@ body{
   align-items: center;
   text-align: center;
   gap: 6px;
+   background-color: white;
+  border-radius: 12px;
+  padding: 12px;
   margin-top: 20px;
 }
 
@@ -2900,7 +2907,12 @@ body{
 }
 
 /* Accounts */
-.dashboard .module--accounts { grid-area: accounts;  background-color: rgba(30, 48, 109, 0.445); color: white;}
+.dashboard .module--accounts { 
+  grid-area: accounts;  
+  background-color: 
+  rgba(30, 48, 109, 0.445); 
+  color: white;
+}
 .accountsLayout{
   display: grid;
   grid-template-columns: 160px 1fr;
@@ -2973,7 +2985,7 @@ body{
 }
 .row{
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 0.5fr;
   padding: 8px 10px;
   border-top: 1px solid var(--border);
 }
@@ -4219,4 +4231,7 @@ a:hover,
   flex-shrink: 0;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   text-align: center;
+}
+.accounts-homepage-header{
+  margin-bottom: 20px;
 }

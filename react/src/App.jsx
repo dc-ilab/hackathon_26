@@ -6,6 +6,8 @@ import ClientProfile from './pages/ClientProfile';
 import Forms from './pages/Forms';
 import InteractionPage from './pages/InteractionPage';
 import SpendDetails from './pages/SpendDetails';
+import ReserveDetails from './pages/ReserveDetails';
+import GrowthDetails from './pages/GrowthDetails';
 
 const formatCurrency = (value) =>
   new Intl.NumberFormat('en-US', {
@@ -249,11 +251,11 @@ function App() {
                 Spend
               </button>
 
-              <button className="submenu-item">
+              <button className="submenu-item" onClick={() => handleMenuItemClick('reserve', 'Reserve', ReserveDetails)}>
                 Reserve
               </button>
 
-              <button className="submenu-item">
+              <button className="submenu-item" onClick={() => handleMenuItemClick('growth', 'Growth', GrowthDetails)}>
                 Growth
               </button>
             </div>
@@ -313,7 +315,6 @@ function App() {
       <header className="header card">
         <div className="header__left">
           <div className="avatar" aria-hidden="true"></div>
-          <div className="pronouns">{selectedClient.pronouns || 'she/her'}</div>
         </div>
 
         <div className="header__grid">
@@ -323,7 +324,7 @@ function App() {
           </div>
           <div className="info">
             <div className="label">Marital Status</div>
-            <div className="value">{selectedClient.maritalStatus}</div>
+            <div className="value">{selectedClient.maritalStatus} with dependents</div>
           </div>
           <div className="info">
             <div className="label">Location</div>
@@ -344,6 +345,10 @@ function App() {
           <div className="info">
             <div className="label">Employment</div>
             <div className="value">{selectedClient.employment}</div>
+          </div>
+          <div className="info">
+            <div className="label">Total Rewards Tier</div>
+            <div className="value">Gold</div>
           </div>
         </div>
 
