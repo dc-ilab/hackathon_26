@@ -3,6 +3,8 @@ import Accounts from './Accounts';
 import InteractionPage from './InteractionPage';
 import Forms from './Forms';
 import SpendDetails from './SpendDetails';
+import ReserveDetails from './ReserveDetails';
+import GrowthDetails from './GrowthDetails';
 import externalLinkIcon from '../assets/external-link-icon.png';
 
 
@@ -84,6 +86,24 @@ function PieChart({ accounts }) {
         y: event.clientY - rect.top,
       });
     }
+  };
+
+  const accountRoutes = {
+    Spend: {
+      id: 'spend-account',
+      label: 'Spend Account',
+      component: SpendDetails,
+    },
+    Reserve: {
+      id: 'reserve-account',
+      label: 'Reserve Account',
+      component: ReserveDetails,
+    },
+    Growth: {
+      id: 'growth-account',
+      label: 'Growth Account',
+      component: GrowthDetails,
+    },
   };
 
   return (
@@ -307,22 +327,51 @@ function Homepage({ selectedClient, setSelectedId, filteredClients, openTab }) {
                 <div key={i} className="row">                  
                 <div
                   className={`account-name ${
-                    account.type === 'Spend' ? 'account-link' : ''
-                  }`}
-                  onClick={() =>
-                    account.type === 'Spend' &&
-                    openTab('spend-account', 'Spend Account', SpendDetails)
+                  account.type === 'Spend' ||
+                  account.type === 'Reserve' ||
+                  account.type === 'Growth'
+                    ? 'account-link'
+                    : ''
+                }`}
+
+                onClick={() => {
+                  if (account.type === 'Spend') {
+                    openTab('spend-account', 'Spend Account', SpendDetails);
+                  } else if (account.type === 'Reserve') {
+                    openTab('reserve-account', 'Reserve Account', ReserveDetails);
+                  } else if (account.type === 'Growth') {
+                    openTab('growth-account', 'Growth Account', GrowthDetails);
                   }
-                  onKeyDown={(e) => {
-                    if (
-                      account.type === 'Spend' &&
-                      (e.key === 'Enter' || e.key === ' ')
-                    ) {
+                }}
+
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    if (account.type === 'Spend') {
                       openTab('spend-account', 'Spend Account', SpendDetails);
+                    } else if (account.type === 'Reserve') {
+                      openTab('reserve-account', 'Reserve Account', ReserveDetails);
+                    } else if (account.type === 'Growth') {
+                      openTab('growth-account', 'Growth Account', GrowthDetails);
                     }
-                  }}
-                  role={account.type === 'Spend' ? 'button' : undefined}
-                  tabIndex={account.type === 'Spend' ? 0 : undefined}
+                  }
+                }}
+
+                role={
+                  account.type === 'Spend' ||
+                  account.type === 'Reserve' ||
+                  account.type === 'Growth'
+                    ? 'button'
+                    : undefined
+                }
+
+                tabIndex={
+                  account.type === 'Spend' ||
+                  account.type === 'Reserve' ||
+                  account.type === 'Growth'
+                    ? 0
+                    : undefined
+                }
+
                 >
                     <div
                       className="account-indicator"
