@@ -4,7 +4,7 @@ clients = [
     "name": "Jane Smith",
     "pronouns": "she/her",
     "title": "",
-    "age": 26,
+    "age": 55,
     "employment": "Office Worker",
     "maritalStatus": "Single",
     "housingStatus": "Homeowner with Mortgage",
@@ -60,6 +60,10 @@ clients = [
       {"date": "2026-04-15", "type": "transfer", "amount": 1200},
       {"date": "2026-04-10", "type": "deposit", "amount": 8000}
     ],
+    "relationships": [
+      { "id": "C-3101", "relation": "Child" },
+      { "id": "C-2062", "relation": "Child" }
+    ],
     "spendTransactions": [
       {"date": "04/02/2026", "description": "Whole Foods", "category": "Food", "type": "expense", "amount": 126.0},
       {"date": "04/01/2026", "description": "Stripe Payroll", "category": "Income", "type": "income", "amount": 3200.0},
@@ -108,7 +112,7 @@ clients = [
     "name": "Noah Patel",
     "pronouns": "he/him",
     "title": "Dr.",
-    "age": 34,
+    "age": 26,
     "employment": "Software Engineer",
     "maritalStatus": "Married",
     "housingStatus": "Homeowner",
@@ -169,6 +173,10 @@ clients = [
       {"date": "2026-04-19", "type": "transfer", "amount": 25000},
       {"date": "2026-04-15", "type": "investment", "amount": 50000}
     ],
+    "relationships": [
+      { "id": "C-1034", "relation": "Parent" },
+      { "id": "C-2062", "relation": "Sibling" }
+    ],
     "spendTransactions": [
       {"date": "04/03/2026", "description": "Mortgage Payment", "category": "Housing", "type": "expense", "amount": 2850.0},
       {"date": "03/31/2026", "description": "Google Salary", "category": "Income", "type": "income", "amount": 8500.0},
@@ -219,7 +227,7 @@ clients = [
     "name": "Mia Chen",
     "pronouns": "she/her",
     "title": "",
-    "age": 29,
+    "age": 19,
     "employment": "Marketing Manager",
     "maritalStatus": "Single",
     "housingStatus": "Renting",
@@ -263,6 +271,10 @@ clients = [
     "recentActivity": [
       {"date": "2026-04-25", "type": "deposit", "amount": 3500},
       {"date": "2026-04-20", "type": "payment", "amount": 1200}
+    ],
+    "relationships": [
+      { "id": "C-1034", "relation": "Parent" },
+      { "id": "C-2062", "relation": "Sibling" }
     ],
     "spendTransactions": [
       {"date": "04/04/2026", "description": "Rent Payment", "category": "Housing", "type": "expense", "amount": 1850.0},

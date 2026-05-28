@@ -514,7 +514,8 @@ header {
 
 .client-profile-page {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: 1.5fr 2.5fr;
   gap: 20px;
 }
 
@@ -528,22 +529,33 @@ header {
 .module--recent-activity .module__content,
 .module--goals .module__content,
 .module--opportunities .module__content {
-  padding: 16px;
+  padding: 12px;
 }
 
-.summary-details,
 .contact-grid,
 .accounts-overview-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  /* grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); */
   gap: 12px;
 }
 
-.detail-item,
+.summary-details{
+  display: grid;
+  gap: 12px;
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
 .contact-item {
   display: flex;
   justify-content: space-between;
   padding: 8px 0;
+  font-weight: 600;
   border-bottom: 1px solid var(--color-border);
 }
 
@@ -1402,9 +1414,14 @@ header {
 }
 
 .section-1 .section-row,
-.section-2 .section-row,
+.section-2 .section-row {
+  grid-template-columns: 1fr 1fr;
+}
+
 .section-3 .section-row {
   grid-template-columns: 1fr 1fr;
+  align-items: stretch;
+
 }
 
 .insight-item {
@@ -1438,6 +1455,8 @@ header {
   border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: 12px;
+  padding-top: 8px;
+  padding-bottom: 0px;
   background: #ffffff;
 }
 
@@ -1457,7 +1476,8 @@ header {
 .account-percentage {
   color: var(--color-text-secondary);
   font-size: 0.9rem;
-  margin: 4px 0;
+  margin-top: 4px;
+  margin-bottom: 0px;
 }
 
 .account-indicator {
@@ -1550,6 +1570,7 @@ header {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  justify-content: space-between;
 }
 
 .question-label {
@@ -2486,7 +2507,7 @@ body{
   border: 1px solid #c7cbd6;
   background: #f9fafb;
   color: #101828;
-  padding: 10px 12px;
+  padding: 7px 12px;
   border-radius: 10px;
   cursor: pointer;
   font-weight: 650;
@@ -2683,7 +2704,7 @@ body{
 .module__title{
   /* color: var(--slate); */
   color: rgb(40 53 95);
-  margin: 0 0 10px;
+  margin: 0 0 1px;
   font-size: 30px;
   font-weight: 950;
   letter-spacing: .2px;
@@ -2866,7 +2887,7 @@ body{
 .total-value {
   font-size: 36px;
   font-weight: 900;
-  color: var(--ink);
+  color: rgb(40 53 95);
   margin-top: -6px;
 }
 
@@ -3479,7 +3500,6 @@ body::before {
   color: #1f2430;
 }
 
-/* Muted text inside forms should still be readable */
 .module--forms .muted,
 .module--forms small {
   color: rgba(255, 255, 255, 0.75) !important;
@@ -3989,6 +4009,7 @@ a:hover,
   background: rgba(0, 0, 0, 0.04);
   color: var(--color-text-secondary);
   font-size: 14px;
+  width: 100%;
 }
 
 .goals-empty-state p {
@@ -4091,4 +4112,111 @@ a:hover,
 
 .overview-chart-card h3{
   margin: 0 0 20px;
+}
+
+.helper-text-banker-notes{
+  margin-top: 25px;
+  margin-bottom: 25px;
+}
+
+.module--relationships{
+  grid-column: span 2;
+  width:90%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.relationships-container {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 18px;
+  justify-content: center;
+}
+.relationship-card {
+  min-width: 160px;
+  padding: 45px;
+  padding-bottom: 40px;
+  border-radius: 10px;
+  background: rgb(78, 139, 116, 0.2);
+  border: 1.5px solid rgba(78, 139, 116, 0.2);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  text-align: center;
+}
+.relationship-interaction-card:hover,
+.relationship-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+}
+.relationship-name {
+  font-size: 25px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: rgb(40 53 95);
+  text-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.relationship-type {
+  font-size: 18px;
+  font-weight: 400;
+  color: rgb(40 53 95);
+}
+
+#relationships-title{
+  text-align: center;
+}
+
+.edit-btn {
+  cursor: pointer;
+  font-size: 20px;
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.2);
+}
+.edit-actions {
+  display: flex;
+  gap: 8px;
+  color: white;
+
+}
+
+.contact-item input {
+  margin-left: 7px;
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.module-header{
+  display:inline-flex;
+  gap: 15px;
+  justify-content: space-between;
+}
+.cancel{
+  background: transparent;
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+}
+.save{
+  background: #71b48d;
+    color: #ffffff;
+    border: 1px solid transparent;
+}
+.relationship-interaction-card {
+  min-width: 100px;
+  padding: 25px;
+  padding-bottom: 20px;
+  border-radius: 10px;
+  background: rgb(78, 139, 116, 0.2);
+  border: 1.5px solid rgba(78, 139, 116, 0.2);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  text-align: center;
 }
