@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState,  useRef } from 'react';
 import Accounts from './Accounts';
 import InteractionPage from './InteractionPage';
 import Forms from './Forms';
@@ -15,11 +15,23 @@ const formatCurrency = (value) =>
 
 // Pie chart component for account distribution (copied from Accounts.jsx)
 function PieChart({ accounts }) {
+  const containerRef = useRef(null);
   const width = 200;
   const height = 200;
-  const radius = 80;
+  const gap = 6;
+  const outerRadius = 85;   // liabilities
+  const innerRadius = 55 - gap;  // assets outer edge
+  const innerHoleRadius = 25; // center hole
   const centerX = width / 2;
   const centerY = height / 2;
+
+  const assetAccounts = accounts.filter(acc => acc.balance > 0);
+  const assetTotal = assetAccounts.reduce((sum, acc) => sum + acc.balance, 0);
+  const safeAssetTotal = assetTotal || 1;
+
+  const liabilityAccounts = accounts.filter(acc => acc.balance < 0);
+  const liabilityTotal = liabilityAccounts.reduce((sum, acc) => sum + Math.abs(acc.balance), 0); 
+  const safeLiabilityTotal = liabilityTotal || 1;
 
   const total = accounts.reduce((sum, account) => sum + Math.abs(account.balance), 0);
   let currentAngle = -Math.PI / 2; // Start from top
@@ -29,9 +41,35 @@ function PieChart({ accounts }) {
   const [hoverSlice, setHoverSlice] = useState(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
+  const createArc = (startAngle, endAngle, outerR, innerR) => {
+    const x1 = centerX + outerR * Math.cos(startAngle);
+    const y1 = centerY + outerR * Math.sin(startAngle);
+    const x2 = centerX + outerR * Math.cos(endAngle);
+    const y2 = centerY + outerR * Math.sin(endAngle);
+
+    const x3 = centerX + innerR * Math.cos(endAngle);
+    const y3 = centerY + innerR * Math.sin(endAngle);
+    const x4 = centerX + innerR * Math.cos(startAngle);
+    const y4 = centerY + innerR * Math.sin(startAngle);
+
+    const largeArcFlag = endAngle - startAngle > Math.PI ? 1 : 0;
+
+    return `
+      M ${x1} ${y1}
+      A ${outerR} ${outerR} 0 ${largeArcFlag} 1 ${x2} ${y2}
+      L ${x3} ${y3}
+      A ${innerR} ${innerR} 0 ${largeArcFlag} 0 ${x4} ${y4}
+      Z
+    `;
+  };
+
   const handleMouseEnter = (account, event) => {
     setHoverSlice(account);
-    setMousePosition({ x: event.clientX, y: event.clientY });
+    const rect = containerRef.current.getBoundingClientRect();
+    setMousePosition({
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top,
+    });
   };
 
   const handleMouseLeave = () => {
@@ -40,69 +78,103 @@ function PieChart({ accounts }) {
 
   const handleMouseMove = (event) => {
     if (hoverSlice) {
-      setMousePosition({ x: event.clientX, y: event.clientY });
+      const rect = containerRef.current.getBoundingClientRect();
+      setMousePosition({
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top,
+      });
     }
   };
 
   return (
-    <div className="pie-chart-container" onMouseMove={handleMouseMove}>
-      <svg viewBox={`0 0 ${width} ${height}`} width="100%" height="100%">
-        {accounts.map((account, index) => {
-          const percentage = Math.abs(account.balance) / total;
-          const angle = percentage * 2 * Math.PI;
-          const startAngle = currentAngle;
-          const endAngle = currentAngle + angle;
+  <div ref={containerRef} className="pie-chart-container" onMouseMove={handleMouseMove}>
+    <svg viewBox={`0 0 ${width} ${height}`} width="100%" height="100%">
+      {/* inner pie chart*/}
+      let currentAngle = -Math.PI / 2;
+      {liabilityAccounts.map((acc, i) => {
+        const sliceAngle =
+          (Math.abs(acc.balance) / (liabilityTotal || 1)) * 2 * Math.PI;
 
-          const x1 = centerX + radius * Math.cos(startAngle);
-          const y1 = centerY + radius * Math.sin(startAngle);
-          const x2 = centerX + radius * Math.cos(endAngle);
-          const y2 = centerY + radius * Math.sin(endAngle);
+        const start = currentAngle;
+        const end = currentAngle + sliceAngle;
 
-          const largeArcFlag = angle > Math.PI ? 1 : 0;
+        const path = createArc(start, end, innerRadius, innerHoleRadius);
 
-          const pathData = [
-            `M ${centerX} ${centerY}`,
-            `L ${x1} ${y1}`,
-            `A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2}`,
-            'Z'
-          ].join(' ');
+        currentAngle = end;
 
-          currentAngle = endAngle;
+        return (
+          <path
+            key={acc.type}
+            d={path}
+            fill={colors[(i + assetAccounts.length) % colors.length]}
+            stroke="#ffffff89"
+            strokeWidth="1.5"
+            onMouseEnter={(e) => handleMouseEnter(acc, e)}
+            onMouseLeave={handleMouseLeave}
+          />
+        );
+      })}
 
-          return (
-            <path
-              key={account.type}
-              d={pathData}
-              fill={colors[index]}
-              stroke="#fff"
-              strokeWidth="2"
-              onMouseEnter={(event) => handleMouseEnter(account, event)}
-              onMouseLeave={handleMouseLeave}
-              style={{ cursor: 'pointer' }}
-            />
-          );
-        })}
-      </svg>
 
-      {hoverSlice && (
-        <div
-          className="pie-tooltip"
-          style={{
-            position: 'fixed',
-            left: mousePosition.x + 10,
-            top: mousePosition.y - 10,
-            pointerEvents: 'none',
-            zIndex: 1000,
-          }}
-        >
-          <div className="pie-tooltip-content">
+      {/* outer pie chart */}
+      currentAngle = -Math.PI / 2;
+      {assetAccounts.map((acc, i) => {
+        const sliceAngle =
+          (Math.abs(acc.balance) / (assetTotal || 1)) * 2 * Math.PI;
+
+        const start = currentAngle;
+        const end = currentAngle + sliceAngle;
+
+        const path = createArc(start, end, outerRadius, innerRadius +gap);
+
+        currentAngle = end;
+
+        return (
+          <path
+            key={acc.type}
+            d={path}
+            fill={colors[i % colors.length]}
+            stroke="#ffffff89"
+            strokeWidth="1.5"
+            onMouseEnter={(e) => handleMouseEnter(acc, e)}
+            onMouseLeave={handleMouseLeave}
+          />
+        );
+      })}
+      <circle
+  cx={centerX}
+  cy={centerY}
+  r={innerHoleRadius}
+  fill="#ffffff00"
+/>
+
+    </svg>
+
+    {hoverSlice && (
+      <div
+        className="pie-tooltip"
+        style={{
+          position: 'absolute',
+          left: mousePosition.x + 10,
+          top: mousePosition.y - 10,
+          pointerEvents: 'none',
+          zIndex: 1000,
+        }}
+      >
+        <div className="pie-tooltip-content">
             <div className="pie-tooltip-title">{hoverSlice.type} Account</div>
-            <div className="pie-tooltip-value">{formatCurrency(hoverSlice.balance)}</div>
-          </div>
+            <div className="pie-tooltip-value">
+              {hoverSlice.type === 'liabilityAccount'
+                ? `-${formatCurrency(Math.abs(hoverSlice.balance))}`
+                : formatCurrency(hoverSlice.balance)}
+            </div>
         </div>
-      )}
-    </div>
-  );
+        
+      </div>
+    )}
+  </div>
+);
+
 }
 
 function Homepage({ selectedClient, setSelectedId, filteredClients, openTab }) {
