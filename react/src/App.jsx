@@ -126,6 +126,23 @@ function App() {
     setInteractionDraft(null);
   };
   
+  const handleClientChange = (client) => {
+    setSelectedId(client.id); //  update client
+    setTabs([ //  clear tabs
+      {
+        id: 'homepage',
+        name: 'Homepage',
+        Component: Homepage,
+        closable: false,
+      },
+    ]);
+    setActiveTab('homepage'); //  force homepage tab active
+
+    //  close dropdown
+    setSearch('');
+    setShowDropdown(false);
+  };
+  
   const tabProps = {
     selectedClient,
     setSelectedId,
@@ -136,6 +153,7 @@ function App() {
     submitInteractionDocument,
     clientGoals,
     setClientGoals,
+    handleClientChange,
   };
 
   const contentBackground = activeTab === 'homepage' ? '#F4EFE7' : '#BDDDBD';
@@ -181,22 +199,7 @@ function App() {
   const activeTabObj = tabs.find((tab) => tab.id === activeTab);
   const ActiveTabComponent = activeTabObj?.Component;
 
-  const handleClientChange = (client) => {
-    setSelectedId(client.id); //  update client
-    setTabs([ //  clear tabs
-      {
-        id: 'homepage',
-        name: 'Homepage',
-        Component: Homepage,
-        closable: false,
-      },
-    ]);
-    setActiveTab('homepage'); //  force homepage tab active
-
-    //  close dropdown
-    setSearch('');
-    setShowDropdown(false);
-  };
+  
 
   return (
     <div className="page">
@@ -213,29 +216,6 @@ function App() {
             <span></span>
             <span></span>
           </button>
-          {/* <input
-            type="text"
-            placeholder="Search clients..."
-            value={search}
-            onChange={(e) => {setSearch(e.target.value); setShowDropdown(true);}}
-            onFocus={() => setShowDropdown(true)}
-            onBlur={() => setTimeout(() => setShowDropdown(false), 100)} // delay to allow click
-            className="client-search"
-          />
-          {showDropdown && search.trim() && filteredClients.length > 0 && (
-            <div className="client-search-dropdown">
-              {filteredClients.slice(0, 5).map(client => (
-                <div
-                 key={client.id} className="dropdown-item"
-                 onMouseDown={(event) => {
-                  event.preventDefault();
-                  setSelectedId(client.id); setSearch(''); setShowDropdown(false); }}>
-                  {client.name}
-                </div>
-              ))}
-            </div>
-          )}
-            */}
         </div>
         {isMenuOpen && (
           <div className="menu-overlay" onClick={() => setIsMenuOpen(false)}></div>

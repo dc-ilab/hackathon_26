@@ -311,10 +311,12 @@ function Homepage({ selectedClient, setSelectedId, filteredClients, openTab }) {
 
         {/* accounts & chart */}
         <section className="module module--accounts card with-link">
-          <h2 className="module__title accounts-link" onClick={() => openTab('accounts', 'Accounts', Accounts)}>
-            Accounts
-            <img src={externalLinkIcon} alt="" className="link-icon" />
-          </h2>
+          <div className="accounts-homepage-header">
+            <h2 className="module__title accounts-link" onClick={() => openTab('accounts', 'Accounts', Accounts)}>
+              Accounts
+              <img src={externalLinkIcon} alt="" className="link-icon" />
+            </h2>
+          </div>
 
           <div className="module__content accountsLayout">
             <PieChart accounts={selectedClient.accounts} />

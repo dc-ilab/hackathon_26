@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useEffect } from 'react';
 
 
-function InteractionPage({ selectedClient, saveInteractionDocument, submitInteractionDocument, draft, interactionDraft, clientGoals, setClientGoals}) {
+function InteractionPage({ selectedClient, saveInteractionDocument, submitInteractionDocument, draft, interactionDraft, clientGoals, setClientGoals, filteredClients, handleClientChange}) {
   
   const activeDraft = draft || interactionDraft;
   const [isGroupingOpen, setIsGroupingOpen] = useState(false);
@@ -22,6 +22,12 @@ function InteractionPage({ selectedClient, saveInteractionDocument, submitIntera
   const [purchaseInput, setPurchaseInput] = useState('');
   const [isGoalUpdateOpen, setIsGoalUpdateOpen] = useState(false);
   const goals = clientGoals[selectedClient.id] || [];
+  
+  const relatedClients =
+  selectedClient.relationships?.map((rel) => {
+    const client = filteredClients.find(c => c.id === rel.id);
+    return client ? { ...client, relation: rel.relation } : null;
+  }).filter(Boolean) || [];
 
   
   
@@ -326,31 +332,42 @@ function InteractionPage({ selectedClient, saveInteractionDocument, submitIntera
             <div className="interaction-section section-2">
               <div className="section-row">
                 {/* Recent Interaction Notes */}
-                <div className="module module--recent-notes card">
-                  <h2 className="module__title">Recent Interaction Notes</h2>
-                  <div className="module__content">
-                    <div className="notes-timeline">
-                      <div className="note-item">
-                        <div className="note-date">2026-04-15</div>
-                        <div className="note-content">
-                          <p>Discussed retirement planning options. Client interested in 401k rollover.</p>
-                        </div>
-                      </div>
-                      <div className="note-item">
-                        <div className="note-date">2026-03-22</div>
-                        <div className="note-content">
-                          <p>Reviewed investment portfolio performance. Suggested diversification.</p>
-                        </div>
-                      </div>
-                      <div className="note-item">
-                        <div className="note-date">2026-02-10</div>
-                        <div className="note-content">
-                          <p>Updated contact information and discussed mortgage refinancing options.</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+<div className="module module--recent-notes card">
+  <div className="module-header">
+    <h2 className="module__title">PNC Relationships</h2>
+  </div>
+
+  <div className="relationships-container">
+    {relatedClients.length > 0 ? (
+      relatedClients.map((client) => (
+        <div
+          key={client.id}
+          className="relationship-interaction-card"
+          onClick={() => handleClientChange(client)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              handleClientChange(client);
+            }
+          }}
+        >
+          <div className="relationship-name">
+            {client.name}
+          </div>
+
+          <div className="relationship-type">
+            {client.relation}
+          </div>
+        </div>
+      ))
+    ) : (
+      <div className="goals-empty-state">
+        <p >No related clients found.</p>
+      </div>
+    )}
+  </div>
+</div>
 
                 {/* Financial Goals */}
                 <div className="module module--goals card">
@@ -573,7 +590,7 @@ function InteractionPage({ selectedClient, saveInteractionDocument, submitIntera
                         </div>
                     </div>
                     <div className="question-block">
-                      <label className="question-label">What are your sources of income?</label>
+                      <label id="income-source-label" className="question-label">What are your sources of income?</label>
 
                       <div className="tag-input-container">
                         {/* TAGS */}
@@ -593,7 +610,7 @@ function InteractionPage({ selectedClient, saveInteractionDocument, submitIntera
                         </div>
 
                         {/* INPUT */}
-                        <input
+                        <input id='income-source-input'
                           type="text"
                           value={incomeInput}
                           onChange={(e) => setIncomeInput(e.target.value)}
@@ -681,7 +698,7 @@ function InteractionPage({ selectedClient, saveInteractionDocument, submitIntera
                 <h2 className="module__title">Banker Notes</h2>
 
                 <div className="module__content">
-                    <p className="muted helper-text">
+                    <p className="muted helper-text-banker-notes">
                     Notes written in this section will only be shown to branch bankers, and saved under the client note page.
                     </p>
 

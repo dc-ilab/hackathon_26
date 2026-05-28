@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useEffect } from 'react';
 import SpendDetails from './SpendDetails';
 
 const formatCurrency = (value) => {
@@ -17,7 +18,7 @@ const formatDate = (value) => {
   return new Intl.DateTimeFormat('en-US').format(date);
 };
 
-function ClientProfile({ selectedClient, openTab, clientGoals, setClientGoals }) {
+function ClientProfile({ selectedClient, openTab, clientGoals, setClientGoals, setSelectedId, filteredClients, handleClientChange}) {
   const normalizeGoals = (goalList) =>
     goalList.map((goal) => {
       const isSavingsGoal = typeof goal.targetAmount === 'number' && goal.targetAmount > 0;
@@ -40,6 +41,12 @@ function ClientProfile({ selectedClient, openTab, clientGoals, setClientGoals })
 
   const goals = clientGoals[selectedClient.id] || [];
 
+const relatedClients =
+  selectedClient.relationships?.map((rel) => {
+    const client = filteredClients.find(c => c.id === rel.id);
+    return client ? { ...client, relation: rel.relation } : null;
+  }).filter(Boolean) || [];
+
   const [showGoalForm, setShowGoalForm] = useState(false);
   const [editingIndex, setEditingIndex] = useState(null);
   const [goalForm, setGoalForm] = useState({
@@ -49,6 +56,32 @@ function ClientProfile({ selectedClient, openTab, clientGoals, setClientGoals })
     startAmount: '0',
     targetAmount: '10000',
   });
+
+const [isEditingContact, setIsEditingContact] = useState(false);
+const [contactDraft, setContactDraft] = useState({
+    name: selectedClient.name || '',
+    age: selectedClient.age || '',
+    maritalStatus: selectedClient.maritalStatus || '',
+    location: selectedClient.location || '',
+    housingStatus: selectedClient.housingStatus || '',
+    phoneNumber: selectedClient.phoneNumber || '',
+    email: selectedClient.email || '',
+    employment: selectedClient.employment || '',
+
+  });
+  useEffect(() => {
+  setContactDraft({
+    name: selectedClient.name || '',
+    age: selectedClient.age || '',
+    maritalStatus: selectedClient.maritalStatus || '',
+    location: selectedClient.location || '',
+    housingStatus: selectedClient.housingStatus || '',
+    phoneNumber: selectedClient.phoneNumber || '',
+    email: selectedClient.email || '',
+    employment: selectedClient.employment || '',
+  });
+}, [selectedClient]);
+
 
   const handleFormChange = (field, value) => {
     setGoalForm((prev) => ({ ...prev, [field]: value }));
@@ -294,7 +327,7 @@ const deleteGoal = (index) => {
                 <span className="value">{formatCurrency(selectedClient.liabilities)}</span>
               </div>
               <div className="detail-item">
-                <span>Relationship:</span>
+                <span>PNC Total Rewards:</span>
                 <span className="value">{selectedClient.relationship}</span>
               </div>
               <div className="detail-item">
@@ -307,79 +340,252 @@ const deleteGoal = (index) => {
 
         {/* Contact Information */}
         <div className="module module--contact card">
-          <h2 className="module__title">Contact Information</h2>
+          <div className="module-header">
+            <h2 className="module__title">Contact Information</h2>
+
+            {!isEditingContact ? (
+              <button
+                className="edit-btn"
+                onClick={() => setIsEditingContact(true)}
+              >
+                ✎
+              </button>
+            ) : (
+              <div className="edit-actions">
+                <button
+                  className="btn cancel"
+                  onClick={() => {
+                    setIsEditingContact(false);
+                    setContactDraft({
+                      name: selectedClient.name || '',
+                      phoneNumber: selectedClient.phoneNumber || '',
+                      email: selectedClient.email || '',
+                      age: selectedClient.age || '',
+                      maritalStatus: selectedClient.maritalStatus || '',
+                      location: selectedClient.location || '',
+                      housingStatus: selectedClient.housingStatus || '',
+                      employment: selectedClient.employment || '',
+                    });
+                  }}
+                >
+                  Cancel
+                </button>
+
+                <button
+                  className="btn save"
+                  onClick={() => {
+                    //  Update client locally
+                    selectedClient.name = contactDraft.name;
+                    selectedClient.phoneNumber = contactDraft.phoneNumber;
+                    selectedClient.email = contactDraft.email;
+                    selectedClient.age = contactDraft.age;
+                    selectedClient.maritalStatus = contactDraft.maritalStatus;
+                    selectedClient.location = contactDraft.location;
+                    selectedClient.housingStatus = contactDraft.housingStatus;
+                    selectedClient.employment = contactDraft.employment;
+
+                    setIsEditingContact(false);
+                  }}
+                >
+                  Save
+                </button>
+              </div>
+            )}
+          </div>
           <div className="module__content">
             <div className="contact-grid">
               <div className="contact-item">
-                <span>Title:</span>
-                <span className="value">{selectedClient.title || ''}</span>
-              </div>
-              <div className="contact-item">
                 <span>Name:</span>
-                <span className="value">{selectedClient.name}</span>
+                {isEditingContact ? (
+                    <input
+                      type="text"
+                      value={contactDraft.name}
+                      onChange={(e) =>
+                        setContactDraft({
+                          ...contactDraft,
+                          name: e.target.value,
+                        })
+                      }
+                    />
+                  ) : (
+                    <span>{selectedClient.name || 'N/A'}</span>
+                  )}
               </div>
               <div className="contact-item">
                 <span>Age:</span>
-                <span className="value">{selectedClient.age} yrs</span>
+                {isEditingContact ? (
+                    <input
+                      type="text"
+                      value={contactDraft.age}
+                      onChange={(e) =>
+                        setContactDraft({
+                          ...contactDraft,
+                          age: e.target.value,
+                        })
+                      }
+                    />
+                  ) : (
+                    <span>{selectedClient.age || 'N/A'} yrs</span>
+                  )}
               </div>
               <div className="contact-item">
                 <span>Marital Status:</span>
-                <span className="value">{selectedClient.maritalStatus}</span>
+                {isEditingContact ? (
+                    <input
+                      type="text"
+                      value={contactDraft.maritalStatus}
+                      onChange={(e) =>
+                        setContactDraft({
+                          ...contactDraft,
+                          maritalStatus: e.target.value,
+                        })
+                      }
+                    />
+                  ) : (
+                    <span>{selectedClient.maritalStatus || 'N/A'}</span>
+                  )}
               </div>
               <div className="contact-item">
                 <span>Location:</span>
-                <span className="value">{selectedClient.location}</span>
+                {isEditingContact ? (
+                    <input
+                      type="text"
+                      value={contactDraft.location}
+                      onChange={(e) =>
+                        setContactDraft({
+                          ...contactDraft,
+                          location: e.target.value,
+                        })
+                      }
+                    />
+                  ) : (
+                    <span>{selectedClient.location || 'N/A'}</span>
+                  )}
               </div>
               <div className="contact-item">
                 <span>Housing Status:</span>
-                <span className="value">{selectedClient.housingStatus}</span>
+                {isEditingContact ? (
+                    <input
+                      type="text"
+                      value={contactDraft.housingStatus}
+                      onChange={(e) =>
+                        setContactDraft({
+                          ...contactDraft,
+                          housingStatus: e.target.value,
+                        })
+                      }
+                    />
+                  ) : (
+                    <span>{selectedClient.housingStatus || 'N/A'}</span>
+                  )}
               </div>
               <div className="contact-item">
                 <span>Phone:</span>
-                <span className="value">{selectedClient.phoneNumber || 'N/A'}</span>
+                {isEditingContact ? (
+                    <input
+                      type="text"
+                      value={contactDraft.phoneNumber}
+                      onChange={(e) =>
+                        setContactDraft({
+                          ...contactDraft,
+                          phoneNumber: e.target.value,
+                        })
+                      }
+                    />
+                  ) : (
+                    <span>{selectedClient.phoneNumber || 'N/A'}</span>
+                  )}
               </div>
               <div className="contact-item">
                 <span>Email:</span>
-                <span className="value">{selectedClient.email || 'N/A'}</span>
+                {isEditingContact ? (
+                    <input
+                      type="text"
+                      value={contactDraft.email}
+                      onChange={(e) =>
+                        setContactDraft({
+                          ...contactDraft,
+                          email: e.target.value,
+                        })
+                      }
+                    />
+                  ) : (
+                    <span>{selectedClient.email || 'N/A'}</span>
+                  )}
               </div>
               <div className="contact-item">
                 <span>Do Not Call:</span>
-                <span className="value">{selectedClient.doNotCall ? 'Yes' : 'No'}</span>
+                {isEditingContact ? (
+                    <input
+                      type="text"
+                      value={contactDraft.doNotCall}
+                      onChange={(e) =>
+                        setContactDraft({
+                          ...contactDraft,
+                          doNotCall: e.target.value,
+                        })
+                      }
+                    />
+                  ) : (
+                    <span className="value">{selectedClient.doNotCall ? 'Yes' : 'No'}</span>
+                  )}
               </div>
               <div className="contact-item">
                 <span>Employment:</span>
-                <span className="value">{selectedClient.employment}</span>
-              </div>
-              <div className="contact-item">
-                <span>Pronouns:</span>
-                <span className="value">{selectedClient.pronouns || 'she/her'}</span>
+                {isEditingContact ? (
+                    <input
+                      type="text"
+                      value={contactDraft.employment}
+                      onChange={(e) =>
+                        setContactDraft({
+                          ...contactDraft,
+                          employment: e.target.value,
+                        })
+                      }
+                    />
+                  ) : (
+                    <span>{selectedClient.employment || 'N/A'}</span>
+                  )}
               </div>
             </div>
           </div>
         </div>
 
-        {/* Account Overview 
-        <div className="module module--accounts-overview card">
-          <h2 className="module__title">Account Overview</h2>
+        {/* Relationships */}
+        <div className="module module--relationships card">
+          <h2 id="relationships-title" className="module__title">PNC Relationships</h2>
           <div className="module__content">
-            <div className="accounts-overview-grid">
-              {selectedClient.accounts.map((account, index) => (
-                <div key={index} className="account-overview-card">
-                  <h3>{account.type}</h3>
-                  <div className="account-balance">{formatCurrency(account.balance)}</div>
-                  <div className="account-percentage">{account.percentage}% of total</div>
+            <div className="relationships-container">
+              {relatedClients.length > 0 ? (
+                relatedClients.map((client) => (
                   <div
-                    className="account-indicator"
-                    style={{ backgroundColor: account.color }}
-                  ></div>
-                </div>
-              ))}
+                    key={client.id}
+                    className="relationship-card"
+                    onClick={() => handleClientChange(client)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleClientChange(client);
+                    }}
+                  >
+                    <div className="relationship-name">
+                      {client.name}
+                    </div>
+
+                    <div className="relationship-type">
+                      {client.relation}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="muted">No related clients found.</p>
+              )}
             </div>
           </div>
         </div>
-        */}
+        
 
-        {/* Recent Activity 
+        {/* Recent Activity */}
         <div className="module module--recent-activity card">
           <h2 className="module__title">Recent Activity</h2>
           <div className="module__content">
