@@ -179,6 +179,23 @@ function App() {
   const activeTabObj = tabs.find((tab) => tab.id === activeTab);
   const ActiveTabComponent = activeTabObj?.Component;
 
+  const handleClientChange = (client) => {
+    setSelectedId(client.id); //  update client
+    setTabs([ //  clear tabs
+      {
+        id: 'homepage',
+        name: 'Homepage',
+        Component: Homepage,
+        closable: false,
+      },
+    ]);
+    setActiveTab('homepage'); //  force homepage tab active
+
+    //  close dropdown
+    setSearch('');
+    setShowDropdown(false);
+  };
+
   return (
     <div className="page">
       <img className="fixed-logo" src={logo} alt="PNC logo" />
@@ -299,9 +316,7 @@ function App() {
                     className="dropdown-item"
                     onMouseDown={(event) => {
                       event.preventDefault();
-                      setSelectedId(client.id);
-                      setSearch('');
-                      setShowDropdown(false);
+                      handleClientChange(client);
                     }}
                   >
                     {client.name}
