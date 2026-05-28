@@ -2959,7 +2959,7 @@ body{
 }
 .row{
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 0.5fr;
   padding: 8px 10px;
   border-top: 1px solid var(--border);
 }
