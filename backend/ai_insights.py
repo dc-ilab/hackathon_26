@@ -278,8 +278,18 @@ def build_client_insights_prompt(sanitized_payload: Dict[str, Any]) -> str:
     You will receive a client profile as JSON. Produce a JSON object only with the keys:
     - headline
     - summary
-    - recommendations (array of objects with title, rationale, priority)
+    - recommendations (array of objects with title, rationale, exact service that could be offered by a bank like PNC (named service))
     - riskFlags (array of strings)
+
+    Service catalog (use these exact labels where applicable):
+    - Personal Banking:
+        - Checking and Savings: Virtual Wallet, Savings, CD, Money Market
+        - Credit Cards: Cash Rewards, Travel Rewards
+        - Borrowing: Mortgage, HELOC, Auto Loan, Personal Loan
+    - Wealth Management:
+        - Investing: Brokerage (mutual funds, ETFs), Private Bank/Hawthorn, Trust & Estate
+    - Business and Institutional:
+        - Business Banking, Commercial Lending, Treasury Management, Corporate & Institutional
 
     Client Profile:
     {json.dumps(sanitized_payload, indent=2)}
@@ -293,8 +303,28 @@ def generate_insights(client_obj: Dict[str, Any]) -> Dict[str, Any]:
         return cached
 
     system = (
-        "You are a concise, professional financial insights assistant for branch bankers. "
-        "Return JSON only."
+        """
+        You are a professional, risk-aware banking assistant for branch bankers. Output only valid JSON (no markdown, no explanation). Use this schema exactly:
+            {
+            "headline": string,
+            "summary": string,
+            "recommendations": [
+                {
+                "title": string,              // <= 8 words
+                "rationale": string,          // concise <= 220 chars
+                "priority": "High"|"Medium"|"Low",
+                "service": {
+                    "category": "Personal Banking"|"Wealth Management"|"Business and Institutional",
+                    "label": string|null,       // best-fit product/subcategory (preferred)
+                    "id": string|null,          // internal product code (optional)
+                    "team": string|null
+                }
+                }
+            ],
+            "riskFlags": [ string ]
+            }
+        Be concise. Prefer concrete PNC service categories and one primary service per recommendation. If you cannot map to a specific product id, set id to null and fill category/label/team.
+        """
     )
 
     sanitized = sanitize_client_for_ai(client_obj)
