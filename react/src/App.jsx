@@ -315,12 +315,13 @@ function App() {
       <header className="header card">
         <div className="header__left">
           <div className="avatar" aria-hidden="true"></div>
+          <div className="value strong">{(selectedClient.title ? selectedClient.title + ' ' : '') + selectedClient.name.toUpperCase()}</div>
         </div>
 
         <div className="header__grid">
           <div className="info">
-            <div className="label">Name</div>
-            <div className="value strong">{(selectedClient.title ? selectedClient.title + ' ' : '') + selectedClient.name.toUpperCase()}</div>
+            <div className="label">Age</div>
+            <div className="value">{selectedClient.age} yrs</div>
           </div>
           <div className="info">
             <div className="label">Marital Status</div>
@@ -333,10 +334,6 @@ function App() {
           <div className="info">
             <div className="label">Housing Status</div>
             <div className="value">{selectedClient.housingStatus}</div>
-          </div>
-          <div className="info">
-            <div className="label">Age</div>
-            <div className="value">{selectedClient.age} yrs</div>
           </div>
           <div className="info">
             <div className="label">Time with PNC</div>
