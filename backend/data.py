@@ -7,7 +7,7 @@ clients = [
     "age": 55,
     "employment": "Office Worker",
     "maritalStatus": "Single",
-    "housingStatus": "Homeowner with Mortgage",
+    "housingStatus": "Homeowner - Mortgage",
     "phoneNumber": "(412) 555-0198",
     "email": "jane.smith@pnc.com",
     "doNotCall": False,
