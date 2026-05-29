@@ -153,7 +153,9 @@ function App() {
     submitInteractionDocument,
     clientGoals,
     setClientGoals,
-    handleClientChange,
+    handleClientChange,  
+closeTab,
+  activeTab,
   };
 
   const contentBackground = activeTab === 'homepage' ? '#F4EFE7' : '#BDDDBD';
