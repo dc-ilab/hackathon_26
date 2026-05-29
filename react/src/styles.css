@@ -2503,7 +2503,7 @@ body{
 /* -------- Header -------- */
 .header{
   display: grid;
-  grid-template-columns: 150px 1fr 170px;
+  grid-template-columns: 170px 1fr 140px;
   gap: 14px;
   padding: 16px;
   align-items: center;
@@ -2514,6 +2514,7 @@ body{
   align-content: start;
   justify-items: center;
   gap: 8px;
+  margin-right: 30px;
 }
 .avatar{
   width: 72px;
@@ -2545,11 +2546,6 @@ body{
   height: 20px;
   border-radius: 20px 20px 10px 10px;
   bottom: 2px;
-}
-
-.pronouns{
-  font-weight: 700;
-  color: white;
 }
 
 .header__grid{
