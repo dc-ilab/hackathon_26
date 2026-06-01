@@ -5,6 +5,7 @@ import Forms from './Forms';
 import SpendDetails from './SpendDetails';
 import ReserveDetails from './ReserveDetails';
 import GrowthDetails from './GrowthDetails';
+import ClientProfile from './ClientProfile';
 import externalLinkIcon from '../assets/external-link-icon.png';
 
 
@@ -14,6 +15,20 @@ const formatCurrency = (value) =>
     currency: 'USD',
     maximumFractionDigits: 0,
   }).format(value);
+
+const formatDate = (value) => { 
+  const dateNTime = value.split(" ");
+  const date = new Date(dateNTime[0]);
+  return new Intl.DateTimeFormat('en-US').format(date); 
+};
+
+const formatTime = (value) => { 
+  const date = new Date(value);
+  const time = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit'}); 
+  console.log("time: ", time);
+  return time;
+};
+
 
 // Pie chart component for account distribution (copied from Accounts.jsx)
 function PieChart({ accounts }) {
@@ -197,7 +212,58 @@ function PieChart({ accounts }) {
 
 }
 
-function Homepage({ selectedClient, setSelectedId, filteredClients, openTab }) {
+function Homepage({ selectedClient, setSelectedId, filteredClients, openTab, clientGoals, handleClientChange }) {
+  const goals = clientGoals[selectedClient.id] || [];
+  const getAppointmentDisplay = (client) => {
+    const now = new Date();
+
+    const appointments = client.appointments || [];
+    const upcoming = appointments.filter(
+      appt => new Date(appt.date) > now
+    );
+
+    const past = appointments.filter(
+      appt => new Date(appt.date) <= now
+    );
+
+    // Sort upcoming ascending (soonest first)
+    const sortedUpcoming = upcoming.sort(
+      (a, b) => new Date(a.date) - new Date(b.date)
+    );
+
+    // Sort past descending (most recent first)
+    const sortedPast = past.sort(
+      (a, b) => new Date(b.date) - new Date(a.date)
+    );
+
+    if (sortedUpcoming.length > 0) {
+      return {
+        label: "Upcoming Appointment",
+        data: sortedUpcoming[0]
+      };
+    }
+
+    if (sortedPast.length > 0) {
+      return {
+        label: "Previous Appointment",
+        data: sortedPast[0]
+      };
+    }
+
+    return null;
+  };
+
+  const appointmentInfo = getAppointmentDisplay(selectedClient);
+
+  const relatedClients =
+    selectedClient.relationships?.map((rel) => {
+      const client = filteredClients.find(c => c.id === rel.id);
+      return client ? { ...client, relation: rel.relation } : null;
+    }).filter(Boolean) || [];
+
+
+
+
   return (
     <div className="background-card">
 
@@ -205,6 +271,82 @@ function Homepage({ selectedClient, setSelectedId, filteredClients, openTab }) {
       <main className="dashboard">
         {/* insights */}
         <section className="module module--insights card">
+          <div className="module__content appointment-split">
+            {/* appointments coming up */}
+            <div id='appointments' className="top-subcard">
+              {/* appointments */}
+              <div
+                className={`appointment-subcard ${
+                  appointmentInfo?.label === "Upcoming Appointment"
+                    ? "appointment-upcoming"
+                    : appointmentInfo?.label === "Previous Appointment"
+                    ? "appointment-previous"
+                    : ""
+                }`}
+              >
+                <h3 id='appointment-upcoming' className="subcard__title">{appointmentInfo?.label}</h3>
+
+                {appointmentInfo?.data ? (
+                  <>
+                    {/* <p id='appointment-title'><strong>{appointmentInfo.data.title}</strong></p> */}
+                    <div className='appointment-dates'> 
+                      <p className="muted">
+                        {formatDate(appointmentInfo.data.date)}
+                      </p>
+                      <p className="muted">
+                        {formatTime(appointmentInfo.data.date)}
+                      </p>
+                      <p className="muted">
+                        {appointmentInfo.data.type === "virtual"
+                          ? "Virtual Meeting"
+                          : "In Person"}
+                      </p>
+                    </div>
+                    <p id='appointment-notes'>{appointmentInfo.data.notes}</p>
+                  </>
+                ) : (
+                  <p className="muted">No appointment data</p>
+                )}
+              </div>
+
+              {/* book button */}
+                <button className="btn book-appointment-btn">
+                  Book Appointment
+                </button>
+            </div>
+            {/* small related accounts */}
+            <div id="related-accounts" className="subcard">
+  <h3 className="subcard__title">Related Clients</h3>
+
+  <div className="homepage-relationships-container">
+    {relatedClients.length > 0 ? (
+      relatedClients.map((client) => (
+        <div
+          key={client.id}
+          className="homepage-relationship-card"
+          onClick={() => handleClientChange(client)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') handleClientChange(client);
+          }}
+        >
+          <div className="homepage-relationship-name">
+            {client.name}
+          </div>
+
+          <div className="homepage-relationship-type">
+            {client.relation}
+          </div>
+        </div>
+      ))
+    ) : (
+      <p className="muted">No related clients</p>
+    )}
+  </div>
+
+            </div>
+          </div>
           <h2 className="module__title">Insights</h2>
           <div className="module__content split">
             <div className="subcard">
@@ -221,24 +363,59 @@ function Homepage({ selectedClient, setSelectedId, filteredClients, openTab }) {
               </ul>
             </div>
 
-            <div className="subcard">
-              <h3 className="subcard__title">Client Goals</h3>
-              <ul className="list">
-                {selectedClient.clientGoals.map((goal, i) => (
-                  <li key={i} className={goal.completed ? 'completed' : ''}>
-                    {goal.goal}
-                  </li>
-                ))}
-              </ul>
+            <div id="homepage-client-goals" className="subcard">
+              <h3 id="homepage-client-goals-title" className="subcard__title accounts-link" onClick={() => openTab('client-profile', 'Client Profile', ClientProfile)}>
+              Client Goals
+              <img src={externalLinkIcon} alt="" className="link-icon" />
+            </h3>
 
-              <div className="notes">
-                <div className="notes__label">Client Notes</div>
-                <select className="select">
-                  <option>Last submitted note</option>
-                  <option>Note 2</option>
-                  <option>Note 3</option>
-                </select>
+            {goals.length === 0 ? (
+              <div className="goals-empty-state">
+                <p>No client goals yet.</p>
+                <span>Add goals in the section below to get started.</span>
               </div>
+            ) : (
+              <ul className="homepage-goals-column">
+                {goals.map((goal, index) => {
+                  const progressPercent =
+                    goal.targetAmount && goal.currentAmount
+                      ? Math.min(100, Math.round((goal.currentAmount / goal.targetAmount) * 100)): 0;
+
+                          return (
+                            <li key={index} className="homepage-goal-item">
+                              <div className="interaction-goal-content">
+                                <h3 className="goal-title">
+                                  {goal.description || goal.goal}
+                                </h3>
+
+                                <div className="goal-type">
+                                  {goal.targetAmount
+                                    ? 'Savings goal'
+                                    : 'Milestone goal'}
+                                </div>
+
+                                <div className="goal-dates-row">
+                                  <span>Start: {goal.startDate || 'Today'}</span>
+                                  <span>Due: {goal.date || 'TBD'}</span>
+                                </div>
+
+                                {goal.targetAmount && (
+                                  <>
+                                    <progress
+                                      value={goal.currentAmount || 0}
+                                      max={goal.targetAmount}
+                                    />
+                                    <div className="goal-progress-percentage">
+                                      {progressPercent}%
+                                    </div>
+                                  </>
+                                )}
+                              </div>
+                            </li>
+                          );
+                        })}
+                </ul>
+                )}
             </div>
           </div>
         </section>

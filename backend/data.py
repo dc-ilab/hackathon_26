@@ -54,6 +54,14 @@ clients = [
       },
       {"goal": "Diversify portfolio", "completed": False}
     ],
+    "appointments": [
+      {
+        "date": "2026-04-18 13:00",
+        "title": "Mortgage refinance discussion",
+        "notes": "Explored lower interest options.",
+        "type": "in-person"
+      }
+    ],
     "recentActivity": [
       {"date": "2026-04-24", "type": "deposit", "amount": 5000},
       {"date": "2026-04-20", "type": "withdrawal", "amount": 2500},
@@ -140,15 +148,27 @@ clients = [
       {"type": "Tax-Advantaged Investments", "description": "Explore municipal bonds and other tax-efficient investment options.", "eligible": True},
       {"type": "Estate Planning Consultation", "description": "Comprehensive estate planning services including trusts and wills.", "eligible": True}
     ],
-    "appointments": {
-      "past": [
-        {"date": "2026-03-09", "title": "Estate planning review", "notes": "Confirmed beneficiary updates."},
-        {"date": "2026-02-21", "title": "Investment allocation check-in", "notes": "Discussed tax-efficient growth."}
-      ],
-      "upcoming": [
-        {"date": "2026-05-28", "title": "Retirement income planning", "notes": "Discuss annuity and IRA options."}
-      ]
-    },
+    "appointments": [
+      {
+        "date": "2026-03-09 14:00",
+        "title": "Estate planning review",
+        "notes": "Confirmed beneficiary updates.",
+        "type": "in-person"
+      },
+      {
+        "date": "2026-02-21 11:00",
+        "title": "Investment allocation check-in",
+        "notes": "Discussed tax-efficient growth.",
+        "type": "virtual"
+      },
+      {
+        "date": "2026-06-15 09:00",
+        "title": "Retirement income planning",
+        "notes": "Discuss annuity and IRA options.",
+        "type": "virtual"
+      }
+    ],
+
     "clientGoals": [
       {
         "goal": "Plan for retirement",
@@ -175,7 +195,7 @@ clients = [
     ],
     "relationships": [
       { "id": "C-1034", "relation": "Parent" },
-      { "id": "C-2062", "relation": "Sibling" }
+      { "id": "C-3101", "relation": "Sibling" }
     ],
     "spendTransactions": [
       {"date": "04/03/2026", "description": "Mortgage Payment", "category": "Housing", "type": "expense", "amount": 2850.0},
@@ -268,6 +288,20 @@ clients = [
       {"goal": "Build emergency fund", "completed": True},
       {"goal": "Reduce credit card debt", "completed": False}
     ],
+    "appointments": [
+      {
+        "date": "2026-06-05T10:30:00",
+        "title": "Homebuyer consultation",
+        "notes": "Discuss mortgage options and down payment strategy.",
+        "type": "in-person"
+      },
+      {
+        "date": "2026-04-20T14:00:00",
+        "title": "Savings strategy review",
+        "notes": "Discussed budgeting and automation tools.",
+        "type": "virtual"
+      }
+    ],
     "recentActivity": [
       {"date": "2026-04-25", "type": "deposit", "amount": 3500},
       {"date": "2026-04-20", "type": "payment", "amount": 1200}
@@ -355,6 +389,14 @@ clients = [
       {"goal": "Succession planning", "completed": False},
       {"goal": "International expansion", "completed": False}
     ],
+    "appointments": [
+      {
+        "date": "2026-04-12 15:30",
+        "title": "Treasury services review",
+        "notes": "Discussed liquidity optimization.",
+        "type": "in-person"
+      }
+    ],
     "recentActivity": [
       {"date": "2026-04-24", "type": "deposit", "amount": 250000},
       {"date": "2026-04-20", "type": "withdrawal", "amount": 100000}
@@ -436,6 +478,14 @@ clients = [
       {"goal": "Maximize retirement income", "completed": True},
       {"goal": "Plan charitable giving", "completed": False},
       {"goal": "Leave legacy to family", "completed": False}
+    ],
+    "appointments": [
+      {
+        "date": "2026-04-16 10:00",
+        "title": "Retirement income planning",
+        "notes": "Reviewed withdrawal strategy.",
+        "type": "virtual"
+      }
     ],
     "recentActivity": [
       {"date": "2026-04-24", "type": "dividend", "amount": 18000},

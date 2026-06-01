@@ -2,9 +2,7 @@ import { useState } from 'react';
 import { useEffect } from 'react';
 
 
-function InteractionPage({ selectedClient, saveInteractionDocument, submitInteractionDocument, draft, interactionDraft, clientGoals, setClientGoals, filteredClients, handleClientChange, 
- closeTab,
-  activeTab,
+function InteractionPage({ selectedClient, saveInteractionDocument, submitInteractionDocument, draft, interactionDraft, clientGoals, setClientGoals, filteredClients, handleClientChange, closeTab, activeTab,
 }) {
   
   const activeDraft = draft || interactionDraft;

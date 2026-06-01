@@ -154,8 +154,8 @@ function App() {
     clientGoals,
     setClientGoals,
     handleClientChange,  
-closeTab,
-  activeTab,
+    closeTab,
+    activeTab,
   };
 
   const contentBackground = activeTab === 'homepage' ? '#F4EFE7' : '#BDDDBD';
@@ -355,7 +355,7 @@ closeTab,
         </div>
 
         <div className="header__right">
-          <button className="btn" onClick={() => openTab('client-profile', 'Client Profile', ClientProfile)}>
+          <button id="client-profile-btn" className="btn" onClick={() => openTab('client-profile', 'Client Profile', ClientProfile)}>
             Client profile <span aria-hidden="true">↗</span>
           </button>
         </div>
