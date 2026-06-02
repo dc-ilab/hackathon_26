@@ -210,7 +210,7 @@ function Homepage({ selectedClient, setSelectedId, filteredClients, openTab }) {
             <div className="subcard">
               <h3 className="subcard__title">Client Summary</h3>
               <p className="muted">
-                {selectedClient.name} is a {selectedClient.relationship} of PNC, {selectedClient.clientSummary.toLowerCase()}
+                {selectedClient.name} {selectedClient.clientSummary}
               </p>
 
               <h3 className="subcard__title">Possible Opportunities</h3>
@@ -288,13 +288,13 @@ function Homepage({ selectedClient, setSelectedId, filteredClients, openTab }) {
               <div className="networth-item">
                 <div className="label">Accounts</div>
                 <div className="value positive">
-                  {formatCurrency(selectedClient.netWorth)}
+                  {formatCurrency(selectedClient.totalAssets)}
                 </div>
               </div>
               <div className="networth-item">
                 <div className="label">Loans</div>
                 <div className="value negative">
-                  {formatCurrency(selectedClient.netWorth)}
+                  {formatCurrency(selectedClient.totalLiabilities)}
                 </div>
               </div>
             </div>

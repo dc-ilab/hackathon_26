@@ -345,7 +345,7 @@ function App() {
           </div>
           <div className="info">
             <div className="label">Total Rewards Tier</div>
-            <div className="value">Gold</div>
+            <div className="value">{selectedClient.totalRewardsStatus}</div>
           </div>
         </div>
 

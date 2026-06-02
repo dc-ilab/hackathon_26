@@ -324,11 +324,11 @@ const deleteGoal = (index) => {
               </div>
               <div className="detail-item">
                 <span>Total Liabilities:</span>
-                <span className="value">{formatCurrency(selectedClient.liabilities)}</span>
+                <span className="value">{formatCurrency(selectedClient.totalLiabilities)}</span>
               </div>
               <div className="detail-item">
                 <span>PNC Total Rewards:</span>
-                <span className="value">{selectedClient.relationship}</span>
+                <span className="value">{selectedClient.totalRewardsStatus}</span>
               </div>
               <div className="detail-item">
                 <span>Time with Bank:</span>
