@@ -10,24 +10,24 @@ function Forms({ selectedClient, openTab, interactionDraft }) {
       <div className="forms-page">
         {/* Client Interaction Form */}
         <div className="module module--interaction card">
-          <h2 className="module__title">Client Interaction</h2>
+          <div className="module__header">
+            <h2 className="module__title">Client Interaction</h2>
+            <button className="btn" onClick={() => openTab('interaction', 'Client Interaction', InteractionPage)}>Start Interaction</button>
+          </div>
           <div className="module__content">
             <div className="form-details">
-              <div className="detail-item">
+              {/* <div className="detail-item">
                 <span>Client:</span>
                 <span className="value">{selectedClient.name}</span>
-              </div>
+              </div> */}
               <div className="detail-item">
-                <span>Appointment Date:</span>
+                <span>Last Appointment:</span>
                 <span className="value">May 15, 2026</span>
               </div>
               <div className="detail-item">
                 <span>Purpose:</span>
                 <span className="value">Review financial goals</span>
               </div>
-            </div>
-            <div className="form-actions">
-              <button className="btn" onClick={() => openTab('interaction', 'Client Interaction', InteractionPage)}>Start Interaction</button>
             </div>
             <div className="module module--interaction card">
               <div className="interaction-header">
@@ -89,6 +89,71 @@ function Forms({ selectedClient, openTab, interactionDraft }) {
                 </div>
             </div>
 
+          </div>
+        </div>
+
+        {/* General Inquiry Form 
+        <div className="module module--inquiry card">
+          <h2 className="module__title">General Inquiry</h2>
+          <div className="module__content">
+            <form className="form">
+              <div className="form-group">
+                <label htmlFor="subject">Subject:</label>
+                <input id="subject" type="text" placeholder="Enter subject..." />
+              </div>
+              <div className="form-group">
+                <label htmlFor="category">Category:</label>
+                <select id="category">
+                  <option>General</option>
+                  <option>Account Issues</option>
+                  <option>Technical Support</option>
+                  <option>Feedback</option>
+                  <option>Other</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label htmlFor="message">Message:</label>
+                <textarea id="message" placeholder="Enter your message..."></textarea>
+              </div>
+              <div className="form-group">
+                <label htmlFor="contact-method">Preferred Contact Method:</label>
+                <select id="contact-method">
+                  <option>Email</option>
+                  <option>Phone</option>
+                  <option>In-person</option>
+                </select>
+              </div>
+              <button type="submit" className="btn">Submit Inquiry</button>
+            </form>
+          </div>
+        </div>*/}
+
+        {/* Form History */}
+        <div className="module module--history card">
+          <h2 className="module__title">Recent Form Submissions</h2>
+          <div className="module__content">
+            <ul className="history-list">
+              <li className="history-item">
+                <span className="history-date">2026-05-01</span>
+                <span className="history-type">Service Request</span>
+                <span className="history-status">Pending</span>
+              </li>
+              <li className="history-item">
+                <span className="history-date">2026-04-28</span>
+                <span className="history-type">Sales Request</span>
+                <span className="history-status">Approved</span>
+              </li>
+              <li className="history-item">
+                <span className="history-date">2026-04-25</span>
+                <span className="history-type">General Inquiry</span>
+                <span className="history-status">Resolved</span>
+              </li>
+              <li className="history-item">
+                <span className="history-date">2026-04-20</span>
+                <span className="history-type">Client Interaction</span>
+                <span className="history-status">Completed</span>
+              </li>
+            </ul>
           </div>
         </div>
 
@@ -170,77 +235,12 @@ function Forms({ selectedClient, openTab, interactionDraft }) {
           </div>
         </div>
 
-        {/* General Inquiry Form */}
-        <div className="module module--inquiry card">
-          <h2 className="module__title">General Inquiry</h2>
-          <div className="module__content">
-            <form className="form">
-              <div className="form-group">
-                <label htmlFor="subject">Subject:</label>
-                <input id="subject" type="text" placeholder="Enter subject..." />
-              </div>
-              <div className="form-group">
-                <label htmlFor="category">Category:</label>
-                <select id="category">
-                  <option>General</option>
-                  <option>Account Issues</option>
-                  <option>Technical Support</option>
-                  <option>Feedback</option>
-                  <option>Other</option>
-                </select>
-              </div>
-              <div className="form-group">
-                <label htmlFor="message">Message:</label>
-                <textarea id="message" placeholder="Enter your message..."></textarea>
-              </div>
-              <div className="form-group">
-                <label htmlFor="contact-method">Preferred Contact Method:</label>
-                <select id="contact-method">
-                  <option>Email</option>
-                  <option>Phone</option>
-                  <option>In-person</option>
-                </select>
-              </div>
-              <button type="submit" className="btn">Submit Inquiry</button>
-            </form>
-          </div>
-        </div>
-
-        {/* Form History */}
-        <div className="module module--history card">
-          <h2 className="module__title">Recent Form Submissions</h2>
-          <div className="module__content">
-            <ul className="history-list">
-              <li className="history-item">
-                <span className="history-date">2026-05-01</span>
-                <span className="history-type">Service Request</span>
-                <span className="history-status">Pending</span>
-              </li>
-              <li className="history-item">
-                <span className="history-date">2026-04-28</span>
-                <span className="history-type">Sales Request</span>
-                <span className="history-status">Approved</span>
-              </li>
-              <li className="history-item">
-                <span className="history-date">2026-04-25</span>
-                <span className="history-type">General Inquiry</span>
-                <span className="history-status">Resolved</span>
-              </li>
-              <li className="history-item">
-                <span className="history-date">2026-04-20</span>
-                <span className="history-type">Client Interaction</span>
-                <span className="history-status">Completed</span>
-              </li>
-            </ul>
-          </div>
-        </div>
-
         {/* Quick Actions */}
         <div className="module module--actions card">
           <h2 className="module__title">Quick Actions</h2>
           <div className="module__content">
             <div className="quick-actions-grid">
-              <button className="quick-action-btn">Schedule Meeting</button>
+              <button className="quick-action-btn">Schedule Appointment</button>
               <button className="quick-action-btn">Send Email</button>
               <button className="quick-action-btn">Create Task</button>
               <button className="quick-action-btn">View Documents</button>
