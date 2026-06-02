@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { useEffect } from 'react';
 
 
-function InteractionPage({ selectedClient, saveInteractionDocument, submitInteractionDocument, draft, interactionDraft, clientGoals, setClientGoals, filteredClients, handleClientChange}) {
+function InteractionPage({ selectedClient, saveInteractionDocument, submitInteractionDocument, draft, interactionDraft, clientGoals, setClientGoals, filteredClients, handleClientChange, closeTab, activeTab,
+}) {
   
   const activeDraft = draft || interactionDraft;
   const [isGroupingOpen, setIsGroupingOpen] = useState(false);
@@ -22,19 +23,21 @@ function InteractionPage({ selectedClient, saveInteractionDocument, submitIntera
   const [purchaseInput, setPurchaseInput] = useState('');
   const [isGoalUpdateOpen, setIsGoalUpdateOpen] = useState(false);
   const goals = clientGoals[selectedClient.id] || [];
+  const [preparationNotes, setPreparationNotes] = useState('');
+
   
   const relatedClients =
   selectedClient.relationships?.map((rel) => {
     const client = filteredClients.find(c => c.id === rel.id);
     return client ? { ...client, relation: rel.relation } : null;
   }).filter(Boolean) || [];
-
-  
   
   useEffect(() => {
       if (!draft && !interactionDraft) return;
-
       const data = draft || interactionDraft;
+      setPreparationNotes(interactionDraft?.preparationNotes || '');
+
+
 
       setAnswers({
         tracksExpenses: {
@@ -60,7 +63,7 @@ function InteractionPage({ selectedClient, saveInteractionDocument, submitIntera
 
       setBankerNotes(data.bankerNotes || '');
       setPncNotes(data.pncNotes || '');
-  }, [draft, interactionDraft]);
+  }, [draft, interactionDraft, preparationNotes ]);
 
 
   const handleAnswerChange = (field, key, value) => {
@@ -98,17 +101,17 @@ function InteractionPage({ selectedClient, saveInteractionDocument, submitIntera
   };
 
 
-  const handleSaveDocument = () => {
-    saveInteractionDocument({
+  const handleSaveDocument = async () => {
+  setIsSaving(true);
+
+  try {
+    await saveInteractionDocument({
       clientId: selectedClient.id,
       clientName: selectedClient.name,
-
+      preparationNotes,
       questions: answers,
-
       bankerNotes,
-
       pncNotes,
-
       documentText: `
       Client: ${selectedClient.name}
 
@@ -135,10 +138,37 @@ function InteractionPage({ selectedClient, saveInteractionDocument, submitIntera
 
       PNC NOTES
       ${pncNotes}
-          `,
+      `,
     });
-  };
 
+    // quick visual confirmation
+    setTimeout(() => setIsSaving(false), 800);
+  } catch (err) {
+    console.error(err);
+    setIsSaving(false);
+  }
+};
+const handleSubmit = async () => {
+  setIsSubmitting(true);
+  setPreparationNotes('');
+
+  try {
+    await submitInteractionDocument();
+
+    setIsSubmitting(false);
+    setSubmitSuccess(true);
+
+    setTimeout(() => {
+      if (closeTab && activeTab) {
+        closeTab(activeTab);
+      }
+    }, 900);
+
+  } catch (err) {
+    console.error(err);
+    setIsSubmitting(false);
+  }
+};
   const toggleCompletion = (index) => {
     setClientGoals((prev) => ({
       ...prev,
@@ -231,6 +261,10 @@ function InteractionPage({ selectedClient, saveInteractionDocument, submitIntera
     : null;
 
   const [showGoalForm, setShowGoalForm] = useState(false);
+  //button saving/submitting reaction states
+  const [isSaving, setIsSaving] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
 
   return (
     <div className="background-card">
@@ -328,47 +362,46 @@ function InteractionPage({ selectedClient, saveInteractionDocument, submitIntera
               </div>
             </div>
 
-            {/* Section 2: Recent Interaction Notes and Financial Goals */}
+            {/* Section 2: PNC Relationships and Financial Goals */}
             <div className="interaction-section section-2">
               <div className="section-row">
-                {/* Recent Interaction Notes */}
-<div className="module module--recent-notes card">
-  <div className="module-header">
-    <h2 className="module__title">PNC Relationships</h2>
-  </div>
+                {/* Related Accounts */}
+                <div className="module module--recent-notes card">
+                  <div className="module-header">
+                    <h2 className="module__title">PNC Relationships</h2>
+                  </div>
 
-  <div className="relationships-container">
-    {relatedClients.length > 0 ? (
-      relatedClients.map((client) => (
-        <div
-          key={client.id}
-          className="relationship-interaction-card"
-          onClick={() => handleClientChange(client)}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              handleClientChange(client);
-            }
-          }}
-        >
-          <div className="relationship-name">
-            {client.name}
-          </div>
+                  <div className="relationships-container">
+                    {relatedClients.length > 0 ? (
+                      relatedClients.map((client) => (
+                        <div
+                          key={client.id}
+                          className="relationship-interaction-card"
+                          onClick={() => handleClientChange(client)}
+                          role="button"
+                          tabIndex={0}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              handleClientChange(client);
+                            }
+                          }}
+                        >
+                          <div className="relationship-name">
+                            {client.name}
+                          </div>
 
-          <div className="relationship-type">
-            {client.relation}
-          </div>
-        </div>
-      ))
-    ) : (
-      <div className="goals-empty-state">
-        <p >No related clients found.</p>
-      </div>
-    )}
-  </div>
-</div>
-
+                          <div className="relationship-type">
+                            {client.relation}
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="goals-empty-state">
+                        <p >No related clients found.</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
                 {/* Financial Goals */}
                 <div className="module module--goals card">
                   <h2 className="module__title">Financial Goals</h2>
@@ -441,11 +474,19 @@ function InteractionPage({ selectedClient, saveInteractionDocument, submitIntera
             <div className="module module--prep-notes card">
               <h2 className="module__title">Interaction Preparation Notes</h2>
               <div className="module__content">
-                <textarea
+                {/* <textarea
                   className="notes-textarea"
                   placeholder="Add preparation notes for this interaction..."
                   rows="6"
-                ></textarea>
+                ></textarea> */}
+                <textarea
+  value={preparationNotes}
+  onChange={(e) => setPreparationNotes(e.target.value)}
+  className="notes-textarea"
+                  placeholder="Add preparation notes for this interaction..."
+                  rows="6"
+/>
+
               </div>
             </div>
 
@@ -1042,13 +1083,42 @@ function InteractionPage({ selectedClient, saveInteractionDocument, submitIntera
 
 
             {/* Action Buttons */}
-            <div className="interaction-actions"> 
+            {/* <div className="interaction-actions"> 
               <button className="btn" onClick={handleSaveDocument}>Save Draft</button>
               <button className="btn" onClick={submitInteractionDocument}>Submit</button>
-            </div>
+            </div> */}
+            <div className="interaction-actions">
+  <button 
+    className={`btn ${isSaving ? 'loading' : ''}`} 
+    onClick={handleSaveDocument}
+    disabled={isSaving}
+  >
+    {isSaving ? 'Saving...' : 'Save Draft'}
+  </button>
+
+  <button 
+    className={`btn ${isSubmitting ? 'loading' : ''} ${submitSuccess ? 'success' : ''}`} 
+    onClick={handleSubmit}
+    disabled={isSubmitting || submitSuccess}
+  >
+    {isSubmitting 
+      ? 'Submitting...' 
+      : submitSuccess 
+      ? 'Submitted ✔' 
+      : 'Submit'}
+  </button>
+  
+{submitSuccess && (
+  <div className="toast-success">
+    Draft submitted successfully!
+  </div>
+)}
+
+</div>
           </div>
       </div>
     </div>
+    
   );
 }
 
