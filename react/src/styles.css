@@ -2728,6 +2728,7 @@ display: flex;
   display: grid;
   grid-template-columns: 1.2fr 1fr;
   gap: 12px;
+  height: 100%;
 }
 
 .subcard{
@@ -2783,6 +2784,9 @@ display: flex;
   background: rgba(255,255,255,.08);
   border: 1px solid rgba(255,255,255,.18);
   color: white;
+  min-height: 225px;
+  display: flex;
+  flex-direction: column;
 }
 .formPanel__title{
   margin: 0 0 8px;
@@ -2793,7 +2797,7 @@ display: flex;
   display: flex;
   gap: 10px;
   justify-content: flex-end;
-  margin-top: 12px;
+  margin-top: auto;
 }
 .module--forms .btn{
   background: #ffffff;
@@ -3083,18 +3087,28 @@ display: flex;
   color: var(--color-heading);
 }
 
-.spend-balance-card {
-  background: rgba(255, 255, 255, 0.95);
+/* .spend-balance-card {
+  background: #81be9a6b;
   border: 1px solid var(--color-border);
   border-radius: 20px;
-  padding: 24px;
+  padding: 15px;
   min-width: 335px;
   display: grid;
-  gap: 8px;
+  border-right: 8px solid #71b48d;
+} */
+
+.spend-balance-card{
+    background: #5267969c;
+    border: 1px solid var(--color-border);
+    border-radius: 20px;
+    padding: 15px;
+    min-width: 335px;
+    display: grid;
+    border-right: 8px solid #404e7c;
 }
 
 .spend-balance-label {
-  color: var(--color-text-secondary);
+  color: var(--color-bg-secondary);
   font-size: 0.9rem;
   font-weight: 600;
 }
@@ -3102,7 +3116,7 @@ display: flex;
 .spend-balance-value {
   font-size: 2rem;
   font-weight: 800;
-  color: var(--color-accent);
+  color: var(--color-bg);
 }
 
 .spend-balance-note {
@@ -4321,6 +4335,8 @@ a:hover,
   border-radius:12px;
   padding: 12px;
   display: grid;
+  height: 100%;
+  align-content: start;
 }
 
 .homepage-goal-item {
@@ -4458,8 +4474,7 @@ flex: 1;
   font-size: 12px;
 }
 #appointment-upcoming{
-  color:rgb(40 53 95);
-  /* color: white; */
+  color:rgb(53 53 66);
   font-size: 16px;
 }
 #appointment-title{
@@ -4478,7 +4493,7 @@ flex: 1;
 }
 
 .appointment-previous {
-  border-left: 4px solid rgb(36 36 62); 
+  border-left: 4px solid rgb(53 53 66);
   background-color: #cfd0d2;
   opacity: 0.85;
   box-shadow: inset 0 5px 10px rgba(0, 0, 0, 0.1);
@@ -4584,4 +4599,35 @@ flex: 1;
   overflow-x: auto;
   padding: 5px;
   justify-content: center;
+}
+.transaction-controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.transaction-search {
+  flex: 1;
+  min-width: 180px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+.loan-balance-card{
+  background: #c15b0c69;
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  padding: 15px;
+  min-width: 335px;
+  display: grid;
+  border-right: 8px solid var(--color-accent);
+}
+#left-insight-column{
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+#interaction-button{
+  margin-top: auto;
 }
