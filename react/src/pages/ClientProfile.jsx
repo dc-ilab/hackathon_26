@@ -568,6 +568,7 @@ const deleteGoal = (index) => {
                       if (e.key === 'Enter') handleClientChange(client);
                     }}
                   >
+                    <div className="related-avatar" aria-hidden="true"></div>
                     <div className="relationship-name">
                       {client.name}
                     </div>
