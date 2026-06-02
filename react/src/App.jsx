@@ -156,6 +156,7 @@ function App() {
     handleClientChange,  
     closeTab,
     activeTab,
+    clients
   };
 
   const contentBackground = activeTab === 'homepage' ? '#F4EFE7' : '#BDDDBD';
