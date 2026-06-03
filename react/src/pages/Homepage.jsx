@@ -469,7 +469,7 @@ function Homepage({ selectedClient, setSelectedId, filteredClients, openTab, cli
           <h2 className="module__title insights">
             Balances
           </h2>
-          
+          <div className="networth-content">
             <div className="networth-grid">
               <div className="networth-item">
                 <div className="label">Accounts</div>
@@ -492,7 +492,7 @@ function Homepage({ selectedClient, setSelectedId, filteredClients, openTab, cli
               </div>
               <div className="acc-loans">Accounts − Loans</div>
             </div>
-        
+          </div>
         </section>
 
         {/* accounts & chart */}

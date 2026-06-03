@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react';
 import SpendDetails from './SpendDetails';
+import ReserveDetails from './ReserveDetails';
+import GrowthDetails from './GrowthDetails';
 import LoanDetails from './LoanDetails';
 import { getAssetsAndLiabilities } from '../utils';
 
@@ -382,6 +384,20 @@ function Accounts({ selectedClient, openTab }) {
     }));
   }, [selectedClient]);
 
+  const accountDetailTarget = (accountType) => {
+    switch (accountType) {
+      case 'Spend':
+        return { id: 'spend-account', title: 'Spend Account', component: SpendDetails };
+      case 'Reserve':
+        return { id: 'reserve-account', title: 'Reserve Account', component: ReserveDetails };
+      case 'Growth':
+        return { id: 'growth-account', title: 'Growth Account', component: GrowthDetails };
+      case 'Auto Loan':
+        return { id: 'loan-account', title: 'Loan Account', component: LoanDetails };
+      default:
+        return null;
+    }
+  };
 
 
   return (
@@ -463,15 +479,19 @@ function Accounts({ selectedClient, openTab }) {
                           
                           <td>
                             <div
-                              className={`breakdown-account-name ${account.type === 'Spend' ? 'account-link' : ''}`}
-                              onClick={() => account.type === 'Spend' && openTab('spend-account', 'Spend Account', SpendDetails)}
+                              className={`breakdown-account-name ${['Spend', 'Reserve', 'Growth'].includes(account.type) ? 'account-link' : ''}`}
+                              onClick={() => {
+                                const details = accountDetailTarget(account.type);
+                                if (details) openTab(details.id, details.title, details.component);
+                              }}
                               onKeyDown={(event) => {
-                                if (account.type === 'Spend' && (event.key === 'Enter' || event.key === ' ')) {
-                                  openTab('spend-account', 'Spend Account', SpendDetails);
+                                const details = accountDetailTarget(account.type);
+                                if (details && (event.key === 'Enter' || event.key === ' ')) {
+                                  openTab(details.id, details.title, details.component);
                                 }
                               }}
-                              role={account.type === 'Spend' ? 'button' : undefined}
-                              tabIndex={account.type === 'Spend' ? 0 : undefined}
+                              role={['Spend', 'Reserve', 'Growth'].includes(account.type) ? 'button' : undefined}
+                              tabIndex={['Spend', 'Reserve', 'Growth'].includes(account.type) ? 0 : undefined}
                             >
                             <div
                               className="account-indicator"
@@ -531,10 +551,14 @@ function Accounts({ selectedClient, openTab }) {
                         <td>
                           <div
                               className={`breakdown-account-name ${account.type === 'Auto Loan' ? 'account-link' : ''}`}
-                              onClick={() => account.type === 'Auto Loan' && openTab('loan-account', 'Loan Account', LoanDetails)}
+                              onClick={() => {
+                                const details = accountDetailTarget(account.type);
+                                if (details) openTab(details.id, details.title, details.component);
+                              }}
                               onKeyDown={(event) => {
-                                if (account.type === 'Auto Loan' && (event.key === 'Enter' || event.key === ' ')) {
-                                  openTab('loan-account', 'Loan Account', LoanDetails);
+                                const details = accountDetailTarget(account.type);
+                                if (details && (event.key === 'Enter' || event.key === ' ')) {
+                                  openTab(details.id, details.title, details.component);
                                 }
                               }}
                               role={account.type === 'Auto Loan' ? 'button' : undefined}
