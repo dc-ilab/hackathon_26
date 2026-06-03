@@ -292,7 +292,7 @@ function Homepage({ selectedClient, setSelectedId, filteredClients, openTab, cli
               <h2 className="module__title">Insights</h2>
               <h3 className="subcard__title">Client Summary</h3>
               <p className="muted">
-                {selectedClient.name} is a {selectedClient.relationship} of PNC, {selectedClient.clientSummary.toLowerCase()}
+                {selectedClient.name} {selectedClient.clientSummary}
               </p>
 
               <h3 className="subcard__title">Possible Opportunities</h3>
