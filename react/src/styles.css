@@ -4152,9 +4152,11 @@ a:hover,
   width: 100%;
 }
 
-.goals-empty-state p {
+.goals-empty-state p,
+.goals-empty-state span {
   margin: 0 0 6px;
   font-weight: 600;
+  color: var(--muted) !important;
 }
 
 .goals-empty-state span {
@@ -4188,6 +4190,10 @@ a:hover,
   color: var(--color-bg-secondary);
   font-size: 16px;
   margin-bottom: 15px;
+}
+
+.goals-empty-state p{
+  color:var(--ink);
 }
 
 .breakdown-group {
