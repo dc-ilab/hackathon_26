@@ -1,8 +1,7 @@
-from sqlalchemy import create_engine, Column, String, Date, Text, Numeric, DateTime, ForeignKey
+from sqlalchemy import create_engine, Column, String, Date, Text, Numeric, DateTime, ForeignKey, Integer, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
-from typing import Optional
-from datetime import date, datetime
+from datetime import datetime
 import os
 from dotenv import load_dotenv
 
@@ -14,98 +13,128 @@ Base = declarative_base()
 class Customer(Base):
     __tablename__ = "customers"
 
-    customer_id = Column(String(20), primary_key=True)
-    name = Column(String(100))
+    customer_id = Column(String(100), primary_key=True)
+    full_name = Column(String(100))
     dob = Column(Date)
-    address = Column(Text)
-    zip_code = Column(String(10))
-    phone_number = Column(String(50))
-    email = Column(String(100))
-    date_joined = Column(Date)
-    segment = Column(String(50))
-    preferred_language = Column(String(20))
-    relationship_status = Column(String(20))
+    age = Column(Integer)
+    city = Column(Text)
+    state = Column(Text)
+    zip_code = Column(Text)
+    country = Column(Text)
+    employment = Column(Text)
+    total_assets = Column(Numeric)
+    total_liabilities = Column(Numeric)
+    net_worth = Column(Numeric)
+    estimated_income = Column(Text)
+    consumer_segment = Column(Text)
+    housing_status = Column(Text)
+    marital_status = Column(Text)
+    student = Column(Text)
+    account_created = Column(Date)
+    length_of_residence = Column(Text)
+    has_dependents = Column(Text)
+    number_of_adults = Column(Integer)
+    company_employee = Column(Text)
+    has_mortgage = Column(Text)
+    phone_num = Column(Text)
+    email = Column(Text)
+    do_not_call = Column(Boolean)
+    total_rewards_status = Column(Text)
+    relationships = Column(Text)
+    opportunities = Column(Text)
+    client_summary = Column(Text)
+    campaign_referrals = Column(Text)
 
-    # Relationships
     accounts = relationship("Account", back_populates="customer")
+    appointments = relationship("Appointment", back_populates="customer")
     interactions = relationship("Interaction", back_populates="customer")
-    opportunities = relationship("Opportunity", back_populates="customer")
+    goals = relationship("Goal", back_populates="customer")
     transactions = relationship("Transaction", back_populates="customer")
 
 class Account(Base):
     __tablename__ = "accounts"
 
-    account_id = Column(String(20), primary_key=True)
-    customer_id = Column(String(20), ForeignKey("customers.customer_id"))
-    account_type = Column(String(50))
-    account_status = Column(String(20))
-    balance = Column(Numeric(15, 2))
-    interest_rate = Column(Numeric(5, 4))
-    opened_date = Column(DateTime)
-    last_activity_date = Column(DateTime)
+    account_id = Column(String(100), primary_key=True)
+    customer_id = Column(String(100), ForeignKey("customers.customer_id"))
+    is_joint = Column(String(10))
+    joint_customer_id = Column(String(100))
+    account_category = Column(String(100))
+    account_type = Column(String(100))
+    balance = Column(Numeric)
+    date_opened = Column(Date)
+    maturity_date = Column(Date)
+    interest_rate = Column(Numeric)
+    last_activity_amount = Column(Numeric)
+    last_activity_date = Column(Date)
 
-    # Relationships
     customer = relationship("Customer", back_populates="accounts")
-    products = relationship("Product", back_populates="account")
 
-class Product(Base):
-    __tablename__ = "products"
+class Appointment(Base):
+    __tablename__ = "appointments"
 
-    product_id = Column(String, primary_key=True)
-    product_name = Column(String)
-    product_type = Column(String)
-    fee_structure = Column(String)
-    eligibility_rules = Column(Text)
-    status = Column(String)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow)
-    account_id = Column(String, ForeignKey("accounts.account_id"))
+    appointment_id = Column(Integer, primary_key=True)
+    customer_id = Column(String(100), ForeignKey("customers.customer_id"))
+    appointment_date = Column(DateTime)
+    type = Column(String(100))
+    notes = Column(Text)
+    title = Column(Text)
 
-    # Relationships
-    account = relationship("Account", back_populates="products")
+    customer = relationship("Customer", back_populates="appointments")
 
 class Interaction(Base):
     __tablename__ = "interactions"
 
-    interaction_id = Column(String(20), primary_key=True)
-    customer_id = Column(String(20), ForeignKey("customers.customer_id"))
-    channel = Column(String(20))
-    banker_id = Column(String(20))
-    interaction_date = Column(DateTime)
-    interaction_reason = Column(String(50))
-    outcome = Column(String(20))
-    notes = Column(Text)
+    interaction_id = Column(Integer, primary_key=True)
+    customer_id = Column(String(100), ForeignKey("customers.customer_id"))
+    interaction_date = Column(Date)
+    prep_notes = Column(Text)
+    track_expenses = Column(Boolean)
+    track_expenses_desc = Column(Text)
+    borrow_money = Column(Boolean)
+    borrow_money_desc = Column(Text)
+    save_retirement = Column(Boolean)
+    save_retirement_desc = Column(Text)
+    income_srcs = Column(Text)
+    current_save = Column(Text)
+    typ_purchase = Column(Text)
+    banker_notes = Column(Text)
+    pnc_notes = Column(Text)
 
-    # Relationships
     customer = relationship("Customer", back_populates="interactions")
 
-class Opportunity(Base):
-    __tablename__ = "opportunities"
+class Goal(Base):
+    __tablename__ = "goals"
 
-    insight_id = Column(String(20), primary_key=True)
-    customer_id = Column(String(20), ForeignKey("customers.customer_id"))
-    insight_type = Column(String(50))
-    confidence_score = Column(Numeric(3, 2))
-    insight_summary = Column(Text)
-    generated_date = Column(DateTime)
+    goal_id = Column(Integer, primary_key=True)
+    customer_id = Column(String(100), ForeignKey("customers.customer_id"))
+    goal_name = Column(Text, nullable=False)
+    goal_type = Column(Text, nullable=False)
+    linked_account = Column(String(100))
+    target_amount = Column(Numeric(12, 2))
+    starting_amount = Column(Numeric(12, 2))
+    due_date = Column(Date)
+    start_date = Column(Date)
 
-    # Relationships
-    customer = relationship("Customer", back_populates="opportunities")
+    customer = relationship("Customer", back_populates="goals")
 
 class Transaction(Base):
     __tablename__ = "transactions"
 
-    activity_id = Column(String(20), primary_key=True)
-    customer_id = Column(String(20), ForeignKey("customers.customer_id"))
-    activity_type = Column(String(50))
-    activity_date = Column(DateTime)
+    transaction_id = Column(Integer, primary_key=True)
+    account_id = Column(String(100))
+    account_category = Column(String(100))
+    account_type = Column(String(100))
+    customer_id = Column(String(100), ForeignKey("customers.customer_id"))
     description = Column(Text)
-    severity = Column(String(10))
+    category = Column(Text)
+    transaction_type = Column(String(100))
+    transaction_amt = Column(Numeric)
+    acct_balance = Column(Numeric)
+    transaction_date = Column(Date)
+    transaction_made_by = Column(String(100))
 
-    # Relationships
     customer = relationship("Customer", back_populates="transactions")
 
-# Database connection - using environment variables for security
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://ilb3010tdpteam1postgresserver.postgres.database.azure.com:5432/postgres?sslmode=require")
 
 engine = create_engine(DATABASE_URL)

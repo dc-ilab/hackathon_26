@@ -47,6 +47,9 @@ function App() {
 
         const data = await response.json();
         setClients(data);
+        setClientGoals(
+          Object.fromEntries(data.map((client) => [client.id, client.clientGoals || []]))
+        );
 
         if (data.length > 0) {
           setSelectedId(data[0].id);
@@ -348,7 +351,7 @@ function App() {
           </div>
           <div className="info">
             <div className="label">Total Rewards Tier</div>
-            <div className="value">Gold</div>
+            <div className="value">{selectedClient.totalRewardsStatus}</div>
           </div>
         </div>
 

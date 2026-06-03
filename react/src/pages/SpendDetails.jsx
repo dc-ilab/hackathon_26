@@ -171,6 +171,11 @@ function SpendDetails({ selectedClient }) {
     setEndDate(null);
     setCalendarMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
   };
+  const handleNextMonth = () => {
+    setStartDate(null);
+    setEndDate(null);
+    setCalendarMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
+  }
 
   const handleToday = () => {
     const now = new Date();
@@ -228,13 +233,11 @@ const displayedTransactions = showAllTransactions
             <section className="spend-insights-card">
               <div className="section-header">
                 <div>
-                  <h2>Account Insights</h2>
-                  <p className="muted">Overview of spending habits and account cash flow.</p>
+                  <h2>Account Summary</h2>
                 </div>
               </div>
               <p>
                 Over the last six months, this account has averaged <strong>{formatCurrency(averageExpense)}</strong> in expenses per month while receiving an average income of <strong>{formatCurrency(Math.round(totalIncome / monthlySpendData.length))}</strong>.
-                Most spending was on food, transport, and subscriptions, with income comfortably covering expenses each month.
               </p>
               <div className="insight-stat-row">
                 <div>
@@ -313,10 +316,13 @@ const displayedTransactions = showAllTransactions
                   <button className="calendar-nav-button" onClick={handlePrevMonth} type="button">
                     ←
                   </button>
-                  <div>
+                  <div className='calendar-date'>
                     <p className="eyebrow">Calendar</p>
                     <h2>{currentMonthLabel}</h2>
                   </div>
+                  <button className="calendar-nav-button" onClick={handleNextMonth} type="button">
+                    →
+                  </button>
                 </div>
                 <button className="calendar-action" onClick={handleToday} type="button">Today</button>
               </div>

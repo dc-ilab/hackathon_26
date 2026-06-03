@@ -18,27 +18,15 @@ const formatDate = (value) => {
   return new Intl.DateTimeFormat('en-US').format(date);
 };
 
-function ClientProfile({ selectedClient, openTab, clientGoals, setClientGoals, setSelectedId, filteredClients, handleClientChange}) {
-  const normalizeGoals = (goalList) =>
-    goalList.map((goal) => {
-      const isSavingsGoal = typeof goal.targetAmount === 'number' && goal.targetAmount > 0;
-      return {
-        ...goal,
-        description: goal.description || goal.goal || 'Goal description',
-        date: goal.date || goal.targetDate || '',
-        targetAmount: isSavingsGoal ? goal.targetAmount : null,
-        currentAmount:
-          typeof goal.currentAmount === 'number'
-            ? goal.currentAmount
-            : isSavingsGoal
-            ? 0
-            : null,
-        startDate: goal.startDate || '',
-        isSavingsGoal,
-        completed: !!goal.completed,
-      };
-    });
+const normalizeDateForInput = (value) => {
+  if (!value) return '';
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return '';
+  return parsed.toISOString().slice(0, 10);
+}
 
+function ClientProfile({ selectedClient, openTab, clientGoals, setClientGoals, setSelectedId, filteredClients, handleClientChange}) {
   const goals = clientGoals[selectedClient.id] || [];
 
 const relatedClients =
@@ -51,6 +39,7 @@ const relatedClients =
   const [editingIndex, setEditingIndex] = useState(null);
   const [goalForm, setGoalForm] = useState({
     description: '',
+    startDate: '',
     date: '',
     isSavingsGoal: true,
     startAmount: '0',
@@ -91,7 +80,8 @@ const [contactDraft, setContactDraft] = useState({
     const goal = goals[index];
     setGoalForm({
       description: goal.description,
-      date: goal.date,
+      startDate: normalizeDateForInput(goal.startDate),
+      date: normalizeDateForInput(goal.date),
       isSavingsGoal: goal.isSavingsGoal,
       startAmount: goal.currentAmount != null ? String(goal.currentAmount) : '0',
       targetAmount: goal.targetAmount != null ? String(goal.targetAmount) : '10000',
@@ -105,10 +95,12 @@ const [contactDraft, setContactDraft] = useState({
 
     const startAmount = Number(goalForm.startAmount || 0);
     const targetAmount = Number(goalForm.targetAmount || 0);
+    const normalizedStartDate = normalizeDateForInput(goalForm.startDate) || new Date().toISOString().slice(0, 10);
+    const normalizedDate = normalizeDateForInput(goalForm.date);
     const goalData = {
       description: goalForm.description.trim(),
-      date: goalForm.date,
-      startDate: new Date().toLocaleDateString('en-US'),
+      startDate: normalizedStartDate,
+      date: normalizedDate,
       isSavingsGoal: goalForm.isSavingsGoal,
       targetAmount: goalForm.isSavingsGoal ? targetAmount : null,
       currentAmount: goalForm.isSavingsGoal ? startAmount : null,
@@ -137,6 +129,7 @@ const [contactDraft, setContactDraft] = useState({
     setShowGoalForm(false);
     setGoalForm({
       description: '',
+      startDate: '',
       date: '',
       isSavingsGoal: true,
       startAmount: '0',
@@ -171,8 +164,19 @@ const deleteGoal = (index) => {
           <div className="goals-header-row">
             <h2 className="module__title">Client Goals</h2>
             <button className="new-goal-btn" onClick={() => {
-              setShowGoalForm((prev) => !prev);
-              if (showGoalForm) setEditingIndex(null);
+              const nextState = !showGoalForm;
+              setShowGoalForm(nextState);
+              setEditingIndex(null);
+              if (nextState) {
+                setGoalForm({
+                  description: '',
+                  startDate: '',
+                  date: '',
+                  isSavingsGoal: true,
+                  startAmount: '0',
+                  targetAmount: '10000',
+                });
+              }
             }}>
               {showGoalForm ? 'Close' : 'New Goal'}
             </button>
@@ -191,12 +195,22 @@ const deleteGoal = (index) => {
                     />
                   </label>
                   <label>
+                    Start date
+                    <input
+                      type="date"
+                      value={goalForm.startDate}
+                      onChange={(e) => handleFormChange('startDate', e.target.value)}
+                    />
+                   </label>
+                  <label>
                     Target date
                     <input
                       type="date"
                       value={goalForm.date}
                       onChange={(e) => handleFormChange('date', e.target.value)}
                     />
+                  </label>
+                  <label>
                   </label>
                   <label className="checkbox-label">
                     <input
@@ -324,11 +338,11 @@ const deleteGoal = (index) => {
               </div>
               <div className="detail-item">
                 <span>Total Liabilities:</span>
-                <span className="value">{formatCurrency(selectedClient.liabilities)}</span>
+                <span className="value">{formatCurrency(selectedClient.totalLiabilities)}</span>
               </div>
               <div className="detail-item">
                 <span>PNC Total Rewards:</span>
-                <span className="value">{selectedClient.relationship}</span>
+                <span className="value">{selectedClient.totalRewardsStatus}</span>
               </div>
               <div className="detail-item">
                 <span>Time with Bank:</span>

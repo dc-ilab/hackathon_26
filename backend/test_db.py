@@ -7,7 +7,7 @@ Run this before starting the FastAPI server to ensure everything works.
 import os
 from dotenv import load_dotenv
 from sqlalchemy.orm import sessionmaker
-from models import engine, Customer, Account, Transaction, Interaction, Opportunity
+from models import engine, Customer, Account, Transaction, Interaction, Appointment, Goal
 
 def test_database_connection():
     """Test database connection and basic queries"""
@@ -33,7 +33,7 @@ def test_database_connection():
         # Get sample customer
         customer = db.query(Customer).first()
         if customer:
-            print(f"Sample customer: {customer.name} (ID: {customer.customer_id})")
+            print(f"Sample customer: {customer.full_name} (ID: {customer.customer_id})")
 
             # Get related data
             accounts = db.query(Account).filter(Account.customer_id == customer.customer_id).all()
@@ -45,8 +45,11 @@ def test_database_connection():
             interactions = db.query(Interaction).filter(Interaction.customer_id == customer.customer_id).all()
             print(f"- Customer has {len(interactions)} interactions")
 
-            opportunities = db.query(Opportunity).filter(Opportunity.customer_id == customer.customer_id).all()
-            print(f"- Customer has {len(opportunities)} opportunities")
+            appointments = db.query(Appointment).filter(Appointment.customer_id == customer.customer_id).all()
+            print(f"- Customer has {len(appointments)} appointments")
+
+            goals = db.query(Goal).filter(Goal.customer_id == customer.customer_id).all()
+            print(f"- Customer has {len(goals)} goals")
 
         db.close()
         print("\nAll database tests passed!")

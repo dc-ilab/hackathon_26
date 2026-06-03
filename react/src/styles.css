@@ -2796,19 +2796,25 @@ body{
 .dashboard{
   display: grid;
   gap: 14px;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: minmax(520px, 2fr) minmax(360px, 1fr);
   grid-template-areas:
     "insights forms"
-    "accounts networth"
+    "accounts networth";
+  max-width: 1160px;
+  margin: 0 auto;
+}
+
+.dashboard > * {
+  min-width: 0;
 }
 
 /* Module base */
 .module{
+  width: 100%;
+  min-width: 0;
   padding: 14px;
-  
-display: flex;
+  display: flex;
   flex-direction: column;
-
 }
 
 .module__title{
@@ -2921,6 +2927,15 @@ display: flex;
   grid-area: networth; 
   color: var(--ink);
   background-color: rgb(255, 255, 255, 0.6); 
+  display: flex;
+  flex-direction: column;
+}
+.networth-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
 }
 .bigMoney{
   font-size: 36px;
@@ -3249,7 +3264,7 @@ display: flex;
 .spend-insights-card,
 .spend-graph-card,
 .calendar-card {
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.8);
   border: 1px solid var(--color-border);
   border-radius: 20px;
   padding: 20px;
@@ -4140,6 +4155,8 @@ a:hover,
   padding: 15px;
   background: linear-gradient(rgb(239 240 235) 2%, rgba(255, 255, 255, 0.05) 9%);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  max-width: 1240px;
+  margin: 0 auto;
 }
 
 .goals-empty-state {
@@ -4641,7 +4658,7 @@ flex: 1;
 
 #related-accounts{
   align-items: center;
-  background-color: #ffffff75;
+  background-color: #ffffff;
   padding: 10px;
 }
 #related-accounts h3{
@@ -4748,4 +4765,25 @@ flex: 1;
 }
 #interaction-button{
   margin-top: auto;
+}
+#authenticate-btn{
+  background: #f9fafbf3;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  padding: 8px;
+  margin-left: auto;
+  margin-right: auto;
+}
+#authenticate-btn:hover {
+  background: rgb(221, 236, 241);
+  box-shadow: 0 4px 12px rgba(2, 2, 2, 0.4);
+  transform: translateY(-1px);
+}
+#client-profile-btn:hover {
+  background: rgb(221, 236, 241);
+  box-shadow: 0 4px 12px rgba(2, 2, 2, 0.4);
+  transform: translateY(-1px);
+}
+.calendar-date{
+  text-align: center;
 }

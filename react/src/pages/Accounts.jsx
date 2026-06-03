@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import SpendDetails from './SpendDetails';
 import LoanDetails from './LoanDetails';
+import { getAssetsAndLiabilities } from '../utils';
 
 const formatCurrency = (value) =>
   new Intl.NumberFormat('en-US', {
@@ -331,8 +332,9 @@ if (!filteredAccounts.length) {
 }
 
 function Accounts({ selectedClient, openTab }) {
-  const assetAccounts = selectedClient.accounts.filter((account) => account.balance > 0);
-  const liabilityAccounts = selectedClient.accounts.filter((account) => account.balance < 0);
+  // const assetAccounts = selectedClient.accounts.filter((account) => account.balance > 0);
+  // const liabilityAccounts = selectedClient.accounts.filter((account) => account.balance < 0);
+  const { assetAccounts, liabilityAccounts } = getAssetsAndLiabilities(selectedClient.accounts);
   const totalLiabilities = liabilityAccounts.reduce((sum, acc) => sum + Math.abs(acc.balance),0);
 
   const accountHistory = useMemo(() => {

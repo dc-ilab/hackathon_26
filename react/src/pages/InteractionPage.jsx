@@ -1,6 +1,13 @@
 import { useState } from 'react';
 import { useEffect } from 'react';
+import { getAssetsAndLiabilities } from '../utils';
 
+const formatDate = (value) => {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat('en-US').format(date);
+};
 
 function InteractionPage({ selectedClient, saveInteractionDocument, submitInteractionDocument, draft, interactionDraft, clientGoals, setClientGoals, filteredClients, handleClientChange, closeTab, activeTab,
 }) {
@@ -24,6 +31,7 @@ function InteractionPage({ selectedClient, saveInteractionDocument, submitIntera
   const [isGoalUpdateOpen, setIsGoalUpdateOpen] = useState(false);
   const goals = clientGoals[selectedClient.id] || [];
   const [preparationNotes, setPreparationNotes] = useState('');
+  const {assetAccounts, liabilityAccounts } = getAssetsAndLiabilities(selectedClient.accounts);
 
   
   const relatedClients =
@@ -220,7 +228,7 @@ const handleSubmit = async () => {
     const goalData = {
       description: goalForm.description,
       date: goalForm.date,
-      startDate: new Date().toLocaleDateString(),
+      startDate: goalForm.startDate,
       isSavingsGoal: goalForm.isSavingsGoal,
       targetAmount: goalForm.isSavingsGoal ? targetAmount : null,
       currentAmount: goalForm.isSavingsGoal ? startAmount : null,
@@ -242,6 +250,7 @@ const handleSubmit = async () => {
     setEditingIndex(null);
     setGoalForm({
       description: '',
+      startDate: '',
       date: '',
       isSavingsGoal: true,
       startAmount: '0',
@@ -315,11 +324,12 @@ const handleSubmit = async () => {
                   <h2 className="module__title">Accounts Overview</h2>
                   <div className="module__content">
                     <div className="accounts-grid">
-                      {selectedClient.accounts.filter(account => account.percentage !== null).map((account, index) => (
+                      {/* {selectedClient.accounts.filter(account => account.percentage !== null).map((account, index) => ( */}
+                      {assetAccounts.map((account, index) => (
                         <div key={index} className="account-card">
                           <h3>{account.type}</h3>
                           <div className="account-balance">{formatCurrency(account.balance)}</div>
-                          <div className="account-percentage">{account.percentage}% of total</div>
+                          {/* <div className="account-percentage">{account.percentage}% of total</div> */}
                           <div
                             className="account-indicator"
                             style={{ backgroundColor: account.color }}
@@ -330,7 +340,8 @@ const handleSubmit = async () => {
                     <div className="loans-section">
                       <h3>Loans & Credit</h3>
                       <div className="loans-grid">
-                        {selectedClient.accounts.filter(account => account.percentage === null).map((account, index) => (
+                        {/* {selectedClient.accounts.filter(account => account.percentage === null).map((account, index) => ( */}
+                        {liabilityAccounts.map((account, index) => (
                           <div key={index} className="loan-card">
                             <h4>{account.type}</h4>
                             <div className="loan-balance">{formatCurrency(account.balance)}</div>
@@ -438,8 +449,8 @@ const handleSubmit = async () => {
                                 </div>
 
                                 <div className="goal-dates-row">
-                                  <span>Start: {goal.startDate || 'Today'}</span>
-                                  <span>Due: {goal.date || 'TBD'}</span>
+                                  <span>Start: {formatDate(goal.startDate) || 'Today'}</span>
+                                  <span>Due: {formatDate(goal.date) || 'TBD'}</span>
                                 </div>
 
                                 {goal.targetAmount && (
@@ -961,8 +972,8 @@ const handleSubmit = async () => {
                                     />
                                   ) : (
                                     <div className="goal-dates">
-                                      <span>Start: {goal.startDate || 'Today'}</span>
-                                      <span>Due: {goal.date || 'TBD'}</span>
+                                      <span>Start: {formatDate(goal.startDate) || 'Today'}</span>
+                                      <span>Due: {formatDate(goal.date) || 'TBD'}</span>
                                     </div>
                                   )}  
                                 </div>

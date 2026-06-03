@@ -7,6 +7,7 @@ import ReserveDetails from './ReserveDetails';
 import GrowthDetails from './GrowthDetails';
 import ClientProfile from './ClientProfile';
 import externalLinkIcon from '../assets/external-link-icon.png';
+import { sortAccountsByType } from '../utils';
 
 
 const formatCurrency = (value) =>
@@ -25,7 +26,6 @@ const formatDate = (value) => {
 const formatTime = (value) => { 
   const date = new Date(value);
   const time = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit'}); 
-  console.log("time: ", time);
   return time;
 };
 
@@ -42,11 +42,25 @@ function PieChart({ accounts }) {
   const centerX = width / 2;
   const centerY = height / 2;
 
-  const assetAccounts = accounts.filter(acc => acc.balance > 0);
+  const sortedAccounts = sortAccountsByType(accounts);
+  
+  const assetAccounts = sortedAccounts.filter((account) => {
+    if(account.category) {
+      return account.category.toLowerCase() === 'asset';
+    }
+    return account.balance > 0;
+  });
   const assetTotal = assetAccounts.reduce((sum, acc) => sum + acc.balance, 0);
   const safeAssetTotal = assetTotal || 1;
 
-  const liabilityAccounts = accounts.filter(acc => acc.balance < 0);
+  const liabilityAccounts = sortedAccounts.filter((account) => {
+    if(account.category) {
+      return account.category.toLowerCase() === 'liability';
+      console.log("account category: ", account.category);
+    }
+    console.log("no category.. account balance: ", account.balance);
+    return account.balance <= 0;
+  });
   const liabilityTotal = liabilityAccounts.reduce((sum, acc) => sum + Math.abs(acc.balance), 0); 
   const safeLiabilityTotal = liabilityTotal || 1;
 
@@ -277,7 +291,7 @@ function Homepage({ selectedClient, setSelectedId, filteredClients, openTab, cli
               <h2 className="module__title">Insights</h2>
               <h3 className="subcard__title">Client Summary</h3>
               <p className="muted">
-                {selectedClient.name} is a {selectedClient.relationship} of PNC, {selectedClient.clientSummary.toLowerCase()}
+                {selectedClient.name} {selectedClient.clientSummary}
               </p>
 
               <h3 className="subcard__title">Possible Opportunities</h3>
@@ -350,8 +364,8 @@ function Homepage({ selectedClient, setSelectedId, filteredClients, openTab, cli
                                 </div>
 
                                 <div className="goal-dates-row">
-                                  <span>Start: {goal.startDate || 'Today'}</span>
-                                  <span>Due: {goal.date || 'TBD'}</span>
+                                  <span>Start: {formatDate(goal.startDate) || 'Today'}</span>
+                                  <span>Due: {formatDate(goal.date) || 'TBD'}</span>
                                 </div>
 
                                 {goal.targetAmount && (
@@ -445,18 +459,18 @@ function Homepage({ selectedClient, setSelectedId, filteredClients, openTab, cli
           <h2 className="module__title insights">
             Balances
           </h2>
-          
+          <div className="networth-content">
             <div className="networth-grid">
               <div className="networth-item">
                 <div className="label">Accounts</div>
                 <div className="value positive">
-                  {formatCurrency(selectedClient.netWorth)}
+                  {formatCurrency(selectedClient.totalAssets)}
                 </div>
               </div>
               <div className="networth-item">
                 <div className="label">Loans</div>
                 <div className="value negative">
-                  {formatCurrency(selectedClient.netWorth)}
+                  {formatCurrency(selectedClient.totalLiabilities)}
                 </div>
               </div>
             </div>
@@ -468,7 +482,7 @@ function Homepage({ selectedClient, setSelectedId, filteredClients, openTab, cli
               </div>
               <div className="acc-loans">Accounts − Loans</div>
             </div>
-        
+          </div>
         </section>
 
         {/* accounts & chart */}
