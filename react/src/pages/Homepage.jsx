@@ -26,7 +26,6 @@ const formatDate = (value) => {
 const formatTime = (value) => { 
   const date = new Date(value);
   const time = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit'}); 
-  console.log("time: ", time);
   return time;
 };
 
