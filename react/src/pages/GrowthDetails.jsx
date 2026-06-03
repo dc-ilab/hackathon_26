@@ -119,6 +119,29 @@ function GrowthDetails({ selectedClient }) {
     ? spendTransactions.filter((item) => item.date === selectedDate)
     : [];
 
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedMonth, setSelectedMonth] = useState('');
+  const [selectedYear, setSelectedYear] = useState('');
+  const filteredTransactions = spendTransactions.filter((tx) => {
+    const matchesSearch =
+      tx.description.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const [month, , year] = tx.date.split('/');
+
+    const matchesMonth = selectedMonth
+      ? parseInt(month, 10) === parseInt(selectedMonth, 10)
+      : true;
+
+    const matchesYear = selectedYear
+      ? year === selectedYear
+      : true;
+
+    return matchesSearch && matchesMonth && matchesYear;
+  });
+  const displayedTransactions = showAllTransactions
+    ? filteredTransactions
+    : filteredTransactions.slice(0, 10);
+
   const handleDateClick = (dateNumber) => {
     if (dateNumber < 1 || dateNumber > daysInMonth) return;
     const monthString = String(calendarMonth.getMonth() + 1).padStart(2, '0');
@@ -326,6 +349,45 @@ function GrowthDetails({ selectedClient }) {
                   <p className="muted">All recent transactions for your Growth account.</p>
                 </div>
               </div>
+              <div className="transaction-controls">
+                {/*  Search */}
+                <input
+                  type="text"
+                  placeholder="Search by institution..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="transaction-search"
+                />
+
+                {/*  Month filter */}
+                <select
+                  value={selectedMonth}
+                  onChange={(e) => setSelectedMonth(e.target.value)}
+                >
+                  <option value="">All Months</option>
+                  {monthNames.map((m, i) => (
+                    <option key={i} value={i + 1}>
+                      {m}
+                    </option>
+                  ))}
+                </select>
+
+                {/*  Year filter */}
+                <select
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(e.target.value)}
+                >
+                  <option value="">All Years</option>
+                  {[...new Set(spendTransactions.map(tx => tx.date.split('/')[2]))].map(
+                    (year) => (
+                      <option key={year} value={year}>
+                        {year}
+                      </option>
+                    )
+                  )}
+                </select>
+
+              </div>
               <table className="transaction-table">
                 <thead>
                   <tr>
@@ -335,7 +397,7 @@ function GrowthDetails({ selectedClient }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {(showAllTransactions ? spendTransactions : spendTransactions.slice(0, 10)).map((item, index) => {
+                  {displayedTransactions.map((item, index) => {
                     const isPositive = item.type === 'income';
                     return (
                       <tr key={index}>
@@ -349,7 +411,7 @@ function GrowthDetails({ selectedClient }) {
                   })}
                 </tbody>
               </table>
-              {spendTransactions.length > 10 && (
+              {filteredTransactions.length > 10 && (
                 <button 
                   className="btn show-more-button" 
                   onClick={() => setShowAllTransactions(!showAllTransactions)}
