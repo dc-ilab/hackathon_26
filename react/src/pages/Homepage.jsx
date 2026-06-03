@@ -395,8 +395,8 @@ function Homepage({ selectedClient, setSelectedId, filteredClients, openTab, cli
                                 </div>
 
                                 <div className="goal-dates-row">
-                                  <span>Start: {goal.startDate || 'Today'}</span>
-                                  <span>Due: {goal.date || 'TBD'}</span>
+                                  <span>Start: {formatDate(goal.startDate) || 'Today'}</span>
+                                  <span>Due: {formatDate(goal.date) || 'TBD'}</span>
                                 </div>
 
                                 {goal.targetAmount && (

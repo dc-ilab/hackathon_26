@@ -113,6 +113,7 @@ class Goal(Base):
     target_amount = Column(Numeric(12, 2))
     starting_amount = Column(Numeric(12, 2))
     due_date = Column(Date)
+    start_date = Column(Date)
 
     customer = relationship("Customer", back_populates="goals")
 

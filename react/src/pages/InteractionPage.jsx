@@ -1,6 +1,12 @@
 import { useState } from 'react';
 import { useEffect } from 'react';
 
+const formatDate = (value) => {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat('en-US').format(date);
+};
 
 function InteractionPage({ selectedClient, saveInteractionDocument, submitInteractionDocument, draft, interactionDraft, clientGoals, setClientGoals, filteredClients, handleClientChange, closeTab, activeTab,
 }) {
@@ -220,7 +226,7 @@ const handleSubmit = async () => {
     const goalData = {
       description: goalForm.description,
       date: goalForm.date,
-      startDate: new Date().toLocaleDateString(),
+      startDate: goalForm.startDate,
       isSavingsGoal: goalForm.isSavingsGoal,
       targetAmount: goalForm.isSavingsGoal ? targetAmount : null,
       currentAmount: goalForm.isSavingsGoal ? startAmount : null,
@@ -242,6 +248,7 @@ const handleSubmit = async () => {
     setEditingIndex(null);
     setGoalForm({
       description: '',
+      startDate: '',
       date: '',
       isSavingsGoal: true,
       startAmount: '0',
@@ -438,8 +445,8 @@ const handleSubmit = async () => {
                                 </div>
 
                                 <div className="goal-dates-row">
-                                  <span>Start: {goal.startDate || 'Today'}</span>
-                                  <span>Due: {goal.date || 'TBD'}</span>
+                                  <span>Start: {formatDate(goal.startDate) || 'Today'}</span>
+                                  <span>Due: {formatDate(goal.date) || 'TBD'}</span>
                                 </div>
 
                                 {goal.targetAmount && (
@@ -961,8 +968,8 @@ const handleSubmit = async () => {
                                     />
                                   ) : (
                                     <div className="goal-dates">
-                                      <span>Start: {goal.startDate || 'Today'}</span>
-                                      <span>Due: {goal.date || 'TBD'}</span>
+                                      <span>Start: {formatDate(goal.startDate) || 'Today'}</span>
+                                      <span>Due: {formatDate(goal.date) || 'TBD'}</span>
                                     </div>
                                   )}  
                                 </div>
