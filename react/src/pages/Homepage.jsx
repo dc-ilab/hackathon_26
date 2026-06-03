@@ -227,7 +227,7 @@ function PieChart({ accounts }) {
 
 }
 
-function Homepage({ selectedClient, setSelectedId, filteredClients, openTab, clientGoals, handleClientChange }) {
+function Homepage({ selectedClient, setSelectedId, filteredClients, openTab, clientGoals, handleClientChange, clients }) {
   const goals = clientGoals[selectedClient.id] || [];
   const getAppointmentDisplay = (client) => {
     const now = new Date();
@@ -270,9 +270,9 @@ function Homepage({ selectedClient, setSelectedId, filteredClients, openTab, cli
 
   const appointmentInfo = getAppointmentDisplay(selectedClient);
 
-  const relatedClients =
-    selectedClient.relationships?.map((rel) => {
-      const client = filteredClients.find(c => c.id === rel.id);
+ const relatedClients =
+  selectedClient.relationships?.map((rel) => {
+    const client = clients.find(c => c.id === rel.id);
       return client ? { ...client, relation: rel.relation } : null;
     }).filter(Boolean) || [];
 
@@ -286,88 +286,13 @@ function Homepage({ selectedClient, setSelectedId, filteredClients, openTab, cli
       <main className="dashboard">
         {/* insights */}
         <section className="module module--insights card">
-          <div className="module__content appointment-split">
-            {/* appointments coming up */}
-            <div id='appointments' className="top-subcard">
-              {/* appointments */}
-              <div
-                className={`appointment-subcard ${
-                  appointmentInfo?.label === "Upcoming Appointment"
-                    ? "appointment-upcoming"
-                    : appointmentInfo?.label === "Previous Appointment"
-                    ? "appointment-previous"
-                    : ""
-                }`}
-              >
-                <h3 id='appointment-upcoming' className="subcard__title">{appointmentInfo?.label}</h3>
 
-                {appointmentInfo?.data ? (
-                  <>
-                    {/* <p id='appointment-title'><strong>{appointmentInfo.data.title}</strong></p> */}
-                    <div className='appointment-dates'> 
-                      <p className="muted">
-                        {formatDate(appointmentInfo.data.date)}
-                      </p>
-                      <p className="muted">
-                        {formatTime(appointmentInfo.data.date)}
-                      </p>
-                      <p className="muted">
-                        {appointmentInfo.data.type === "virtual"
-                          ? "Virtual"
-                          : "In Person"}
-                      </p>
-                    </div>
-                    <p id='appointment-notes'>{appointmentInfo.data.notes}</p>
-                  </>
-                ) : (
-                  <p className="muted">No appointment data</p>
-                )}
-              </div>
-
-              {/* book button */}
-                <button className="btn book-appointment-btn">
-                  Book Appointment
-                </button>
-            </div>
-            {/* small related accounts */}
-            <div id="related-accounts" className="subcard">
-  <h3 className="subcard__title">Related Clients</h3>
-
-  <div className="homepage-relationships-container">
-    {relatedClients.length > 0 ? (
-      relatedClients.map((client) => (
-        <div
-          key={client.id}
-          className="homepage-relationship-card"
-          onClick={() => handleClientChange(client)}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') handleClientChange(client);
-          }}
-        >
-          <div className="homepage-relationship-name">
-            {client.name}
-          </div>
-
-          <div className="homepage-relationship-type">
-            {client.relation}
-          </div>
-        </div>
-      ))
-    ) : (
-      <p className="muted">No related clients</p>
-    )}
-  </div>
-
-            </div>
-          </div>
-          <h2 className="module__title">Insights</h2>
           <div className="module__content split">
-            <div className="subcard">
+            <div id='insight-card' className="subcard">
+              <h2 className="module__title">Insights</h2>
               <h3 className="subcard__title">Client Summary</h3>
               <p className="muted">
-                {selectedClient.name} {selectedClient.clientSummary}
+                {selectedClient.name} is a {selectedClient.relationship} of PNC, {selectedClient.clientSummary.toLowerCase()}
               </p>
 
               <h3 className="subcard__title">Possible Opportunities</h3>
@@ -377,7 +302,37 @@ function Homepage({ selectedClient, setSelectedId, filteredClients, openTab, cli
                 ))}
               </ul>
             </div>
+            
+            <div id='left-insight-column'>
+              <div id="related-accounts" className="subcard">
+              <h3 className="subcard__title">Related Clients</h3>
+              <div className="homepage-relationships-container">
+                {relatedClients.length > 0 ? (
+                  relatedClients.map((client) => (
+                    <div
+                      key={client.id}
+                      className="homepage-relationship-card"
+                      onClick={() => handleClientChange(client)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleClientChange(client);
+                      }}
+                    >
+                      <div className="homepage-relationship-name">
+                        {client.name}
+                      </div>
 
+                      <div className="homepage-relationship-type">
+                        {client.relation}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="muted">No related clients</p>
+                )}
+              </div>
+            </div>
             <div id="homepage-client-goals" className="subcard">
               <h3 id="homepage-client-goals-title" className="subcard__title accounts-link" onClick={() => openTab('client-profile', 'Client Profile', ClientProfile)}>
               Client Goals
@@ -432,43 +387,73 @@ function Homepage({ selectedClient, setSelectedId, filteredClients, openTab, cli
                 </ul>
                 )}
             </div>
-          </div>
-        </section>
-
-        {/* forms */}
-        <section className="module module--forms card with-link">
-          <h2 className="module__title forms-link" onClick={() => openTab('forms', 'Forms', Forms)}>
-            Forms
-            <img src={externalLinkIcon} alt="" className="link-icon" />
-          </h2>
-
-          <div className="formPanel">
-            <h3 className="formPanel__title">Client Interaction</h3>
-            <p className="muted">
-              Client appointment coming up? Start interaction form to see client insights +
-              previous interaction summaries.
-            </p>
-            <div className="formPanel__actions">
-              <button className="btn" onClick={() => openTab('interaction', 'Client Interaction', InteractionPage)}>Start</button>
             </div>
-          </div>
-
-          <button className="accordion">
-            <span>Service Request</span>
-            <span className="chev" aria-hidden="true">▾</span>
-          </button>
-          <div className="accordionPanel muted">
-            Placeholder content for service request module.
-          </div>
-
-          <button className="accordion">
-            <span>Sales Request</span>
-            <span className="chev" aria-hidden="true">▾</span>
-          </button>
-          <div className="accordionPanel muted">
-            Placeholder content for sales request module.
+            
           </div>
         </section>
+
+          {/* forms column */}
+          <section>
+            <div id='appointments' className="top-subcard">
+                {/* appointments */}
+                <div
+                  className={`appointment-subcard ${
+                    appointmentInfo?.label === "Upcoming Appointment"
+                      ? "appointment-upcoming"
+                      : appointmentInfo?.label === "Previous Appointment"
+                      ? "appointment-previous"
+                      : ""
+                  }`}
+                >
+                  <h3 id='appointment-upcoming' className="subcard__title">{appointmentInfo?.label}</h3>
+
+                  {appointmentInfo?.data ? (
+                    <>
+                      {/* <p id='appointment-title'><strong>{appointmentInfo.data.title}</strong></p> */}
+                      <div className='appointment-dates'> 
+                        <p className="muted">
+                          {formatDate(appointmentInfo.data.date)}
+                        </p>
+                        <p className="muted">
+                          {formatTime(appointmentInfo.data.date)}
+                        </p>
+                        <p className="muted">
+                          {appointmentInfo.data.type === "virtual"
+                            ? "Virtual Meeting"
+                            : "In Person"}
+                        </p>
+                      </div>
+                      <p id='appointment-notes'>{appointmentInfo.data.notes}</p>
+                    </>
+                  ) : (
+                    <p className="muted">No appointment data</p>
+                  )}
+                </div>
+
+                {/* book button */}
+                  <button className="btn book-appointment-btn">
+                    Book Appointment
+                  </button>
+              </div>
+            <section className="module module--forms card with-link">
+              <h2 className="module__title forms-link" onClick={() => openTab('forms', 'Forms', Forms)}>
+                Forms
+                <img src={externalLinkIcon} alt="" className="link-icon" />
+              </h2>
+
+              <div className="formPanel">
+                <h3 className="formPanel__title">Client Interaction</h3>
+                <p className="muted">
+                  Client appointment coming up? Start interaction form to see client insights +
+                  previous interaction summaries.
+                </p>
+                <div className="formPanel__actions">
+                  <button id='interaction-button' className="btn" onClick={() => openTab('interaction', 'Client Interaction', InteractionPage)}>Start</button>
+                </div>
+              </div>
+            </section>
+        </section>
+        
 
         {/* net worth */}
         <section className="module module--networth card">

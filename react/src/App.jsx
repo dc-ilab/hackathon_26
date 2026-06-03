@@ -159,6 +159,7 @@ function App() {
     handleClientChange,  
     closeTab,
     activeTab,
+    clients
   };
 
   const contentBackground = activeTab === 'homepage' ? '#F4EFE7' : '#BDDDBD';
@@ -245,7 +246,7 @@ function App() {
             <div className="submenu">
               <button
                 className="submenu-item"
-                onClick={() => handleMenuItemClick('account-overview', 'Overview', Accounts)}
+                onClick={() => handleMenuItemClick('account-overview', 'Accounts', Accounts)}
               >
                 Overview
               </button>

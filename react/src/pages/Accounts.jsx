@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import SpendDetails from './SpendDetails';
+import LoanDetails from './LoanDetails';
 import { getAssetsAndLiabilities } from '../utils';
 
 const formatCurrency = (value) =>
@@ -387,7 +388,7 @@ function Accounts({ selectedClient, openTab }) {
                       <div className="summary-label">{account.type} Account</div>
                       <div className="summary-value">{formatCurrency(account.balance)}</div>
                     </div>
-                    <div className="summary-pill" style={{ backgroundColor: ['#71B48D', '#BDDDBD', '#404E7C'][i] }} />
+                    <div className="summary-pill" style={{ backgroundColor: ['#71B48D', '#BDDDBD', '#404E7C', '#db8c4f', '#eeceb6'][i] }} />
                   </div>
                 ))}
               </div>
@@ -513,15 +514,15 @@ function Accounts({ selectedClient, openTab }) {
                       <tr key={account.type}>
                         <td>
                           <div
-                              className={`breakdown-account-name ${account.type === 'Spend' ? 'account-link' : ''}`}
-                              onClick={() => account.type === 'Spend' && openTab('spend-account', 'Spend Account', SpendDetails)}
+                              className={`breakdown-account-name ${account.type === 'Auto Loan' ? 'account-link' : ''}`}
+                              onClick={() => account.type === 'Auto Loan' && openTab('loan-account', 'Loan Account', LoanDetails)}
                               onKeyDown={(event) => {
-                                if (account.type === 'Spend' && (event.key === 'Enter' || event.key === ' ')) {
-                                  openTab('spend-account', 'Spend Account', SpendDetails);
+                                if (account.type === 'Auto Loan' && (event.key === 'Enter' || event.key === ' ')) {
+                                  openTab('loan-account', 'Loan Account', LoanDetails);
                                 }
                               }}
-                              role={account.type === 'Spend' ? 'button' : undefined}
-                              tabIndex={account.type === 'Spend' ? 0 : undefined}
+                              role={account.type === 'Auto Loan' ? 'button' : undefined}
+                              tabIndex={account.type === 'Auto Loan' ? 0 : undefined}
                             >
                             <div
                               className="account-indicator"

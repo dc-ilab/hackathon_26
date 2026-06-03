@@ -98,6 +98,7 @@ function SpendDetails({ selectedClient }) {
   
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
+  
 
   const [calendarMonth, setCalendarMonth] = useState(new Date(2026, 3, 1));
   const [showAllTransactions, setShowAllTransactions] = useState(false);
@@ -135,42 +136,46 @@ function SpendDetails({ selectedClient }) {
     const monthString = String(calendarMonth.getMonth() + 1).padStart(2, '0');
     const dateString = `${monthString}/${String(dateNumber).padStart(2, '0')}/${calendarMonth.getFullYear()}`;
 
-    
-if (startDate && !endDate && startDate === dateString) {
-    setStartDate(null);
-    setEndDate(null);
-    return;
-  }
-
-    // CASE 1: no start → set start
-    if (!startDate) {
-      setStartDate(dateString);
-      setEndDate(null);
-      return;
-    }
-
-    // CASE 2: start exists but no end → set range
-    if (startDate && !endDate) {
-      if (new Date(dateString) < new Date(startDate)) {
-        // swap if second click is earlier
-        setEndDate(startDate);
-        setStartDate(dateString);
-      } else {
-        setEndDate(dateString);
+    if (startDate && !endDate && startDate === dateString) {
+        setStartDate(null);
+        setEndDate(null);
+        return;
       }
-      return;
-    }
 
-    // CASE 3: reset range
-    setStartDate(dateString);
-    setEndDate(null);
-  };
+        // CASE 1: no start → set start
+        if (!startDate) {
+          setStartDate(dateString);
+          setEndDate(null);
+          return;
+        }
+
+        // CASE 2: start exists but no end → set range
+        if (startDate && !endDate) {
+          if (new Date(dateString) < new Date(startDate)) {
+            // swap if second click is earlier
+            setEndDate(startDate);
+            setStartDate(dateString);
+          } else {
+            setEndDate(dateString);
+          }
+          return;
+        }
+
+        // CASE 3: reset range
+        setStartDate(dateString);
+        setEndDate(null);
+      };
 
   const handlePrevMonth = () => {
     setStartDate(null);
     setEndDate(null);
     setCalendarMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
   };
+  const handleNextMonth = () => {
+    setStartDate(null);
+    setEndDate(null);
+    setCalendarMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
+  }
 
   const handleToday = () => {
     const now = new Date();
@@ -178,6 +183,32 @@ if (startDate && !endDate && startDate === dateString) {
     setEndDate(null);
     setCalendarMonth(new Date(now.getFullYear(), now.getMonth(), 1));
   };
+  const [searchTerm, setSearchTerm] = useState('');
+const [selectedMonth, setSelectedMonth] = useState('');
+const [selectedYear, setSelectedYear] = useState('');
+const filteredTransactions = spendTransactions.filter((tx) => {
+  // Search filter
+  const matchesSearch =
+    tx.description.toLowerCase().includes(searchTerm.toLowerCase());
+
+  // Date parsing
+  const [month, , year] = tx.date.split('/');
+
+  const matchesMonth = selectedMonth
+    ? parseInt(month, 10) === parseInt(selectedMonth, 10)
+    : true;
+
+  const matchesYear = selectedYear
+    ? year === selectedYear
+    : true;
+
+  return matchesSearch && matchesMonth && matchesYear;
+});
+const displayedTransactions = showAllTransactions
+  ? filteredTransactions
+  : filteredTransactions.slice(0, 10);
+
+
 
   if (!spendAccount) {
     return <div className="spend-details-page">No Spend account data available.</div>;
@@ -190,12 +221,10 @@ if (startDate && !endDate && startDate === dateString) {
           <div className='spend-header-info'>
             <p className="eyebrow">Spend Account</p>
             <h1>Spend account insights</h1>
-            <p className="muted">A snapshot of your spending trends, cash flow, and recent activity for the Spend account.</p>
           </div>
           <div className="spend-balance-card">
             <span className="spend-balance-label">Current Balance</span>
             <span className="spend-balance-value">{formatCurrency(spendAccount.balance)}</span>
-            <span className="spend-balance-note">Account is healthy and operating within budget.</span>
           </div>
         </div>
 
@@ -204,13 +233,11 @@ if (startDate && !endDate && startDate === dateString) {
             <section className="spend-insights-card">
               <div className="section-header">
                 <div>
-                  <h2>Account Insights</h2>
-                  <p className="muted">Overview of spending habits and account cash flow.</p>
+                  <h2>Account Summary</h2>
                 </div>
               </div>
               <p>
                 Over the last six months, this account has averaged <strong>{formatCurrency(averageExpense)}</strong> in expenses per month while receiving an average income of <strong>{formatCurrency(Math.round(totalIncome / monthlySpendData.length))}</strong>.
-                Most spending was on food, transport, and subscriptions, with income comfortably covering expenses each month.
               </p>
               <div className="insight-stat-row">
                 <div>
@@ -289,10 +316,13 @@ if (startDate && !endDate && startDate === dateString) {
                   <button className="calendar-nav-button" onClick={handlePrevMonth} type="button">
                     ←
                   </button>
-                  <div>
+                  <div className='calendar-date'>
                     <p className="eyebrow">Calendar</p>
                     <h2>{currentMonthLabel}</h2>
                   </div>
+                  <button className="calendar-nav-button" onClick={handleNextMonth} type="button">
+                    →
+                  </button>
                 </div>
                 <button className="calendar-action" onClick={handleToday} type="button">Today</button>
               </div>
@@ -384,6 +414,46 @@ if (startDate && !endDate && startDate === dateString) {
                   <p className="muted">All recent transactions for your Spend account.</p>
                 </div>
               </div>
+              <div className="transaction-controls">
+
+  {/*  Search */}
+  <input
+    type="text"
+    placeholder="Search by institution..."
+    value={searchTerm}
+    onChange={(e) => setSearchTerm(e.target.value)}
+    className="transaction-search"
+  />
+
+  {/*  Month filter */}
+  <select
+    value={selectedMonth}
+    onChange={(e) => setSelectedMonth(e.target.value)}
+  >
+    <option value="">All Months</option>
+    {monthNames.map((m, i) => (
+      <option key={i} value={i + 1}>
+        {m}
+      </option>
+    ))}
+  </select>
+
+  {/*  Year filter */}
+  <select
+    value={selectedYear}
+    onChange={(e) => setSelectedYear(e.target.value)}
+  >
+    <option value="">All Years</option>
+    {[...new Set(spendTransactions.map(tx => tx.date.split('/')[2]))].map(
+      (year) => (
+        <option key={year} value={year}>
+          {year}
+        </option>
+      )
+    )}
+  </select>
+
+</div>
               <table className="transaction-table">
                 <thead>
                   <tr>
@@ -393,7 +463,7 @@ if (startDate && !endDate && startDate === dateString) {
                   </tr>
                 </thead>
                 <tbody>
-                  {(showAllTransactions ? spendTransactions : spendTransactions.slice(0, 10)).map((item, index) => {
+                  {displayedTransactions.map((item, index) => {
                     const isPositive = item.type === 'income';
                     return (
                       <tr key={index}>
@@ -407,7 +477,7 @@ if (startDate && !endDate && startDate === dateString) {
                   })}
                 </tbody>
               </table>
-              {spendTransactions.length > 10 && (
+              {filteredTransactions.length > 10 && (
                 <button 
                   className="btn show-more-button" 
                   onClick={() => setShowAllTransactions(!showAllTransactions)}
