@@ -26,7 +26,6 @@ const formatDate = (value) => {
 const formatTime = (value) => { 
   const date = new Date(value);
   const time = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit'}); 
-  console.log("time: ", time);
   return time;
 };
 
@@ -229,6 +228,16 @@ function PieChart({ accounts }) {
 
 function Homepage({ selectedClient, setSelectedId, filteredClients, openTab, clientGoals, handleClientChange, clients }) {
   const goals = clientGoals[selectedClient.id] || [];
+  const sortedAccounts = sortAccountsByType(selectedClient.accounts);
+
+  const assetColors = ['#bdddbd','#71B48D','#404E7C', '#4a3974'];
+  const liabilityColors = ['#db8c4f', '#eeceb6', '#edeea4', '#e3e64a'];
+  let _ai = 0, _li = 0; // asset and liability color indices
+  const accountIndicators = sortedAccounts.map((acc) => {
+    const isAsset = acc.category ? acc.category.toLowerCase() === 'asset' : acc.balance > 0;
+    return isAsset ? assetColors[(_ai++) % assetColors.length] : liabilityColors[(_li++) % liabilityColors.length];
+  });
+
   const getAppointmentDisplay = (client) => {
     const now = new Date();
 
@@ -502,7 +511,7 @@ function Homepage({ selectedClient, setSelectedId, filteredClients, openTab, cli
               <div className="row headerRow">
                 <div>Type</div><div>Balance</div>
               </div>
-              {selectedClient.accounts.map((account, i) => (
+              {sortedAccounts.map((account, i) => (
                 <div key={i} className="row">                  
                 <div
                   className={`account-name ${
@@ -554,7 +563,7 @@ function Homepage({ selectedClient, setSelectedId, filteredClients, openTab, cli
                 >
                     <div
                       className="account-indicator"
-                      style={{ backgroundColor: ['#71B48D', '#BDDDBD', '#404E7C', '#db8c4f', '#eeceb6'][i] }}
+                      style={{ backgroundColor: accountIndicators[i] }}
                     ></div>
                     {account.type}
                   </div>
