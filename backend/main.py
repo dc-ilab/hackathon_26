@@ -121,12 +121,18 @@ def serialize_interaction(interaction):
 
 
 def serialize_appointment(appointment):
+    if appointment.appointment_date is None:
+        date_str = None
+    elif isinstance(appointment.appointment_date, datetime):
+        date_str = appointment.appointment_date.strftime("%Y-%m-%d %H:%M")
+    else:
+        date_str = str(appointment.appointment_date)
     return {
-        "appointment_id": appointment.appointment_id,
-        "customer_id": appointment.customer_id,
-        "appointment_date": format_date(appointment.appointment_date),
-        "type": appointment.type,
+        "date": date_str,
+        "title": appointment.title,
         "notes": appointment.notes,
+        "type": appointment.type,
+
     }
 
 
@@ -219,23 +225,9 @@ def serialize_customer(customer):
             "amount": tx.get("amount"),
         })
 
-    past_appointments = []
-    upcoming_appointments = []
     today = date.today()
-    for appointment in appointments:
-        try:
-            appt_date = appointment.get("appointment_date")
-            appt_date_obj = datetime.strptime(appt_date, "%m/%d/%Y").date() if appt_date else None
-        except (ValueError, TypeError):
-            appt_date_obj = None
-        if appt_date_obj and appt_date_obj < today:
-            past_appointments.append(appointment)
-        else:
-            upcoming_appointments.append(appointment)
-
     relationship_items = parse_relationships(customer.relationships)
     opportunities = parse_list_field(customer.opportunities)
-
 
     if customer.account_created:
         years_with_bank = today.year - customer.account_created.year
@@ -273,14 +265,11 @@ def serialize_customer(customer):
         "relationships": relationship_items,
         "spendTransactions": transactions,
         "clientSummary": customer.client_summary or "Customer data loaded from the database.",
-        "opportunities": opportunities,  #check this
+        "opportunities": opportunities,  
         "interactions": interaction_summary,
         "notes": notes,
         "interactionNotes": interaction_notes,
-        "appointments": {
-            "past": past_appointments,
-            "upcoming": upcoming_appointments,
-        },
+        "appointments": appointments,
     }
 
 

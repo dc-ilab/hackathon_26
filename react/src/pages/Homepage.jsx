@@ -298,7 +298,7 @@ function Homepage({ selectedClient, setSelectedId, filteredClients, openTab, cli
                       </p>
                       <p className="muted">
                         {appointmentInfo.data.type === "virtual"
-                          ? "Virtual Meeting"
+                          ? "Virtual"
                           : "In Person"}
                       </p>
                     </div>

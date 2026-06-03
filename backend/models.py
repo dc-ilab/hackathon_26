@@ -77,6 +77,7 @@ class Appointment(Base):
     appointment_date = Column(DateTime)
     type = Column(String(100))
     notes = Column(Text)
+    title = Column(Text)
 
     customer = relationship("Customer", back_populates="appointments")
 
