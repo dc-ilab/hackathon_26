@@ -4008,6 +4008,7 @@ a:hover,
   flex-wrap: wrap;
   align-items: center;
 }
+.update-goal-form-panel input[type="text"],
 .update-goal-form-panel input[type="date"],
 .update-goal-form-panel input[type="text"],
 .update-goal-form-panel input[type="number"]
@@ -4018,6 +4019,10 @@ a:hover,
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.18);
   background: rgba(255, 255, 255, 0.08);
+}
+
+.update-goal-form-panel input::placeholder {
+  color: rgba(255, 255, 255, 0.75);
 }
 
 .update-goal-item input[type="checkbox"] {
