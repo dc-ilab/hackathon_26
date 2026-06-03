@@ -7,6 +7,7 @@ import ReserveDetails from './ReserveDetails';
 import GrowthDetails from './GrowthDetails';
 import ClientProfile from './ClientProfile';
 import externalLinkIcon from '../assets/external-link-icon.png';
+import { sortAccountsByType } from '../utils';
 
 
 const formatCurrency = (value) =>
@@ -42,11 +43,25 @@ function PieChart({ accounts }) {
   const centerX = width / 2;
   const centerY = height / 2;
 
-  const assetAccounts = accounts.filter(acc => acc.balance > 0);
+  const sortedAccounts = sortAccountsByType(accounts);
+  
+  const assetAccounts = sortedAccounts.filter((account) => {
+    if(account.category) {
+      return account.category.toLowerCase() === 'asset';
+    }
+    return account.balance > 0;
+  });
   const assetTotal = assetAccounts.reduce((sum, acc) => sum + acc.balance, 0);
   const safeAssetTotal = assetTotal || 1;
 
-  const liabilityAccounts = accounts.filter(acc => acc.balance < 0);
+  const liabilityAccounts = sortedAccounts.filter((account) => {
+    if(account.category) {
+      return account.category.toLowerCase() === 'liability';
+      console.log("account category: ", account.category);
+    }
+    console.log("no category.. account balance: ", account.balance);
+    return account.balance <= 0;
+  });
   const liabilityTotal = liabilityAccounts.reduce((sum, acc) => sum + Math.abs(acc.balance), 0); 
   const safeLiabilityTotal = liabilityTotal || 1;
 

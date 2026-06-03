@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useEffect } from 'react';
+import { getAssetsAndLiabilities } from '../utils';
 
 const formatDate = (value) => {
   if (!value) return '';
@@ -30,6 +31,7 @@ function InteractionPage({ selectedClient, saveInteractionDocument, submitIntera
   const [isGoalUpdateOpen, setIsGoalUpdateOpen] = useState(false);
   const goals = clientGoals[selectedClient.id] || [];
   const [preparationNotes, setPreparationNotes] = useState('');
+  const {assetAccounts, liabilityAccounts } = getAssetsAndLiabilities(selectedClient.accounts);
 
   
   const relatedClients =
@@ -322,11 +324,12 @@ const handleSubmit = async () => {
                   <h2 className="module__title">Accounts Overview</h2>
                   <div className="module__content">
                     <div className="accounts-grid">
-                      {selectedClient.accounts.filter(account => account.percentage !== null).map((account, index) => (
+                      {/* {selectedClient.accounts.filter(account => account.percentage !== null).map((account, index) => ( */}
+                      {assetAccounts.map((account, index) => (
                         <div key={index} className="account-card">
                           <h3>{account.type}</h3>
                           <div className="account-balance">{formatCurrency(account.balance)}</div>
-                          <div className="account-percentage">{account.percentage}% of total</div>
+                          {/* <div className="account-percentage">{account.percentage}% of total</div> */}
                           <div
                             className="account-indicator"
                             style={{ backgroundColor: account.color }}
@@ -337,7 +340,8 @@ const handleSubmit = async () => {
                     <div className="loans-section">
                       <h3>Loans & Credit</h3>
                       <div className="loans-grid">
-                        {selectedClient.accounts.filter(account => account.percentage === null).map((account, index) => (
+                        {/* {selectedClient.accounts.filter(account => account.percentage === null).map((account, index) => ( */}
+                        {liabilityAccounts.map((account, index) => (
                           <div key={index} className="loan-card">
                             <h4>{account.type}</h4>
                             <div className="loan-balance">{formatCurrency(account.balance)}</div>
