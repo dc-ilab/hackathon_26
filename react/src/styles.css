@@ -3446,7 +3446,7 @@ display: flex;
 
 .transaction-table th,
 .transaction-table td {
-  padding: 14px 16px;
+  padding: 3px 16px;
   text-align: left;
   border-bottom: 1px solid var(--color-border);
 }
@@ -3466,6 +3466,103 @@ display: flex;
 
 .transaction-amount.expense {
   color: var(--color-text);
+}
+
+.transaction-type-column {
+  width: 64px;
+}
+
+.transaction-type-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: var(--color-text);
+  text-transform: uppercase;
+  transition: all 0.2s ease;
+}
+
+.transaction-type-badge:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.transaction-type-withdraw {
+  background-color: #fce4e6;
+  border-color: #f8bec1;
+}
+
+.transaction-type-withdraw:hover {
+  background-color: #f9d0d5;
+}
+
+.transaction-type-transfer {
+  background-color: #e8ecf3;
+  border-color: #d6dce8;
+}
+
+.transaction-type-transfer:hover {
+  background-color: #dce5eb;
+}
+
+.transaction-type-deposit {
+  background-color: #ddf5e8;
+  border-color: #b3e5d0;
+}
+
+.transaction-type-deposit:hover {
+  background-color: #cceee0;
+}
+
+.transaction-type-charge {
+  background-color: #fdf6e0;
+  border-color: #f9e6b8;
+}
+
+.transaction-type-charge:hover {
+  background-color: #fcf0cc;
+}
+
+.transaction-type-payment {
+  background-color: #f5f0e8;
+  border-color: #ede3d6;
+}
+
+.transaction-type-payment:hover {
+  background-color: #ede8dc;
+}
+
+.transaction-type-interest {
+  background-color: #e3f2ff;
+  border-color: #b3d9ff;
+}
+
+.transaction-type-interest:hover {
+  background-color: #d4ebff;
+}
+
+.transaction-type-loan {
+  background-color: #f3e8ff;
+  border-color: #dfc8ff;
+}
+
+.transaction-type-loan:hover {
+  background-color: #ead7ff;
+}
+
+.transaction-type-default {
+  background-color: #f0f2f7;
+  border-color: #dbe0ed;
+  color: var(--color-text);
+}
+
+.transaction-type-default:hover {
+  background-color: #e6eaf4;
 }
 
 .calendar-header {
@@ -4763,4 +4860,19 @@ flex: 1;
 }
 .calendar-date{
   text-align: center;
+}
+.auto-loan-section-header h2,
+.auto-loan-section-header p{
+  margin:0px;
+  text-align: center;
+}
+
+.auto-loan-section-header{
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  margin-bottom: 0px;
+}
+#auto-loan-line-chart{
+  height: 260px;
 }
