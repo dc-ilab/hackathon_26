@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect, useCallback, useRef } from 'react';
-import logo from './assets/pnclogo.png';
+import pncLogo from './assets/pnclogo.png';
+import brandLogo from './assets/logo.png';
 import Homepage from './pages/Homepage';
 import Accounts from './pages/Accounts';
 import ClientProfile from './pages/ClientProfile';
@@ -209,7 +210,7 @@ function App() {
 
   return (
     <div className="page">
-      <img className="fixed-logo" src={logo} alt="PNC logo" />
+      <img className="fixed-logo" src={pncLogo} alt="PNC logo" />
       {/* Hamburger Menu */}
       <div className="hamburger-menu">
         <div className="menu-controls">
@@ -222,6 +223,7 @@ function App() {
             <span></span>
             <span></span>
           </button>
+          <img className="brand-logo" src={brandLogo} alt="Brand logo" />
         </div>
         {isMenuOpen && (
           <div className="menu-overlay" onClick={() => setIsMenuOpen(false)}></div>
