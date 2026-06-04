@@ -41,7 +41,7 @@ const buildMonthlyTotals = (transactions) => {
     if (tx.type === 'income') {
       totals[key].income += tx.amount;
     } else {
-      totals[key].expense += tx.amount;
+      totals[key].expense += Math.abs(tx.amount);
     }
   });
 
@@ -184,35 +184,26 @@ function SpendDetails({ selectedClient }) {
     setCalendarMonth(new Date(now.getFullYear(), now.getMonth(), 1));
   };
   const [searchTerm, setSearchTerm] = useState('');
-const [selectedMonth, setSelectedMonth] = useState('');
-const [selectedYear, setSelectedYear] = useState('');
-const filteredTransactions = spendTransactions.filter((tx) => {
-  // Search filter
-  const matchesSearch =
-    tx.description.toLowerCase().includes(searchTerm.toLowerCase());
-
-  // Date parsing
-  const [month, , year] = tx.date.split('/');
-
-  const matchesMonth = selectedMonth
-    ? parseInt(month, 10) === parseInt(selectedMonth, 10)
-    : true;
-
-  const matchesYear = selectedYear
-    ? year === selectedYear
-    : true;
-
-  return matchesSearch && matchesMonth && matchesYear;
-});
-const displayedTransactions = showAllTransactions
-  ? filteredTransactions
-  : filteredTransactions.slice(0, 10);
+  const [selectedMonth, setSelectedMonth] = useState('');
+  const [selectedYear, setSelectedYear] = useState('');
+  const filteredTransactions = spendTransactions.filter((tx) => {
+    // Search filter
+    const matchesSearch = tx.description.toLowerCase().includes(searchTerm.toLowerCase());
+    // Date parsing
+    const [month, , year] = tx.date.split('/');
+    const matchesMonth = selectedMonth ? parseInt(month, 10) === parseInt(selectedMonth, 10) : true;
+    const matchesYear = selectedYear ? year === selectedYear : true;
+    return matchesSearch && matchesMonth && matchesYear;
+  });
+  const displayedTransactions = showAllTransactions
+    ? filteredTransactions
+    : filteredTransactions.slice(0, 10);
 
 
 
-  if (!spendAccount) {
-    return <div className="spend-details-page">No Spend account data available.</div>;
-  }
+    if (!spendAccount) {
+      return <div className="spend-details-page">No Spend account data available.</div>;
+    }
 
   return (
     <div className="background-card">
@@ -394,7 +385,7 @@ const displayedTransactions = showAllTransactions
                             <td>{item.date}</td>
                             <td>{item.description}</td>
                             <td className={`transaction-amount ${item.type === 'income' ? 'positive' : 'expense'}`}>
-                              {item.type === 'income' ? '+' : '-'}{formatCurrency(item.amount)}
+                              {item.type === 'income' ? '+' : '-'}{formatCurrency(Math.abs(item.amount))}
                             </td>
                           </tr>
                         ))}
@@ -470,7 +461,7 @@ const displayedTransactions = showAllTransactions
                         <td>{item.date}</td>
                         <td>{item.description}</td>
                         <td className={`transaction-amount ${isPositive ? 'positive' : 'expense'}`}>
-                          {isPositive ? '+' : '-'}{formatCurrency(item.amount)}
+                          {isPositive ? '+' : '-'}{formatCurrency(Math.abs(item.amount))}
                         </td>
                       </tr>
                     );

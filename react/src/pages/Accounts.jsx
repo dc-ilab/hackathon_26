@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react';
 import SpendDetails from './SpendDetails';
+import AutoLoanDetails from './AutoLoanDetails';
 import ReserveDetails from './ReserveDetails';
 import GrowthDetails from './GrowthDetails';
-import LoanDetails from './LoanDetails';
 import { getAssetsAndLiabilities } from '../utils';
 
 const formatCurrency = (value) =>
@@ -551,6 +551,10 @@ function Accounts({ selectedClient, openTab }) {
                         <td>
                           <div
                               className={`breakdown-account-name ${account.type === 'Auto Loan' ? 'account-link' : ''}`}
+                              onClick={() => account.type === 'Auto Loan' && openTab('loan-account', 'Loan Account', AutoLoanDetails)}
+                              onKeyDown={(event) => {
+                                if (account.type === 'Auto Loan' && (event.key === 'Enter' || event.key === ' ')) {
+                                  openTab('loan-account', 'Loan Account', AutoLoanDetails);
                               onClick={() => {
                                 const details = accountDetailTarget(account.type);
                                 if (details) openTab(details.id, details.title, details.component);
