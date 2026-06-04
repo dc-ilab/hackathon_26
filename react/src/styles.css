@@ -1121,7 +1121,7 @@ header {
   left: calc(50px + 8px); /* place to the right of the hamburger (hamburger width + gap) */
   top: 50%;
   transform: translateY(-50%);
-  width: 150px;
+  width: 130px;
   height: auto;
   display: block;
   border-radius: 6px;
