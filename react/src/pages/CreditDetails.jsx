@@ -229,8 +229,7 @@ function CreditDetails({ selectedClient }) {
         <div className="spend-header">
           <div>
             <p className="eyebrow">Credit Account</p>
-            <h1>Credit card insights</h1>
-            <p className="muted">Review your card balance, payment profile, and recent activity in one place.</p>
+            <h1>Credit Account Insights</h1>
           </div>
           <div className="spend-balance-card">
             <span className="spend-balance-label">Current Balance</span>
@@ -244,8 +243,11 @@ function CreditDetails({ selectedClient }) {
             <section className="spend-insights-card">
               <div className="section-header">
                 <div>
-                  <h2>Credit snapshot</h2>
+                  <h2>Credit Summary</h2>
                   <p className="muted">Your most recent statement activity and payment health summary.</p>
+                  <p>
+                    Over the last six months, this account has averaged {formatCurrency(averageExpense)} in monthly charges, with total payments of {formatCurrency(totalPayments)} against total charges of {formatCurrency(totalSpent)}. Keeping your credit utilization low and making timely payments can help improve your credit score and financial health.
+                  </p>
                 </div>
               </div>
               <div className="insight-stat-row">
@@ -268,9 +270,6 @@ function CreditDetails({ selectedClient }) {
                   <strong>{dueDate}</strong>
                 </div>
               </div>
-              <p>
-                Your credit card is being managed with regular payments and a stable balance trend. Keep payments on schedule, and consider reducing the balance to improve utilization.
-              </p>
             </section>
 
             <section className="spend-graph-card">

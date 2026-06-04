@@ -198,7 +198,7 @@ function ReserveDetails({ selectedClient }) {
         <div className="spend-header">
           <div>
             <p className="eyebrow">Reserve Account</p>
-            <h1>Reserve account insights</h1>
+            <h1>Reserve Account Insights</h1>
             <p className="muted">A snapshot of your spending trends, cash flow, and recent activity for the Reserve account.</p>
           </div>
           <div className="spend-balance-card">
