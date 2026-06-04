@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { getTransactionTypeMeta } from '../utils';
 
 const buildMonthlyTotals = (transactions) => {
 
@@ -87,14 +88,14 @@ const formatCurrency = (value) =>
     maximumFractionDigits: 0,
   }).format(value);
 
-// Transform client spendTransactions to match expected transaction format
-const getSpendTransactions = (spendTransactions) => {
-  return spendTransactions || [];
+// Transform client reserveTransactions to match expected transaction format
+const getReserveTransactions = (reserveTransactions) => {
+  return reserveTransactions || [];
 };
 
 function ReserveDetails({ selectedClient }) {
-  const spendTransactions = getSpendTransactions(selectedClient.spendTransactions);
-  const monthlySpendData = buildMonthlyTotals(spendTransactions);
+  const reserveTransactions = getReserveTransactions(selectedClient.reserveTransactions);
+  const monthlySpendData = buildMonthlyTotals(reserveTransactions);
   const [selectedDate, setSelectedDate] = useState(null);
   const [calendarMonth, setCalendarMonth] = useState(new Date(2026, 3, 1));
   const [showAllTransactions, setShowAllTransactions] = useState(false);
@@ -110,19 +111,34 @@ function ReserveDetails({ selectedClient }) {
     calendarMonth.getMonth() === today.getMonth() &&
     calendarMonth.getFullYear() === today.getFullYear();
 
-  const spendAccount = selectedClient.accounts.find((account) => account.type === 'Spend');
+  const reserveAccount = selectedClient.accounts.find((account) => account.type === 'Reserve');
+  console.log("Reserve Account:", reserveAccount);
+  const isJointAccount =
+    reserveAccount?.isJoint === 'Y' ||
+    reserveAccount?.isJoint === true ||
+    String(reserveAccount?.isJoint).toLowerCase() === 'y';
   const highestMonthlyValue = Math.max(...monthlySpendData.flatMap((item) => [item.income, item.expense]));
   const totalExpense = monthlySpendData.reduce((sum, item) => sum + item.expense, 0);
   const totalIncome = monthlySpendData.reduce((sum, item) => sum + item.income, 0);
   const averageExpense = Math.round(totalExpense / monthlySpendData.length);
   const selectedTransactions = selectedDate
-    ? spendTransactions.filter((item) => item.date === selectedDate)
+    ? reserveTransactions.filter((item) => item.date === selectedDate)
     : [];
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedMonth, setSelectedMonth] = useState('');
   const [selectedYear, setSelectedYear] = useState('');
-  const filteredTransactions = spendTransactions.filter((tx) => {
+  const [selectedTransactionType, setSelectedTransactionType] = useState('');
+
+  const transactionTypes = [...new Set(
+    reserveTransactions
+      .map((tx) => String(tx.transaction_type || tx.type || '').toLowerCase())
+      .filter(Boolean)
+  )];
+
+  const filteredTransactions = reserveTransactions.filter((tx) => {
+    const txType = String(tx.transaction_type || tx.type || '').toLowerCase();
+    const matchesType = selectedTransactionType ? txType === selectedTransactionType : true;
     const matchesSearch =
       tx.description.toLowerCase().includes(searchTerm.toLowerCase());
 
@@ -136,7 +152,7 @@ function ReserveDetails({ selectedClient }) {
       ? year === selectedYear
       : true;
 
-    return matchesSearch && matchesMonth && matchesYear;
+    return matchesSearch && matchesMonth && matchesYear && matchesType;
   });
   const displayedTransactions = showAllTransactions
     ? filteredTransactions
@@ -160,7 +176,19 @@ function ReserveDetails({ selectedClient }) {
     setCalendarMonth(new Date(now.getFullYear(), now.getMonth(), 1));
   };
 
-  if (!spendAccount) {
+  const getCustomerName = (customerId) => {
+    if (customerId === selectedClient.customer_id) {
+      return selectedClient.name;
+    }
+
+    const relationship = selectedClient.relationships?.find(
+      (rel) => rel.id === customerId
+    );
+
+    return relationship ? relationship.relation : customerId;
+  };
+
+  if (!reserveAccount) {
     return <div className="spend-details-page">No Reserve account data available.</div>;
   }
 
@@ -175,7 +203,7 @@ function ReserveDetails({ selectedClient }) {
           </div>
           <div className="spend-balance-card">
             <span className="spend-balance-label">Current Balance</span>
-            <span className="spend-balance-value">{formatCurrency(spendAccount.balance)}</span>
+            <span className="spend-balance-value">{formatCurrency(reserveAccount.balance)}</span>
             <span className="spend-balance-note">Account is healthy and operating within budget.</span>
           </div>
         </div>
@@ -321,6 +349,7 @@ function ReserveDetails({ selectedClient }) {
                           <th>Date</th>
                           <th>Name</th>
                           <th>Amount</th>
+                           {isJointAccount && <th>Customer</th>}
                         </tr>
                       </thead>
                       <tbody>
@@ -331,6 +360,13 @@ function ReserveDetails({ selectedClient }) {
                             <td className={`transaction-amount ${item.type === 'income' ? 'positive' : 'expense'}`}>
                               {item.type === 'income' ? '+' : '-'}{formatCurrency(item.amount)}
                             </td>
+                            
+{isJointAccount && (
+  <td className="transaction-customer">
+    {getCustomerName(item.customer_id)}
+  </td>
+)}
+
                           </tr>
                         ))}
                       </tbody>
@@ -343,17 +379,33 @@ function ReserveDetails({ selectedClient }) {
             </div>
           </aside>
           <section className="spend-transactions-card">
-              <div className="section-header">
+              <div className="transaction-section-header">
                 <div>
                   <h2>Transactions</h2>
-                  <p className="muted">All recent transactions for your Reserve account.</p>
+                  <p className="muted">Transaction type filters and recent Reserve activity.</p>
+                </div>
+                <div className="transaction-type-filters">
+                  {transactionTypes.map((type) => {
+                    const typeMeta = getTransactionTypeMeta(type, type);
+                    const isActive = selectedTransactionType === type;
+                    return (
+                      <button
+                        key={type}
+                        type="button"
+                        className={`transaction-filter-btn ${isActive ? 'active' : ''}`}
+                        onClick={() => setSelectedTransactionType(isActive ? '' : type)}
+                      >
+                        {typeMeta.label}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
               <div className="transaction-controls">
                 {/*  Search */}
                 <input
                   type="text"
-                  placeholder="Search by institution..."
+                  placeholder="Search transactions..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="transaction-search"
@@ -378,7 +430,7 @@ function ReserveDetails({ selectedClient }) {
                   onChange={(e) => setSelectedYear(e.target.value)}
                 >
                   <option value="">All Years</option>
-                  {[...new Set(spendTransactions.map(tx => tx.date.split('/')[2]))].map(
+                  {[...new Set(reserveTransactions.map(tx => tx.date.split('/')[2]))].map(
                     (year) => (
                       <option key={year} value={year}>
                         {year}
@@ -391,18 +443,31 @@ function ReserveDetails({ selectedClient }) {
               <table className="transaction-table">
                 <thead>
                   <tr>
+                    <th className="transaction-type-column">Type</th>
                     <th>Date</th>
-                    <th>Name of Institution</th>
+                    <th>Description</th>
+                    <th>Category</th>
                     <th>Amount</th>
                   </tr>
                 </thead>
                 <tbody>
                   {displayedTransactions.map((item, index) => {
                     const isPositive = item.type === 'income';
+                    const typeMeta = getTransactionTypeMeta(item.transaction_type, item.type);
                     return (
-                      <tr key={index}>
+                      <tr key={index} className={typeMeta.className}>
+                        <td>
+                          <abbr
+                            className={`transaction-type-badge ${typeMeta.className}`}
+                            title={typeMeta.label}
+                            aria-label={typeMeta.label}
+                          >
+                            {typeMeta.abbr}
+                          </abbr>
+                        </td>
                         <td>{item.date}</td>
                         <td>{item.description}</td>
+                        <td>{item.category || '—'}</td>
                         <td className={`transaction-amount ${isPositive ? 'positive' : 'expense'}`}>
                           {isPositive ? '+' : '-'}{formatCurrency(item.amount)}
                         </td>
