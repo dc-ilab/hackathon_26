@@ -182,7 +182,7 @@ function GrowthDetails({ selectedClient }) {
         <div className="spend-header">
           <div>
             <p className="eyebrow">Growth Account</p>
-            <h1>Growth account insights</h1>
+            <h1>Growth Account Insights</h1>
             <p className="muted">A snapshot of your spending trends, cash flow, and recent activity for the Growth account.</p>
           </div>
           <div className="spend-balance-card">
