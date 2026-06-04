@@ -327,6 +327,50 @@ function AutoLoanDetails({ selectedClient }) {
   const totalExpense = monthlyAutoLoanData.reduce((sum, item) => sum + item.expense, 0);
   const totalIncome = monthlyAutoLoanData.reduce((sum, item) => sum + item.income, 0);
   const averageExpense = Math.round(totalExpense / monthlyAutoLoanData.length);
+
+  // Auto Loan specific calculations
+  const paymentTransactions = autoLoanTransactions.filter((tx) => {
+    const txType = String(tx.transaction_type || '').toLowerCase();
+    return txType.includes('payment');
+  });
+
+  const interestTransactions = autoLoanTransactions.filter((tx) => {
+    const txType = String(tx.transaction_type || '').toLowerCase();
+    return txType.includes('interest');
+  });
+
+  const threeMonthsAgo = new Date();
+  threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+
+  const last3MonthPayments = paymentTransactions.filter((tx) => {
+    const [m, d, y] = tx.date.split('/');
+    const txDate = new Date(parseInt(y, 10), parseInt(m, 10) - 1, parseInt(d, 10));
+    return txDate >= threeMonthsAgo;
+  });
+
+  const last3MonthInterest = interestTransactions.filter((tx) => {
+    const [m, d, y] = tx.date.split('/');
+    const txDate = new Date(parseInt(y, 10), parseInt(m, 10) - 1, parseInt(d, 10));
+    return txDate >= threeMonthsAgo;
+  });
+
+  const totalAmountPaid = paymentTransactions.reduce((sum, tx) => sum + tx.amount, 0);
+  const totalInterestAdded = interestTransactions.reduce((sum, tx) => sum + tx.amount, 0);
+  const avg3MonthPayment = last3MonthPayments.length > 0
+    ? Math.round(last3MonthPayments.reduce((sum, tx) => sum + tx.amount, 0) / last3MonthPayments.length)
+    : 0;
+  const last3MonthInterestTotal = last3MonthInterest.reduce((sum, tx) => sum + tx.amount, 0);
+
+  // Estimate interest rate (simplified: annual rate based on balance decline vs interest accrual)
+  const estimatedAnnualRate = autoLoanAccount && last3MonthInterestTotal > 0 && autoLoanAccount.balance > 0
+    ? ((last3MonthInterestTotal * 4) / autoLoanAccount.balance * 100).toFixed(2)
+    : 4.5;
+
+  // Estimate payoff time (months)
+  const estimatedPayoffMonths = avg3MonthPayment > 0 && autoLoanAccount
+    ? Math.ceil(autoLoanAccount.balance / avg3MonthPayment)
+    : 0;
+  
   const selectedTransactions = startDate && !endDate
     ? autoLoanTransactions.filter((item) => item.date === startDate)
     : startDate && endDate
@@ -387,27 +431,40 @@ function AutoLoanDetails({ selectedClient }) {
     setCalendarMonth(new Date(now.getFullYear(), now.getMonth(), 1));
   };
     const [searchTerm, setSearchTerm] = useState('');
-    const [selectedMonth, setSelectedMonth] = useState('');
-    const [selectedYear, setSelectedYear] = useState('');
-    const filteredTransactions = autoLoanTransactions.filter((tx) => {
+  const [selectedMonth, setSelectedMonth] = useState('');
+  const [selectedYear, setSelectedYear] = useState('');
+  const [selectedTransactionType, setSelectedTransactionType] = useState('');
+
+  const transactionTypes = [...new Set(
+    autoLoanTransactions
+      .map((tx) => String(tx.transaction_type || tx.type || '').toLowerCase())
+      .filter(Boolean)
+  )];
+
+  const filteredTransactions = autoLoanTransactions.filter((tx) => {
+    const txType = String(tx.transaction_type || tx.type || '').toLowerCase();
+    const matchesType = selectedTransactionType
+      ? txType === selectedTransactionType
+      : true;
+
     // Search filter
     const matchesSearch =
-        tx.description.toLowerCase().includes(searchTerm.toLowerCase());
+      tx.description.toLowerCase().includes(searchTerm.toLowerCase());
 
     // Date parsing
     const [month, , year] = tx.date.split('/');
 
     const matchesMonth = selectedMonth
-        ? parseInt(month, 10) === parseInt(selectedMonth, 10)
-        : true;
+      ? parseInt(month, 10) === parseInt(selectedMonth, 10)
+      : true;
 
     const matchesYear = selectedYear
-        ? year === selectedYear
-        : true;
+      ? year === selectedYear
+      : true;
 
-    return matchesSearch && matchesMonth && matchesYear;
-    });
-    const displayedTransactions = showAllTransactions
+    return matchesSearch && matchesMonth && matchesYear && matchesType;
+  });
+  const displayedTransactions = showAllTransactions
     ? filteredTransactions
     : filteredTransactions.slice(0, 10);
     if (!autoLoanAccount) {
@@ -434,21 +491,23 @@ function AutoLoanDetails({ selectedClient }) {
                   <div className="section-header">
                       <div>
                       <h2>Loan Insights</h2>
-                      <p className="muted">Overview of spending habits and account cash flow.</p>
                       </div>
                   </div>
                   <p>
-                      Over the last six months, this account has averaged <strong>{formatCurrency(averageExpense)}</strong> in expenses per month while receiving an average income of <strong>{formatCurrency(Math.round(totalIncome / monthlyAutoLoanData.length))}</strong>.
-                      Most spending was on food, transport, and subscriptions, with income comfortably covering expenses each month.
+                      Auto loan has an estimated annual interest rate of <strong>{estimatedAnnualRate}%</strong>. Over the last 3 months, you've averaged <strong>{formatCurrency(avg3MonthPayment)}</strong> in monthly payments, with <strong>{formatCurrency(Math.abs(last3MonthInterestTotal))}</strong> in interest accrued. At your current payment rate, your loan should be paid off in approximately <strong>{Math.abs(estimatedPayoffMonths)} months</strong>.
                   </p>
-                  <div className="insight-stat-row">
+                  <div className="loan-insight-stat-row">
                       <div>
-                      <span className="insight-label">Total income</span>
-                      <strong>{formatCurrency(totalIncome)}</strong>
+                      <span className="insight-label">Total Amount Paid</span>
+                      <strong>{formatCurrency(totalAmountPaid)}</strong>
                       </div>
                       <div>
-                      <span className="insight-label">Total expense</span>
-                      <strong>{formatCurrency(totalExpense)}</strong>
+                      <span className="insight-label">Total Interest Added</span>
+                      <strong>+{formatCurrency(Math.abs(totalInterestAdded))}</strong>
+                      </div>
+                      <div>
+                      <span className="insight-label">Estimated Payoff Time</span>
+                      <strong>{Math.abs(estimatedPayoffMonths)} months</strong>
                       </div>
                   </div>
                 </section>
@@ -563,10 +622,30 @@ function AutoLoanDetails({ selectedClient }) {
                   </div>
               </aside>
               <section className="spend-transactions-card">
-                <div className="section-header">
+                <div className="transaction-section-header">
                     <div>
                     <h2>Transactions Table</h2>
-                    <p className="muted">All recent transactions for your Spend account.</p>
+                    <p className='muted'>Transaction Type Filter</p>
+                    </div>
+                    <div className="transaction-type-filters">
+                      {transactionTypes.map((type) => {
+                        const typeMeta = getTransactionTypeMeta(type, type);
+                        const isActive = selectedTransactionType === type;
+                        return (
+                          <button
+                            key={type}
+                            type="button"
+                            className={`transaction-filter-btn ${isActive ? 'active' : ''}`}
+                            onClick={() =>
+                              setSelectedTransactionType(
+                                isActive ? '' : type
+                              )
+                            }
+                          >
+                            {typeMeta.label}
+                          </button>
+                        );
+                      })}
                     </div>
                 </div>
                 <div className="transaction-controls">
@@ -614,7 +693,7 @@ function AutoLoanDetails({ selectedClient }) {
                     <tr>
                         <th className="transaction-type-column">Type</th>
                         <th>Date</th>
-                        <th>Name of Institution</th>
+                        <th>Description</th>
                         <th>Category</th>
                         <th>Amount</th>
                     </tr>

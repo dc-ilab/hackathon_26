@@ -6,6 +6,7 @@ import SpendDetails from './SpendDetails';
 import ReserveDetails from './ReserveDetails';
 import GrowthDetails from './GrowthDetails';
 import ClientProfile from './ClientProfile';
+import AutoLoanDetails from './AutoLoanDetails';
 import externalLinkIcon from '../assets/external-link-icon.png';
 import { sortAccountsByType } from '../utils';
 
@@ -517,7 +518,8 @@ function Homepage({ selectedClient, setSelectedId, filteredClients, openTab, cli
                   className={`account-name ${
                   account.type === 'Spend' ||
                   account.type === 'Reserve' ||
-                  account.type === 'Growth'
+                  account.type === 'Growth' ||
+                  account.type === 'Auto Loan'
                     ? 'account-link'
                     : ''
                 }`}
@@ -529,6 +531,8 @@ function Homepage({ selectedClient, setSelectedId, filteredClients, openTab, cli
                     openTab('reserve-account', 'Reserve Account', ReserveDetails);
                   } else if (account.type === 'Growth') {
                     openTab('growth-account', 'Growth Account', GrowthDetails);
+                  } else if (account.type === 'Auto Loan') {
+                    openTab('auto-loan', 'Auto Loan', AutoLoanDetails);
                   }
                 }}
 
@@ -540,6 +544,8 @@ function Homepage({ selectedClient, setSelectedId, filteredClients, openTab, cli
                       openTab('reserve-account', 'Reserve Account', ReserveDetails);
                     } else if (account.type === 'Growth') {
                       openTab('growth-account', 'Growth Account', GrowthDetails);
+                    } else if (account.type === 'Auto Loan') {
+                      openTab('auto-loan', 'Auto Loan', AutoLoanDetails);
                     }
                   }
                 }}
