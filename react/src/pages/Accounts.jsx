@@ -555,14 +555,7 @@ function Accounts({ selectedClient, openTab }) {
                               onKeyDown={(event) => {
                                 if (account.type === 'Auto Loan' && (event.key === 'Enter' || event.key === ' ')) {
                                   openTab('loan-account', 'Loan Account', AutoLoanDetails);
-                              onClick={() => {
-                                const details = accountDetailTarget(account.type);
-                                if (details) openTab(details.id, details.title, details.component);
-                              }}
-                              onKeyDown={(event) => {
-                                const details = accountDetailTarget(account.type);
-                                if (details && (event.key === 'Enter' || event.key === ' ')) {
-                                  openTab(details.id, details.title, details.component);
+                              
                                 }
                               }}
                               role={account.type === 'Auto Loan' ? 'button' : undefined}

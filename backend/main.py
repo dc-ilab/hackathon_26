@@ -70,6 +70,7 @@ def serialize_transaction(transaction):
         "description": transaction.description,
         "category": transaction.category,
         "type": simple_type,
+        "transaction_type": transaction.transaction_type,
         "transaction_amt": safe_float(transaction.transaction_amt),
         "acct_balance": safe_float(transaction.acct_balance),
         "transaction_date": format_date(transaction.transaction_date),
@@ -140,6 +141,12 @@ def serialize_customer(customer):
     goals = [serialize_goal(goal) for goal in customer.goals]
     interactions = [serialize_interaction(interaction) for interaction in customer.interactions]
     appointments = [serialize_appointment(appointment) for appointment in customer.appointments]
+    
+    # Filter transactions by account type
+    spend_transactions = [tx for tx in transactions if tx.get("account_type") == "Spend"]
+    auto_loan_transactions = [tx for tx in transactions if tx.get("account_type") == "Auto Loan"]
+    growth_transactions = [tx for tx in transactions if tx.get("account_type") == "Growth"]
+    reserve_transactions = [tx for tx in transactions if tx.get("account_type") == "Reserve"]
 
     raw_transaction_dates = [
         tx.transaction_date if isinstance(tx.transaction_date, date) else tx.transaction_date.date()
@@ -261,7 +268,10 @@ def serialize_customer(customer):
         "clientGoals": goals,
         "recentActivity": recent_activity,
         "relationships": relationship_items,
-        "spendTransactions": transactions,
+        "spendTransactions": spend_transactions,
+        "autoLoanTransactions": auto_loan_transactions,
+        "growthTransactions": growth_transactions,
+        "reserveTransactions": reserve_transactions,
         "clientSummary": customer.client_summary or "Customer data loaded from the database.",
         "opportunities": opportunities,  
         "interactions": interaction_summary,
