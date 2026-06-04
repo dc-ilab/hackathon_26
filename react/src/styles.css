@@ -1109,9 +1109,29 @@ header {
 }
 
 .menu-controls {
+  position: relative; /* establish containing block for absolute brand logo */
   display: flex;
   gap: 10px;
   align-items: center;
+  width: max-content;
+}
+
+.brand-logo {
+  position: absolute;
+  left: calc(50px + 8px); /* place to the right of the hamburger (hamburger width + gap) */
+  top: 50%;
+  transform: translateY(-50%);
+  width: 150px;
+  height: auto;
+  display: block;
+  border-radius: 6px;
+}
+
+@media (max-width: 640px) {
+  .brand-logo {
+    left: calc(50px + 6px);
+    width: 48px;
+  }
 }
 
 .has-submenu {
