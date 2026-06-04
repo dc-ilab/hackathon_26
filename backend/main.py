@@ -3,7 +3,7 @@ from decimal import Decimal
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from models import get_db, Customer
+from models import get_db, Customer, Transaction
 
 app = FastAPI(title="Branch Banker API")
 
@@ -135,9 +135,14 @@ def serialize_appointment(appointment):
     }
 
 
-def serialize_customer(customer):
+def serialize_customer(customer, db=None):
     accounts = [serialize_account(account) for account in customer.accounts]
-    transactions = [serialize_transaction(tx) for tx in customer.transactions]
+    account_ids = [account.account_id for account in customer.accounts if account.account_id]
+    if db is not None and account_ids:
+        all_account_transactions = db.query(Transaction).filter(Transaction.account_id.in_(account_ids)).all()
+        transactions = [serialize_transaction(tx) for tx in all_account_transactions]
+    else:
+        transactions = [serialize_transaction(tx) for tx in customer.transactions]
     goals = [serialize_goal(goal) for goal in customer.goals]
     interactions = [serialize_interaction(interaction) for interaction in customer.interactions]
     appointments = [serialize_appointment(appointment) for appointment in customer.appointments]
@@ -284,7 +289,7 @@ def serialize_customer(customer):
 @app.get("/api/clients")
 def get_clients(db: Session = Depends(get_db)):
     customers = db.query(Customer).all()
-    return [serialize_customer(customer) for customer in customers]
+    return [serialize_customer(customer, db) for customer in customers]
 
 
 @app.get("/api/clients/{customer_id}")
@@ -292,5 +297,5 @@ def get_client(customer_id: str, db: Session = Depends(get_db)):
     customer = db.query(Customer).filter(Customer.customer_id == customer_id).first()
     if not customer:
         raise HTTPException(status_code=404, detail="Client not found")
-    return serialize_customer(customer)
+    return serialize_customer(customer, db)
 
