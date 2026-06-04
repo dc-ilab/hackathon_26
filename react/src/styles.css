@@ -2443,6 +2443,18 @@ header {
   flex-shrink: 0;
 }
 
+.joint-badge {
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(113, 180, 141, 0.12);
+  color: #1b542d;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
 /* Footer */
 .accounts-footer {
   display: flex;
@@ -4958,11 +4970,21 @@ flex: 1;
   outline: none;
   border-color: #404E7C;
 }
-
-
 .transaction-search:focus {
   outline: none;
   border-color: #404E7C;
   box-shadow: 0 0 0 2px rgba(64, 78, 124, 0.1);
+}
+.joint-badge {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: #eef2f8;
+  color: #404E7C;
+  font-weight: 500;
+}
+.transaction-customer {
+  font-size: 13px;
+  color: #555;
 }
 

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { getTransactionTypeMeta } from '../utils';
 
 const buildMonthlyTotals = (transactions) => {
 
@@ -93,8 +94,8 @@ const getSpendTransactions = (spendTransactions) => {
 };
 
 function GrowthDetails({ selectedClient }) {
-  const spendTransactions = getSpendTransactions(selectedClient.spendTransactions);
-  const monthlySpendData = buildMonthlyTotals(spendTransactions);
+  const transactions = getSpendTransactions(selectedClient.growthTransactions);
+  const monthlySpendData = buildMonthlyTotals(transactions);
   const [selectedDate, setSelectedDate] = useState(null);
   const [calendarMonth, setCalendarMonth] = useState(new Date(2026, 3, 1));
   const [showAllTransactions, setShowAllTransactions] = useState(false);
@@ -110,19 +111,30 @@ function GrowthDetails({ selectedClient }) {
     calendarMonth.getMonth() === today.getMonth() &&
     calendarMonth.getFullYear() === today.getFullYear();
 
-  const spendAccount = selectedClient.accounts.find((account) => account.type === 'Spend');
+  const growthAccount = selectedClient.accounts.find((account) => account.type === 'Growth');
   const highestMonthlyValue = Math.max(...monthlySpendData.flatMap((item) => [item.income, item.expense]));
   const totalExpense = monthlySpendData.reduce((sum, item) => sum + item.expense, 0);
   const totalIncome = monthlySpendData.reduce((sum, item) => sum + item.income, 0);
   const averageExpense = Math.round(totalExpense / monthlySpendData.length);
   const selectedTransactions = selectedDate
-    ? spendTransactions.filter((item) => item.date === selectedDate)
+    ? transactions.filter((item) => item.date === selectedDate)
     : [];
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedMonth, setSelectedMonth] = useState('');
   const [selectedYear, setSelectedYear] = useState('');
-  const filteredTransactions = spendTransactions.filter((tx) => {
+  const [selectedTransactionType, setSelectedTransactionType] = useState('');
+
+  const transactionTypes = [...new Set(
+    transactions
+      .map((tx) => String(tx.transaction_type || tx.type || '').toLowerCase())
+      .filter(Boolean)
+  )];
+
+  const filteredTransactions = transactions.filter((tx) => {
+    const txType = String(tx.transaction_type || tx.type || '').toLowerCase();
+    const matchesType = selectedTransactionType ? txType === selectedTransactionType : true;
+
     const matchesSearch =
       tx.description.toLowerCase().includes(searchTerm.toLowerCase());
 
@@ -136,7 +148,7 @@ function GrowthDetails({ selectedClient }) {
       ? year === selectedYear
       : true;
 
-    return matchesSearch && matchesMonth && matchesYear;
+    return matchesSearch && matchesMonth && matchesYear && matchesType;
   });
   const displayedTransactions = showAllTransactions
     ? filteredTransactions
@@ -160,7 +172,7 @@ function GrowthDetails({ selectedClient }) {
     setCalendarMonth(new Date(now.getFullYear(), now.getMonth(), 1));
   };
 
-  if (!spendAccount) {
+  if (!growthAccount) {
     return <div className="spend-details-page">No Growth account data available.</div>;
   }
 
@@ -175,7 +187,7 @@ function GrowthDetails({ selectedClient }) {
           </div>
           <div className="spend-balance-card">
             <span className="spend-balance-label">Current Balance</span>
-            <span className="spend-balance-value">{formatCurrency(spendAccount.balance)}</span>
+            <span className="spend-balance-value">{formatCurrency(growthAccount.balance)}</span>
             <span className="spend-balance-note">Account is healthy and operating within budget.</span>
           </div>
         </div>
@@ -343,17 +355,33 @@ function GrowthDetails({ selectedClient }) {
             </div>
           </aside>
           <section className="spend-transactions-card">
-              <div className="section-header">
+              <div className="transaction-section-header">
                 <div>
                   <h2>Transactions</h2>
                   <p className="muted">All recent transactions for your Growth account.</p>
+                </div>
+                <div className="transaction-type-filters">
+                  {transactionTypes.map((type) => {
+                    const typeMeta = getTransactionTypeMeta(type, type);
+                    const isActive = selectedTransactionType === type;
+                    return (
+                      <button
+                        key={type}
+                        type="button"
+                        className={`transaction-filter-btn ${isActive ? 'active' : ''}`}
+                        onClick={() => setSelectedTransactionType(isActive ? '' : type)}
+                      >
+                        {typeMeta.label}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
               <div className="transaction-controls">
                 {/*  Search */}
                 <input
                   type="text"
-                  placeholder="Search by institution..."
+                  placeholder="Search transactions..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="transaction-search"
@@ -378,7 +406,7 @@ function GrowthDetails({ selectedClient }) {
                   onChange={(e) => setSelectedYear(e.target.value)}
                 >
                   <option value="">All Years</option>
-                  {[...new Set(spendTransactions.map(tx => tx.date.split('/')[2]))].map(
+                  {[...new Set(transactions.map(tx => tx.date.split('/')[2]))].map(
                     (year) => (
                       <option key={year} value={year}>
                         {year}
@@ -391,18 +419,29 @@ function GrowthDetails({ selectedClient }) {
               <table className="transaction-table">
                 <thead>
                   <tr>
+                    <th className="transaction-type-column">Type</th>
                     <th>Date</th>
-                    <th>Name of Institution</th>
+                    <th>Category</th>
                     <th>Amount</th>
                   </tr>
                 </thead>
                 <tbody>
                   {displayedTransactions.map((item, index) => {
                     const isPositive = item.type === 'income';
+                    const typeMeta = getTransactionTypeMeta(item.transaction_type, item.type);
                     return (
-                      <tr key={index}>
+                      <tr key={index} className={typeMeta.className}>
+                        <td>
+                          <abbr
+                            className={`transaction-type-badge ${typeMeta.className}`}
+                            title={typeMeta.label}
+                            aria-label={typeMeta.label}
+                          >
+                            {typeMeta.abbr}
+                          </abbr>
+                        </td>
                         <td>{item.date}</td>
-                        <td>{item.description}</td>
+                        <td>{item.category || '—'}</td>
                         <td className={`transaction-amount ${isPositive ? 'positive' : 'expense'}`}>
                           {isPositive ? '+' : '-'}{formatCurrency(item.amount)}
                         </td>

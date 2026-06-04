@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { getTransactionTypeMeta } from '../utils';
 
 const buildMonthlyTotals = (transactions) => {
 
@@ -130,6 +131,30 @@ function SpendDetails({ selectedClient }) {
         );
       })
     : [];
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedMonth, setSelectedMonth] = useState('');
+  const [selectedYear, setSelectedYear] = useState('');
+  const [selectedTransactionType, setSelectedTransactionType] = useState('');
+
+  const transactionTypes = [...new Set(
+    spendTransactions
+      .map((tx) => String(tx.transaction_type || tx.type || '').toLowerCase())
+      .filter(Boolean)
+  )];
+
+  const filteredTransactions = spendTransactions.filter((tx) => {
+    const txType = String(tx.transaction_type || tx.type || '').toLowerCase();
+    const matchesType = selectedTransactionType ? txType === selectedTransactionType : true;
+
+    const matchesSearch = tx.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const [month, , year] = tx.date.split('/');
+    const matchesMonth = selectedMonth ? parseInt(month, 10) === parseInt(selectedMonth, 10) : true;
+    const matchesYear = selectedYear ? year === selectedYear : true;
+    return matchesSearch && matchesMonth && matchesYear && matchesType;
+  });
+  const displayedTransactions = showAllTransactions
+    ? filteredTransactions
+    : filteredTransactions.slice(0, 10);
   const handleDateClick = (dateNumber) => {
     if (dateNumber < 1 || dateNumber > daysInMonth) return;
 
@@ -183,23 +208,6 @@ function SpendDetails({ selectedClient }) {
     setEndDate(null);
     setCalendarMonth(new Date(now.getFullYear(), now.getMonth(), 1));
   };
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedMonth, setSelectedMonth] = useState('');
-  const [selectedYear, setSelectedYear] = useState('');
-  const filteredTransactions = spendTransactions.filter((tx) => {
-    // Search filter
-    const matchesSearch = tx.description.toLowerCase().includes(searchTerm.toLowerCase());
-    // Date parsing
-    const [month, , year] = tx.date.split('/');
-    const matchesMonth = selectedMonth ? parseInt(month, 10) === parseInt(selectedMonth, 10) : true;
-    const matchesYear = selectedYear ? year === selectedYear : true;
-    return matchesSearch && matchesMonth && matchesYear;
-  });
-  const displayedTransactions = showAllTransactions
-    ? filteredTransactions
-    : filteredTransactions.slice(0, 10);
-
-
 
     if (!spendAccount) {
       return <div className="spend-details-page">No Spend account data available.</div>;
@@ -399,10 +407,26 @@ function SpendDetails({ selectedClient }) {
             </div>
           </aside>
           <section className="spend-transactions-card">
-              <div className="section-header">
+              <div className="transaction-section-header">
                 <div>
                   <h2>Transactions Table</h2>
-                  <p className="muted">All recent transactions for your Spend account.</p>
+                  <p className="muted">Transaction type filters and recent Spend activity.</p>
+                </div>
+                <div className="transaction-type-filters">
+                  {transactionTypes.map((type) => {
+                    const typeMeta = getTransactionTypeMeta(type, type);
+                    const isActive = selectedTransactionType === type;
+                    return (
+                      <button
+                        key={type}
+                        type="button"
+                        className={`transaction-filter-btn ${isActive ? 'active' : ''}`}
+                        onClick={() => setSelectedTransactionType(isActive ? '' : type)}
+                      >
+                        {typeMeta.label}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
               <div className="transaction-controls">
@@ -410,7 +434,7 @@ function SpendDetails({ selectedClient }) {
                 {/*  Search */}
                 <input
                   type="text"
-                  placeholder="Search by institution..."
+                  placeholder="Search transactions..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="transaction-search"
@@ -448,18 +472,31 @@ function SpendDetails({ selectedClient }) {
               <table className="transaction-table">
                 <thead>
                   <tr>
+                    <th className="transaction-type-column">Type</th>
                     <th>Date</th>
-                    <th>Name of Institution</th>
+                    <th>Description</th>
+                    <th>Category</th>
                     <th>Amount</th>
                   </tr>
                 </thead>
                 <tbody>
                   {displayedTransactions.map((item, index) => {
                     const isPositive = item.type === 'income';
+                    const typeMeta = getTransactionTypeMeta(item.transaction_type, item.type);
                     return (
-                      <tr key={index}>
+                      <tr key={index} className={typeMeta.className}>
+                        <td>
+                          <abbr
+                            className={`transaction-type-badge ${typeMeta.className}`}
+                            title={typeMeta.label}
+                            aria-label={typeMeta.label}
+                          >
+                            {typeMeta.abbr}
+                          </abbr>
+                        </td>
                         <td>{item.date}</td>
                         <td>{item.description}</td>
+                        <td>{item.category || '—'}</td>
                         <td className={`transaction-amount ${isPositive ? 'positive' : 'expense'}`}>
                           {isPositive ? '+' : '-'}{formatCurrency(Math.abs(item.amount))}
                         </td>
