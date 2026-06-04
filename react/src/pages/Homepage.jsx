@@ -5,6 +5,7 @@ import Forms from './Forms';
 import SpendDetails from './SpendDetails';
 import ReserveDetails from './ReserveDetails';
 import GrowthDetails from './GrowthDetails';
+import CreditDetails from './CreditDetails';
 import ClientProfile from './ClientProfile';
 import AutoLoanDetails from './AutoLoanDetails';
 import externalLinkIcon from '../assets/external-link-icon.png';
@@ -574,33 +575,38 @@ function Homepage({ selectedClient, setSelectedId, filteredClients, openTab, cli
                   account.type === 'Spend' ||
                   account.type === 'Reserve' ||
                   account.type === 'Growth' ||
-                  account.type === 'Auto Loan'
+                  account.type === 'Auto Loan' ||
+                  /credit/i.test(account.type)
                     ? 'account-link'
                     : ''
                 }`}
 
                 onClick={() => {
                   if (account.type === 'Spend') {
-                    openTab('spend-account', 'Spend Account', SpendDetails);
+                    openTab('spend-account', 'Spend', SpendDetails);
                   } else if (account.type === 'Reserve') {
-                    openTab('reserve-account', 'Reserve Account', ReserveDetails);
+                    openTab('reserve-account', 'Reserve', ReserveDetails);
                   } else if (account.type === 'Growth') {
-                    openTab('growth-account', 'Growth Account', GrowthDetails);
+                    openTab('growth-account', 'Growth', GrowthDetails);
                   } else if (account.type === 'Auto Loan') {
                     openTab('auto-loan', 'Auto Loan', AutoLoanDetails);
+                  } else if (/credit/i.test(account.type)) {
+                    openTab('credit-account', 'Credit', CreditDetails);
                   }
                 }}
 
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     if (account.type === 'Spend') {
-                      openTab('spend-account', 'Spend Account', SpendDetails);
+                      openTab('spend-account', 'Spend', SpendDetails);
                     } else if (account.type === 'Reserve') {
-                      openTab('reserve-account', 'Reserve Account', ReserveDetails);
+                      openTab('reserve-account', 'Reserve', ReserveDetails);
                     } else if (account.type === 'Growth') {
-                      openTab('growth-account', 'Growth Account', GrowthDetails);
+                      openTab('growth-account', 'Growth', GrowthDetails);
                     } else if (account.type === 'Auto Loan') {
                       openTab('auto-loan', 'Auto Loan', AutoLoanDetails);
+                    } else if (/credit/i.test(account.type)) {
+                      openTab('credit-account', 'Credit', CreditDetails);
                     }
                   }
                 }}
@@ -608,7 +614,9 @@ function Homepage({ selectedClient, setSelectedId, filteredClients, openTab, cli
                 role={
                   account.type === 'Spend' ||
                   account.type === 'Reserve' ||
-                  account.type === 'Growth'
+                  account.type === 'Growth' ||
+                  account.type === 'Auto Loan' ||
+                  /credit/i.test(account.type)
                     ? 'button'
                     : undefined
                 }
@@ -616,7 +624,9 @@ function Homepage({ selectedClient, setSelectedId, filteredClients, openTab, cli
                 tabIndex={
                   account.type === 'Spend' ||
                   account.type === 'Reserve' ||
-                  account.type === 'Growth'
+                  account.type === 'Growth' ||
+                  account.type === 'Auto Loan' ||
+                  /credit/i.test(account.type)
                     ? 0
                     : undefined
                 }

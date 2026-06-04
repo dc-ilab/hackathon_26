@@ -9,6 +9,7 @@ import InteractionPage from './pages/InteractionPage';
 import SpendDetails from './pages/SpendDetails';
 import ReserveDetails from './pages/ReserveDetails';
 import GrowthDetails from './pages/GrowthDetails';
+import CreditDetails from './pages/CreditDetails';
 
 const formatCurrency = (value) =>
   new Intl.NumberFormat('en-US', {
@@ -85,6 +86,14 @@ function App() {
     if (!clients.length) return null;
     return clients.find((client) => client.id === selectedId) || filteredClients[0] || clients[0];
   }, [clients, selectedId, filteredClients]);
+
+  const hasCreditAccount = useMemo(() => {
+    if (!selectedClient?.accounts) return false;
+    return selectedClient.accounts.some((account) => {
+      const type = String(account.type || account.category || '').toLowerCase();
+      return type.includes('credit');
+    });
+  }, [selectedClient]);
 
   const openTab = useCallback((id, name, Component, extraProps = {}) => {
     setTabs((prevTabs) => {
@@ -266,6 +275,11 @@ function App() {
               <button className="submenu-item" onClick={() => handleMenuItemClick('growth', 'Growth', GrowthDetails)}>
                 Growth
               </button>
+              {hasCreditAccount && (
+                <button className="submenu-item" onClick={() => handleMenuItemClick('credit', 'Credit', CreditDetails)}>
+                  Credit
+                </button>
+              )}
             </div>
           )}
         </div>

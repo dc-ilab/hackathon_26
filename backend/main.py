@@ -147,6 +147,15 @@ def serialize_customer(customer):
     auto_loan_transactions = [tx for tx in transactions if tx.get("account_type") == "Auto Loan"]
     growth_transactions = [tx for tx in transactions if tx.get("account_type") == "Growth"]
     reserve_transactions = [tx for tx in transactions if tx.get("account_type") == "Reserve"]
+    # Credit transactions: look for account_type that mentions credit or transaction types/categories commonly used for cards
+    credit_transactions = [
+        tx for tx in transactions
+        if (
+            (tx.get("account_type") and "credit" in str(tx.get("account_type")).lower())
+            or (tx.get("transaction_type") and any(k in str(tx.get("transaction_type")).lower() for k in ("charge", "payment", "credit")))
+            or (tx.get("category") and "credit" in str(tx.get("category")).lower())
+        )
+    ]
 
     raw_transaction_dates = [
         tx.transaction_date if isinstance(tx.transaction_date, date) else tx.transaction_date.date()
@@ -272,6 +281,7 @@ def serialize_customer(customer):
         "autoLoanTransactions": auto_loan_transactions,
         "growthTransactions": growth_transactions,
         "reserveTransactions": reserve_transactions,
+        "creditTransactions": credit_transactions,
         "clientSummary": customer.client_summary or "Customer data loaded from the database.",
         "opportunities": opportunities,  
         "interactions": interaction_summary,
