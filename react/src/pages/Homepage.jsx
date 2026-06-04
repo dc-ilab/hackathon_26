@@ -10,6 +10,8 @@ import AutoLoanDetails from './AutoLoanDetails';
 import externalLinkIcon from '../assets/external-link-icon.png';
 import { sortAccountsByType } from '../utils';
 
+const assetColors = ['#bdddbd','#71B48D','#404E7C', '#4a3974'];
+const liabilityColors = ['#db8c4f', '#eeceb6', '#edeea4', '#e3e64a'];
 
 const formatCurrency = (value) =>
   new Intl.NumberFormat('en-US', {
@@ -30,6 +32,59 @@ const formatTime = (value) => {
   return time;
 };
 
+const fullCircle = Math.PI * 2;
+const circleEpsilon = 0.0001; 
+const minSliceAngle = 0.15;
+
+const getVisibleSlices = (accounts, totalAmount) => {
+  if (!accounts.length) return [];
+  const target = fullCircle - circleEpsilon;
+
+  if (accounts.length === 1) {
+    return [target];
+  }
+
+  const fallbackAngle = target / accounts.length;
+  const rawAngles = accounts.map((account) => {
+    if(totalAmount <= 0) return fallbackAngle;
+    return (Math.abs(account.balance || 0) / totalAmount) * target;
+  });
+
+  const adjustedAngles = rawAngles.map((angle) => Math.max(angle, minSliceAngle));
+  let adjustedSum = adjustedAngles.reduce((sum, angle) => sum + angle, 0);
+
+  if (adjustedSum > target) {
+    let remainingExcess = adjustedSum - target;
+    let adjustableIndexes = adjustedAngles
+      .map((angle, index) => ({angle, index}))
+      .filter(({angle}) => angle > minSliceAngle)
+      .map(({index}) => index);
+
+    while (remainingExcess > 0.000001 && adjustableIndexes.length > 0) {
+      const reductionPerSlice = remainingExcess / adjustableIndexes.length;
+      const nextAdjustable = [];
+
+      adjustableIndexes.forEach((index) => {
+        const reducible = adjustedAngles[index] - minSliceAngle;
+        const reduction = Math.min(reductionPerSlice, reducible);
+        adjustedAngles[index] -= reduction;
+        remainingExcess -= reduction;
+        if (adjustedAngles[index] > minSliceAngle + 0.000001) {
+          nextAdjustable.push(index);
+        }
+      });
+      adjustableIndexes = nextAdjustable;
+    }
+  }
+
+  adjustedSum = adjustedAngles.reduce((sum, angle) => sum + angle, 0);
+  if (adjustedSum < target) {
+    const largestIndex = adjustedAngles.reduce(
+      (currentMaxIndex, angle, index, arr) => angle > (arr[currentMaxIndex] ? index : currentMaxIndex), 0);
+    adjustedAngles[largestIndex] += target - adjustedSum;
+  }
+  return adjustedAngles;
+};
 
 // Pie chart component for account distribution (copied from Accounts.jsx)
 function PieChart({ accounts }) {
@@ -51,24 +106,22 @@ function PieChart({ accounts }) {
     }
     return account.balance > 0;
   });
-  const assetTotal = assetAccounts.reduce((sum, acc) => sum + acc.balance, 0);
-  const safeAssetTotal = assetTotal || 1;
+
+  const assetTotal = assetAccounts.reduce((sum, acc) => sum + Math.abs(acc.balance || 0), 0);
 
   const liabilityAccounts = sortedAccounts.filter((account) => {
     if(account.category) {
       return account.category.toLowerCase() === 'liability';
-      console.log("account category: ", account.category);
     }
-    console.log("no category.. account balance: ", account.balance);
     return account.balance <= 0;
   });
-  const liabilityTotal = liabilityAccounts.reduce((sum, acc) => sum + Math.abs(acc.balance), 0); 
-  const safeLiabilityTotal = liabilityTotal || 1;
 
-  const total = accounts.reduce((sum, account) => sum + Math.abs(account.balance), 0);
+  const liabilityTotal = liabilityAccounts.reduce((sum, acc) => sum + Math.abs(acc.balance || 0), 0); 
+  const liabilityAngles = getVisibleSlices(liabilityAccounts, liabilityTotal);
+  const assetAngles = getVisibleSlices(assetAccounts, assetTotal); 
+  const hasLiabilities = liabilityAccounts.length > 0 && liabilityTotal > 0;
+
   let currentAngle = -Math.PI / 2; // Start from top
-
-  const colors = ['#71B48D', '#BDDDBD', '#404E7C', '#db8c4f', '#eeceb6'];
 
   const [hoverSlice, setHoverSlice] = useState(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -143,12 +196,15 @@ function PieChart({ accounts }) {
       let currentAngle = -Math.PI / 2;
       {liabilityAccounts.map((acc, i) => {
         const sliceAngle =
-          (Math.abs(acc.balance) / (liabilityTotal || 1)) * 2 * Math.PI;
+          //(Math.abs(acc.balance) / (liabilityTotal || 1)) * 2 * Math.PI;
+          liabilityAngles[i] || 0;
 
         const start = currentAngle;
         const end = currentAngle + sliceAngle;
 
-        const path = createArc(start, end, innerRadius, innerHoleRadius);
+        console.log(hasLiabilities)
+        const assetInnerRadius = hasLiabilities ? innerHoleRadius : innerRadius;
+        const path = createArc(start, end, innerRadius, assetInnerRadius);
 
         currentAngle = end;
 
@@ -156,7 +212,7 @@ function PieChart({ accounts }) {
           <path
             key={acc.type}
             d={path}
-            fill={colors[(i + assetAccounts.length) % colors.length]}
+            fill={liabilityColors[i % liabilityColors.length]}
             stroke="#ffffff89"
             strokeWidth="1.5"
             onMouseEnter={(e) => handleMouseEnter(acc, e)}
@@ -170,12 +226,13 @@ function PieChart({ accounts }) {
       currentAngle = -Math.PI / 2;
       {assetAccounts.map((acc, i) => {
         const sliceAngle =
-          (Math.abs(acc.balance) / (assetTotal || 1)) * 2 * Math.PI;
+          //(Math.abs(acc.balance) / (assetTotal || 1)) * 2 * Math.PI;
+          assetAngles[i] || 0;
 
         const start = currentAngle;
         const end = currentAngle + sliceAngle;
 
-        const path = createArc(start, end, outerRadius, innerRadius +gap);
+        const path = createArc(start, end, outerRadius, innerRadius + gap);
 
         currentAngle = end;
 
@@ -183,7 +240,7 @@ function PieChart({ accounts }) {
           <path
             key={acc.type}
             d={path}
-            fill={colors[i % colors.length]}
+            fill={assetColors[i % assetColors.length]}
             stroke="#ffffff89"
             strokeWidth="1.5"
             onMouseEnter={(e) => handleMouseEnter(acc, e)}
@@ -214,7 +271,7 @@ function PieChart({ accounts }) {
         <div className="pie-tooltip-content">
             <div className="pie-tooltip-title">{hoverSlice.type} Account</div>
             <div className="pie-tooltip-value">
-              {hoverSlice.type === 'liabilityAccount'
+              {(hoverSlice.category?.toLowerCase() === 'liability' || hoverSlice.balance < 0)
                 ? `-${formatCurrency(Math.abs(hoverSlice.balance))}`
                 : formatCurrency(hoverSlice.balance)}
             </div>
@@ -231,8 +288,6 @@ function Homepage({ selectedClient, setSelectedId, filteredClients, openTab, cli
   const goals = clientGoals[selectedClient.id] || [];
   const sortedAccounts = sortAccountsByType(selectedClient.accounts);
 
-  const assetColors = ['#bdddbd','#71B48D','#404E7C', '#4a3974'];
-  const liabilityColors = ['#db8c4f', '#eeceb6', '#edeea4', '#e3e64a'];
   let _ai = 0, _li = 0; // asset and liability color indices
   const accountIndicators = sortedAccounts.map((acc) => {
     const isAsset = acc.category ? acc.category.toLowerCase() === 'asset' : acc.balance > 0;
