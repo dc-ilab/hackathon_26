@@ -407,44 +407,44 @@ function SpendDetails({ selectedClient }) {
               </div>
               <div className="transaction-controls">
 
-  {/*  Search */}
-  <input
-    type="text"
-    placeholder="Search by institution..."
-    value={searchTerm}
-    onChange={(e) => setSearchTerm(e.target.value)}
-    className="transaction-search"
-  />
+                {/*  Search */}
+                <input
+                  type="text"
+                  placeholder="Search by institution..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="transaction-search"
+                />
 
-  {/*  Month filter */}
-  <select
-    value={selectedMonth}
-    onChange={(e) => setSelectedMonth(e.target.value)}
-  >
-    <option value="">All Months</option>
-    {monthNames.map((m, i) => (
-      <option key={i} value={i + 1}>
-        {m}
-      </option>
-    ))}
-  </select>
+                {/*  Month filter */}
+                <select
+                  value={selectedMonth}
+                  onChange={(e) => setSelectedMonth(e.target.value)}
+                >
+                  <option value="">All Months</option>
+                  {monthNames.map((m, i) => (
+                    <option key={i} value={i + 1}>
+                      {m}
+                    </option>
+                  ))}
+                </select>
 
-  {/*  Year filter */}
-  <select
-    value={selectedYear}
-    onChange={(e) => setSelectedYear(e.target.value)}
-  >
-    <option value="">All Years</option>
-    {[...new Set(spendTransactions.map(tx => tx.date.split('/')[2]))].map(
-      (year) => (
-        <option key={year} value={year}>
-          {year}
-        </option>
-      )
-    )}
-  </select>
+                {/*  Year filter */}
+                <select
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(e.target.value)}
+                >
+                  <option value="">All Years</option>
+                  {[...new Set(spendTransactions.map(tx => tx.date.split('/')[2]))].map(
+                    (year) => (
+                      <option key={year} value={year}>
+                        {year}
+                      </option>
+                    )
+                  )}
+                </select>
 
-</div>
+              </div>
               <table className="transaction-table">
                 <thead>
                   <tr>

@@ -2796,19 +2796,25 @@ body{
 .dashboard{
   display: grid;
   gap: 14px;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: minmax(520px, 2fr) minmax(360px, 1fr);
   grid-template-areas:
     "insights forms"
-    "accounts networth"
+    "accounts networth";
+  max-width: 1160px;
+  margin: 0 auto;
+}
+
+.dashboard > * {
+  min-width: 0;
 }
 
 /* Module base */
 .module{
+  width: 100%;
+  min-width: 0;
   padding: 14px;
-  
-display: flex;
+  display: flex;
   flex-direction: column;
-
 }
 
 .module__title{
@@ -2921,6 +2927,15 @@ display: flex;
   grid-area: networth; 
   color: var(--ink);
   background-color: rgb(255, 255, 255, 0.6); 
+  display: flex;
+  flex-direction: column;
+}
+.networth-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
 }
 .bigMoney{
   font-size: 36px;
@@ -4237,6 +4252,8 @@ a:hover,
   padding: 15px;
   background: linear-gradient(rgb(239 240 235) 2%, rgba(255, 255, 255, 0.05) 9%);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  max-width: 1240px;
+  margin: 0 auto;
 }
 
 .goals-empty-state {
@@ -4249,9 +4266,11 @@ a:hover,
   width: 100%;
 }
 
-.goals-empty-state p {
+.goals-empty-state p,
+.goals-empty-state span {
   margin: 0 0 6px;
   font-weight: 600;
+  color: var(--muted) !important;
 }
 
 .goals-empty-state span {
@@ -4285,6 +4304,10 @@ a:hover,
   color: var(--color-bg-secondary);
   font-size: 16px;
   margin-bottom: 15px;
+}
+
+.goals-empty-state p{
+  color:var(--ink);
 }
 
 .breakdown-group {
@@ -4732,7 +4755,7 @@ flex: 1;
 
 #related-accounts{
   align-items: center;
-  background-color: #ffffff75;
+  background-color: #ffffff;
   padding: 10px;
 }
 #related-accounts h3{

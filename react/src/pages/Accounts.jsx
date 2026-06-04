@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react';
 import SpendDetails from './SpendDetails';
 import AutoLoanDetails from './AutoLoanDetails';
+import ReserveDetails from './ReserveDetails';
+import GrowthDetails from './GrowthDetails';
 import { getAssetsAndLiabilities } from '../utils';
 
 const formatCurrency = (value) =>
@@ -335,6 +337,22 @@ function Accounts({ selectedClient, openTab }) {
   // const assetAccounts = selectedClient.accounts.filter((account) => account.balance > 0);
   // const liabilityAccounts = selectedClient.accounts.filter((account) => account.balance < 0);
   const { assetAccounts, liabilityAccounts } = getAssetsAndLiabilities(selectedClient.accounts);
+  const orderedAccounts = [...assetAccounts, ...liabilityAccounts];
+  const assetColors = ['#bdddbd','#71B48D','#404E7C', '#4a3974'];
+  const liabilityColors = ['#db8c4f', '#eeceb6', '#edeea4', '#e3e64a'];
+  let _ai = 0, _li = 0; // asset and liability color indices
+  const overviewColors = orderedAccounts.map((acc) => {
+    const isAsset = acc.category ? acc.category.toLowerCase() === 'asset' : acc.balance > 0;
+    if(isAsset) {
+      const color = assetColors[_ai % assetColors.length];
+      _ai++;
+      return color;
+    }
+    const color = liabilityColors[_li % liabilityColors.length];
+    _li++;
+    return color; 
+  });
+
   const totalLiabilities = liabilityAccounts.reduce((sum, acc) => sum + Math.abs(acc.balance),0);
 
   const accountHistory = useMemo(() => {
@@ -366,6 +384,20 @@ function Accounts({ selectedClient, openTab }) {
     }));
   }, [selectedClient]);
 
+  const accountDetailTarget = (accountType) => {
+    switch (accountType) {
+      case 'Spend':
+        return { id: 'spend-account', title: 'Spend Account', component: SpendDetails };
+      case 'Reserve':
+        return { id: 'reserve-account', title: 'Reserve Account', component: ReserveDetails };
+      case 'Growth':
+        return { id: 'growth-account', title: 'Growth Account', component: GrowthDetails };
+      case 'Auto Loan':
+        return { id: 'loan-account', title: 'Loan Account', component: LoanDetails };
+      default:
+        return null;
+    }
+  };
 
 
   return (
@@ -382,13 +414,13 @@ function Accounts({ selectedClient, openTab }) {
             <article className="overview-summary-card">
               <h3>Account totals</h3>
               <div className="overview-summary-list">
-                {selectedClient.accounts.map((account, i) => (
+                {orderedAccounts.map((account, i) => (
                   <div key={account.type} className="overview-summary-item">
                     <div>
                       <div className="summary-label">{account.type} Account</div>
                       <div className="summary-value">{formatCurrency(account.balance)}</div>
                     </div>
-                    <div className="summary-pill" style={{ backgroundColor: ['#71B48D', '#BDDDBD', '#404E7C', '#db8c4f', '#eeceb6'][i] }} />
+                    <div className="summary-pill" style={{ backgroundColor: overviewColors[i] }} />
                   </div>
                 ))}
               </div>
@@ -402,11 +434,11 @@ function Accounts({ selectedClient, openTab }) {
               </div>
 
               <div className="chart-legend">
-                {selectedClient.accounts.map((account, i) => (
+                {orderedAccounts.map((account, i) => (
                   <div key={account.type} className="legend-item">
                     <div
                       className="legend-color"
-                      style={{ backgroundColor: ['#71B48D', '#BDDDBD', '#404E7C', '#db8c4f', '#eeceb6'][i] }}
+                      style={{ backgroundColor: overviewColors[i] }}
                     ></div>
                     <span>{account.type}</span>
                   </div>
@@ -447,19 +479,23 @@ function Accounts({ selectedClient, openTab }) {
                           
                           <td>
                             <div
-                              className={`breakdown-account-name ${account.type === 'Spend' ? 'account-link' : ''}`}
-                              onClick={() => account.type === 'Spend' && openTab('spend-account', 'Spend Account', SpendDetails)}
+                              className={`breakdown-account-name ${['Spend', 'Reserve', 'Growth'].includes(account.type) ? 'account-link' : ''}`}
+                              onClick={() => {
+                                const details = accountDetailTarget(account.type);
+                                if (details) openTab(details.id, details.title, details.component);
+                              }}
                               onKeyDown={(event) => {
-                                if (account.type === 'Spend' && (event.key === 'Enter' || event.key === ' ')) {
-                                  openTab('spend-account', 'Spend Account', SpendDetails);
+                                const details = accountDetailTarget(account.type);
+                                if (details && (event.key === 'Enter' || event.key === ' ')) {
+                                  openTab(details.id, details.title, details.component);
                                 }
                               }}
-                              role={account.type === 'Spend' ? 'button' : undefined}
-                              tabIndex={account.type === 'Spend' ? 0 : undefined}
+                              role={['Spend', 'Reserve', 'Growth'].includes(account.type) ? 'button' : undefined}
+                              tabIndex={['Spend', 'Reserve', 'Growth'].includes(account.type) ? 0 : undefined}
                             >
                             <div
                               className="account-indicator"
-                              style={{ backgroundColor: ['#71B48D', '#BDDDBD', '#404E7C', '#78afcd', '#4a3974'][i] }}
+                              style={{ backgroundColor: ['#bdddbd','#71B48D','#404E7C', '#4a3974'][i%4] }}
                             ></div>
                             {account.type}
                           </div>
@@ -519,6 +555,14 @@ function Accounts({ selectedClient, openTab }) {
                               onKeyDown={(event) => {
                                 if (account.type === 'Auto Loan' && (event.key === 'Enter' || event.key === ' ')) {
                                   openTab('loan-account', 'Loan Account', AutoLoanDetails);
+                              onClick={() => {
+                                const details = accountDetailTarget(account.type);
+                                if (details) openTab(details.id, details.title, details.component);
+                              }}
+                              onKeyDown={(event) => {
+                                const details = accountDetailTarget(account.type);
+                                if (details && (event.key === 'Enter' || event.key === ' ')) {
+                                  openTab(details.id, details.title, details.component);
                                 }
                               }}
                               role={account.type === 'Auto Loan' ? 'button' : undefined}
