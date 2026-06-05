@@ -794,6 +794,12 @@ header {
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   margin-bottom: 16px;
 }
+.goal-form-top-row {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(4, minmax(220px, 1fr));
+  margin-bottom: 16px;
+}
 
 .goal-form-row label {
   display: flex;
@@ -4542,7 +4548,7 @@ a:hover,
 
 .arrow {
   transition: transform 0.2s ease;
-  font-size: 12px;
+  font-size: 20px;
 }
 
 .opportunity-item.open .arrow {
@@ -5076,7 +5082,7 @@ flex: 1;
 #left-insight-column{
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 10px;
 }
 #interaction-button{
   margin-top: auto;
