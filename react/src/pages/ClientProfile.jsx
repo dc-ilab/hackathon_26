@@ -148,15 +148,23 @@ const [contactDraft, setContactDraft] = useState({
     }));
   };
 
-const deleteGoal = (index) => {
-  setClientGoals((prev) => ({
-    ...prev,
-    [selectedClient.id]: prev[selectedClient.id].filter(
-      (_, i) => i !== index
-    ),
-  }));
-};
+  const deleteGoal = (index) => {
+    setClientGoals((prev) => ({
+      ...prev,
+      [selectedClient.id]: prev[selectedClient.id].filter(
+        (_, i) => i !== index
+      ),
+    }));
+  };
+  const getAccountNameFromId = (accountId) => {
+    if (!accountId) return null;
 
+    const account = selectedClient.accounts.find(
+      (acct) => acct.account_id === accountId
+    );
+
+    return account?.type || null;
+  };
   return (
     <div className="background-card">
       <div className="client-profile-top">
@@ -279,6 +287,12 @@ const deleteGoal = (index) => {
                         </label>
                         <div className="goal-card-title-text">
                           <h3>{goal.description}</h3>
+                          {goal.linkedAccount && (
+                            <div className="goal-linked-account">
+                              <strong>Linked to: {getAccountNameFromId(goal.linkedAccount)} Account</strong>
+                            </div>
+                          )}
+
                           <div className="goal-meta-row">
                             <span>{goal.isSavingsGoal ? 'Savings goal' : 'Milestone goal'}</span>
                           </div>

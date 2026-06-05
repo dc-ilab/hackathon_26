@@ -150,9 +150,10 @@ function GrowthDetails({ selectedClient }) {
 
     return matchesSearch && matchesMonth && matchesYear && matchesType;
   });
+  const sortedTransactions = [...filteredTransactions].sort((a, b) => new Date(b.date) - new Date(a.date));
   const displayedTransactions = showAllTransactions
-    ? filteredTransactions
-    : filteredTransactions.slice(0, 10);
+  ? sortedTransactions
+  : sortedTransactions.slice(0, 10);
 
   const handleDateClick = (dateNumber) => {
     if (dateNumber < 1 || dateNumber > daysInMonth) return;
@@ -182,13 +183,11 @@ function GrowthDetails({ selectedClient }) {
         <div className="spend-header">
           <div>
             <p className="eyebrow">Growth Account</p>
-            <h1>Growth Account Insights</h1>
-            <p className="muted">A snapshot of spending trends, cash flow, and recent activity for the Growth account.</p>
+            <h1 className='account-title'>Growth Account Overview</h1>
           </div>
           <div className="spend-balance-card">
             <span className="spend-balance-label">Current Balance</span>
             <span className="spend-balance-value">{formatCurrency(growthAccount.balance)}</span>
-            <span className="spend-balance-note">Account is healthy and operating within budget.</span>
           </div>
         </div>
 

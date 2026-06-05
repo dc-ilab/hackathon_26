@@ -464,9 +464,10 @@ function AutoLoanDetails({ selectedClient }) {
 
     return matchesSearch && matchesMonth && matchesYear && matchesType;
   });
+  const sortedTransactions = [...filteredTransactions].sort((a, b) => new Date(b.date) - new Date(a.date));
   const displayedTransactions = showAllTransactions
-    ? filteredTransactions
-    : filteredTransactions.slice(0, 10);
+  ? sortedTransactions
+  : sortedTransactions.slice(0, 10);
     if (!autoLoanAccount) {
         return <div className="spend-details-page">No Auto Loan account data available.</div>;
     }
@@ -477,7 +478,7 @@ function AutoLoanDetails({ selectedClient }) {
             <div className="spend-header">
             <div className='spend-header-info'>
                 <p className="eyebrow">Loan Account</p>
-                <h1>Auto Loan Overview</h1>
+                <h1 className='account-title'>Auto Loan Overview</h1>
             </div>
             <div className="loan-balance-card">
                 <span className="spend-balance-label">Current Balance</span>
