@@ -107,7 +107,7 @@ function PieChart({ accounts }) {
     }
     return account.balance > 0;
   });
-  const assetTotal = assetAccounts.reduce((sum, acc) => sum + Math.abs(acc.balance || 0), 0);
+   const assetTotal = assetAccounts.reduce((sum, acc) => sum + Math.abs(acc.balance || 0), 0);
 
   const liabilityAccounts = sortedAccounts.filter((account) => {
     if(account.category) {
@@ -200,7 +200,7 @@ function PieChart({ accounts }) {
         const start = currentAngle;
         const end = currentAngle + sliceAngle;
 
-        const assetInnerRadius = hasLiabilities ? innerHoleRadius : innerRadius;
+const assetInnerRadius = hasLiabilities ? innerHoleRadius : innerRadius;
         const path = createArc(start, end, innerRadius, assetInnerRadius);
 
         currentAngle = end;

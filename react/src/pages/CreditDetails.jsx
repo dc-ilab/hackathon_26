@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { getTransactionTypeMeta } from '../utils';
 
 const formatCurrency = (value) =>
   new Intl.NumberFormat('en-US', {
@@ -41,11 +42,17 @@ const buildMonthlyTotals = (transactions) => {
     totals[key].hasData = true;
     totals[key].txCount += 1;
 
-    if (tx.type === 'income') {
-      totals[key].income += tx.amount;
-    } else {
-      totals[key].expense += tx.amount;
-    }
+    const txType = String(tx.transaction_type || '').toLowerCase();
+const description = String(tx.description || '').toLowerCase();
+
+const isPayment =
+  txType.includes('payment') || description.includes('payment');
+
+if (isPayment) {
+  totals[key].income += Math.abs(tx.amount); 
+} else {
+  totals[key].expense += Math.abs(tx.amount); 
+}
   });
 
   const monthEntries = months.map((m, i) => {
@@ -89,6 +96,7 @@ const getCreditTransactions = (transactions) => {
   });
 };
 
+
 function CreditDetails({ selectedClient }) {
   const creditAccount = selectedClient.accounts.find(
     (account) => /credit/i.test(account.type || '') || /credit/i.test(account.category || '')
@@ -98,21 +106,27 @@ function CreditDetails({ selectedClient }) {
     () => getCreditTransactions(selectedClient.creditTransactions || selectedClient.transactions || []),
     [selectedClient.creditTransactions, selectedClient.transactions]
   );
+  const normalizedCreditTransactions = creditTransactions.map((tx) => {
+  const txType = String(tx.transaction_type || '').toLowerCase();
+  const description = String(tx.description || '').toLowerCase();
 
-  const monthlyCreditData = buildMonthlyTotals(creditTransactions);
+  const isPayment =
+    txType.includes('payment') || description.includes('payment');
+
+  return {
+    ...tx,
+    type: isPayment ? 'income' : 'expense',
+    amount: Math.abs(tx.amount) // normalize for display + math
+  };
+});
+
+  const monthlyCreditData = buildMonthlyTotals(normalizedCreditTransactions);
   const highestMonthlyValue = Math.max(...monthlyCreditData.flatMap((item) => [item.income, item.expense]));
   const totalSpent = monthlyCreditData.reduce((sum, item) => sum + item.expense, 0);
   const totalPayments = monthlyCreditData.reduce((sum, item) => sum + item.income, 0);
   const averageExpense = Math.round(totalSpent / monthlyCreditData.length);
 
   const [searchTerm, setSearchTerm] = useState('');
-  const filteredTransactions = creditTransactions.filter((tx) =>
-    tx.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    tx.category?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-  const displayedTransactions = filteredTransactions.slice(0, 12);
-
-  // Calendar state and helpers (copied from SpendDetails for identical look/behavior)
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [calendarMonth, setCalendarMonth] = useState(new Date());
@@ -130,9 +144,9 @@ function CreditDetails({ selectedClient }) {
     calendarMonth.getFullYear() === today.getFullYear();
 
   const selectedTransactions = startDate && !endDate
-    ? creditTransactions.filter((item) => item.date === startDate)
+    ? normalizedCreditTransactions.filter((item) => item.date === startDate)
     : startDate && endDate
-    ? creditTransactions.filter((item) => {
+    ? normalizedCreditTransactions.filter((item) => {
         const itemDate = new Date(item.date);
         return (
           itemDate >= new Date(startDate) &&
@@ -178,6 +192,11 @@ function CreditDetails({ selectedClient }) {
     setEndDate(null);
     setCalendarMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
   };
+    const handleNextMonth = () => {
+    setStartDate(null);
+    setEndDate(null);
+    setCalendarMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
+  }
 
   const handleToday = () => {
     const now = new Date();
@@ -187,27 +206,31 @@ function CreditDetails({ selectedClient }) {
   };
   const [selectedMonth, setSelectedMonth] = useState('');
   const [selectedYear, setSelectedYear] = useState('');
-  const filteredForTable = creditTransactions.filter((tx) => {
-    const matchesSearch =
-      tx.description.toLowerCase().includes(searchTerm.toLowerCase());
+  const [selectedTransactionType, setSelectedTransactionType] = useState('');
 
-    const [month, , year] = tx.date.split('/');
+    const transactionTypes = [...new Set(
+      normalizedCreditTransactions
+        .map((tx) => String(tx.transaction_type || tx.type || '').toLowerCase())
+        .filter(Boolean)
+    )];
 
-    const matchesMonth = selectedMonth
-      ? parseInt(month, 10) === parseInt(selectedMonth, 10)
-      : true;
+  const filteredTransactions = normalizedCreditTransactions.filter((tx) => {
+      const txType = String(tx.transaction_type || tx.type || '').toLowerCase();
+      const matchesType = selectedTransactionType ? txType === selectedTransactionType : true;
 
-    const matchesYear = selectedYear
-      ? year === selectedYear
-      : true;
+      const matchesSearch = tx.description.toLowerCase().includes(searchTerm.toLowerCase());
+      const [month, , year] = tx.date.split('/');
+      const matchesMonth = selectedMonth ? parseInt(month, 10) === parseInt(selectedMonth, 10) : true;
+      const matchesYear = selectedYear ? year === selectedYear : true;
+      return matchesSearch && matchesMonth && matchesYear && matchesType;
+    });
+    
+const sortedTransactions = [...filteredTransactions].sort((a, b) => new Date(b.date) - new Date(a.date));
+  const displayedTransactions = showAllTransactions
+  ? sortedTransactions
+  : sortedTransactions.slice(0, 10);
 
-    return matchesSearch && matchesMonth && matchesYear;
-  });
-  const displayedForTable = showAllTransactions
-    ? filteredForTable
-    : filteredForTable.slice(0, 10);
-
-  const lastPayment = creditTransactions
+  const lastPayment = normalizedCreditTransactions
     .filter((tx) => tx.type === 'income' || /payment/i.test(tx.transaction_type || tx.description || ''))
     .sort((a, b) => new Date(b.date) - new Date(a.date))[0];
 
@@ -227,9 +250,9 @@ function CreditDetails({ selectedClient }) {
     <div className="background-card">
       <div className="spend-details-page">
         <div className="spend-header">
-          <div>
+          <div className='spend-header-info'>
             <p className="eyebrow">Credit Account</p>
-            <h1>Credit Account Insights</h1>
+            <h1 className='account-title'>Credit Account Overview</h1>
           </div>
           <div className="spend-balance-card">
             <span className="spend-balance-label">Current Balance</span>
@@ -244,16 +267,16 @@ function CreditDetails({ selectedClient }) {
               <div className="section-header">
                 <div>
                   <h2>Credit Summary</h2>
-                  <p className="muted">Your most recent statement activity and payment health summary.</p>
                   <p>
-                    Over the last six months, this account has averaged {formatCurrency(averageExpense)} in monthly charges, with total payments of {formatCurrency(totalPayments)} against total charges of {formatCurrency(totalSpent)}. Keeping your credit utilization low and making timely payments can help improve your credit score and financial health.
+                    Over the last six months, this account has averaged <strong>{formatCurrency(averageExpense)}</strong> in monthly charges, with total payments of <strong>{formatCurrency(totalPayments)}</strong> against total charges of <strong>{formatCurrency(totalSpent)}</strong>.
                   </p>
                 </div>
               </div>
               <div className="insight-stat-row">
                 <div>
                   <span className="insight-label">Available credit</span>
-                  <strong>{availableCredit != null ? formatCurrency(availableCredit) : 'N/A'}</strong>
+                  {/* <strong>{availableCredit != null ? formatCurrency(availableCredit) : 'N/A'}</strong> */}
+                  <strong>$5,000</strong>
                 </div>
                 <div>
                   <span className="insight-label">Suggested min payment</span>
@@ -277,6 +300,10 @@ function CreditDetails({ selectedClient }) {
                 <div>
                   <h2>Monthly card activity</h2>
                   <span className="muted">6-month view of charges vs payments.</span>
+                </div>
+                <div className="chart-legend">
+                  <span className="legend-item"><span className="legend-swatch income" />Payments</span>
+                  <span className="legend-item"><span className="legend-swatch expense" />Charges</span>
                 </div>
               </div>
               <div className="spend-bar-chart">
@@ -325,7 +352,7 @@ function CreditDetails({ selectedClient }) {
               </div>
             </section>
 
-            <section className="spend-transactions-card">
+            {/* <section className="spend-transactions-card">
               <div className="section-header">
                 <div>
                   <h2>Recent credit activity</h2>
@@ -370,7 +397,7 @@ function CreditDetails({ selectedClient }) {
                   </tbody>
                 </table>
               </div>
-            </section>
+            </section> */}
           </div>
 
           <aside className="spend-calendar-card">
@@ -384,6 +411,9 @@ function CreditDetails({ selectedClient }) {
                     <p className="eyebrow">Calendar</p>
                     <h2>{currentMonthLabel}</h2>
                   </div>
+                  <button className="calendar-nav-button" onClick={handleNextMonth} type="button">
+                    →
+                  </button>
                 </div>
                 <button className="calendar-action" onClick={handleToday} type="button">Today</button>
               </div>
@@ -422,8 +452,6 @@ function CreditDetails({ selectedClient }) {
                     </div>
                   );
                 })}
-              </div>
-              <div className="calendar-footer">
               </div>
               {startDate && (
                 <div className="calendar-transactions-section">
@@ -468,72 +496,104 @@ function CreditDetails({ selectedClient }) {
             </div>
           </aside>
           <section className="spend-transactions-card">
-              <div className="section-header">
-                <div>
-                  <h2>Transactions Table</h2>
-                  <p className="muted">All recent transactions for your Credit account.</p>
-                </div>
+              <div className="transaction-section-header">
+                  <div>
+                    <h2>Transactions Table</h2>
+                    <p className="muted">Transaction type filters and recent Spend activity.</p>
+                  </div>
+                  <div className="transaction-type-filters">
+                    {transactionTypes.map((type) => {
+                      const typeMeta = getTransactionTypeMeta(type, type);
+                      const isActive = selectedTransactionType === type;
+                      return (
+                        <button
+                          key={type}
+                          type="button"
+                          className={`transaction-filter-btn ${isActive ? 'active' : ''}`}
+                          onClick={() => setSelectedTransactionType(isActive ? '' : type)}
+                        >
+                          {typeMeta.label}
+                        </button>
+                      );
+                    })}
+                  </div>
               </div>
               <div className="transaction-controls">
+                {/*  Search */}
                 <input
                   type="text"
-                  placeholder="Search by merchant..."
+                  placeholder="Search transactions..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="transaction-search"
                 />
-
-                <select
-                  value={selectedMonth}
-                  onChange={(e) => setSelectedMonth(e.target.value)}
-                >
-                  <option value="">All Months</option>
-                  {monthNames.map((m, i) => (
-                    <option key={i} value={i + 1}>
-                      {m}
-                    </option>
-                  ))}
-                </select>
-
-                <select
-                  value={selectedYear}
-                  onChange={(e) => setSelectedYear(e.target.value)}
-                >
-                  <option value="">All Years</option>
-                  {[...new Set(creditTransactions.map(tx => tx.date.split('/')[2]))].map(
-                    (year) => (
-                      <option key={year} value={year}>
-                        {year}
-                      </option>
-                    )
-                  )}
-                </select>
-
+              
+                              {/*  Month filter */}
+                              <select
+                                value={selectedMonth}
+                                onChange={(e) => setSelectedMonth(e.target.value)}
+                              >
+                                <option value="">All Months</option>
+                                {monthNames.map((m, i) => (
+                                  <option key={i} value={i + 1}>
+                                    {m}
+                                  </option>
+                                ))}
+                              </select>
+              
+                              {/*  Year filter */}
+                              <select
+                                value={selectedYear}
+                                onChange={(e) => setSelectedYear(e.target.value)}
+                              >
+                                <option value="">All Years</option>
+                                {[...new Set(normalizedCreditTransactions.map(tx => tx.date.split('/')[2]))].map(
+                                  (year) => (
+                                    <option key={year} value={year}>
+                                      {year}
+                                    </option>
+                                  )
+                                )}
+                              </select>
+              
               </div>
               <table className="transaction-table">
                 <thead>
                   <tr>
+                    <th className="transaction-type-column">Type</th>
                     <th>Date</th>
-                    <th>Name of Institution</th>
+                    <th>Description</th>
+                    <th>Category</th>
                     <th>Amount</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {displayedForTable.map((item, index) => {
+                  {displayedTransactions.map((item, index) => {
                     const isPositive = item.type === 'income';
+                     const typeMeta = getTransactionTypeMeta(item.transaction_type, item.type);
                     return (
-                      <tr key={index}>
+                      <tr key={index} className={typeMeta.className}>
+                        <td>
+                          <abbr
+                            className={`transaction-type-badge ${typeMeta.className}`}
+                            title={typeMeta.label}
+                            aria-label={typeMeta.label}
+                          >
+                            {typeMeta.abbr}
+                          </abbr>
+                        </td>
                         <td>{item.date}</td>
                         <td>{item.description}</td>
+                        <td>{item.category || '—'}</td>
                         <td className={`transaction-amount ${isPositive ? 'positive' : 'expense'}`}>
-                          {isPositive ? '+' : '-'}{formatCurrency(item.amount)}
+                          {isPositive ? '+' : '-'}{formatCurrency(Math.abs(item.amount))}
                         </td>
                       </tr>
                     );
                   })}
                 </tbody>
               </table>
-              {filteredForTable.length > 10 && (
+              {filteredTransactions.length > 10 && (
                 <button 
                   className="btn show-more-button" 
                   onClick={() => setShowAllTransactions(!showAllTransactions)}

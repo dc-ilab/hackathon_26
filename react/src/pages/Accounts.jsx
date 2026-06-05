@@ -396,7 +396,7 @@ function Accounts({ selectedClient, openTab, clients}) {
       case 'Growth':
         return { id: 'growth-account', title: 'Growth', component: GrowthDetails };
       case 'Auto Loan':
-        return { id: 'loan-account', title: 'Loan', component: LoanDetails };
+        return { id: 'loan-account', title: 'Loan', component: AutoLoanDetails };
       default:
         return null;
     }
