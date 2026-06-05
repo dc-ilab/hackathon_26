@@ -183,7 +183,7 @@ function GrowthDetails({ selectedClient }) {
           <div>
             <p className="eyebrow">Growth Account</p>
             <h1>Growth Account Insights</h1>
-            <p className="muted">A snapshot of your spending trends, cash flow, and recent activity for the Growth account.</p>
+            <p className="muted">A snapshot of spending trends, cash flow, and recent activity for the Growth account.</p>
           </div>
           <div className="spend-balance-card">
             <span className="spend-balance-label">Current Balance</span>
@@ -358,7 +358,7 @@ function GrowthDetails({ selectedClient }) {
               <div className="transaction-section-header">
                 <div>
                   <h2>Transactions</h2>
-                  <p className="muted">All recent transactions for your Growth account.</p>
+                  <p className="muted">All recent transactions for the Growth account.</p>
                 </div>
                 <div className="transaction-type-filters">
                   {transactionTypes.map((type) => {

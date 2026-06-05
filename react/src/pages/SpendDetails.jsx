@@ -405,7 +405,7 @@ const displayedTransactions = showAllTransactions
               <div className="section-header">
                 <div>
                   <h2>Transactions Table</h2>
-                  <p className="muted">All recent transactions for your Spend account.</p>
+                  <p className="muted">All recent transactions for the Spend account.</p>
                 </div>
               </div>
               <div className="transaction-controls">

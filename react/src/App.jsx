@@ -10,6 +10,7 @@ import SpendDetails from './pages/SpendDetails';
 import ReserveDetails from './pages/ReserveDetails';
 import GrowthDetails from './pages/GrowthDetails';
 import CreditDetails from './pages/CreditDetails';
+import AutoLoanDetails from './pages/AutoLoanDetails';
 
 const formatCurrency = (value) =>
   new Intl.NumberFormat('en-US', {
@@ -93,6 +94,15 @@ function App() {
       const type = String(account.type || account.category || '').toLowerCase();
       return type.includes('credit');
     });
+  }, [selectedClient]);
+
+  const hasAutoLoanAccount = useMemo(() => {
+    if (!selectedClient?.accounts) return false;
+    return selectedClient.accounts.some((account) => String(account.type || '').toLowerCase() === 'auto loan');
+  }, [selectedClient]);
+
+  const isEthanAccount = useMemo(() => {
+    return String(selectedClient?.name || '').toLowerCase().includes('ethan');
   }, [selectedClient]);
 
   const openTab = useCallback((id, name, Component, extraProps = {}) => {
@@ -273,6 +283,11 @@ function App() {
               <button className="submenu-item" onClick={() => handleMenuItemClick('growth', 'Growth', GrowthDetails)}>
                 Growth
               </button>
+              {isEthanAccount && hasAutoLoanAccount && (
+                <button className="submenu-item" onClick={() => handleMenuItemClick('auto-loan', 'Auto Loan', AutoLoanDetails)}>
+                  Auto Loan
+                </button>
+              )}
               {hasCreditAccount && (
                 <button className="submenu-item" onClick={() => handleMenuItemClick('credit', 'Credit', CreditDetails)}>
                   Credit

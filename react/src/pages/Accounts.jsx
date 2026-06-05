@@ -412,7 +412,7 @@ function Accounts({ selectedClient, openTab }) {
         <section className="overview-insight-section">
           <h2>Accounts Overview</h2>
           <p className="insight-description">
-            This chart displays the trends across your accounts, showing how each account's balance changed over the last six months.
+            This chart displays the trends across accounts, showing how each account's balance changed over the last six months.
           </p>
 
           <div className="overview-grid">

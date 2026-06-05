@@ -244,9 +244,9 @@ function CreditDetails({ selectedClient }) {
               <div className="section-header">
                 <div>
                   <h2>Credit Summary</h2>
-                  <p className="muted">Your most recent statement activity and payment health summary.</p>
+                  <p className="muted">The most recent statement activity and payment health summary.</p>
                   <p>
-                    Over the last six months, this account has averaged {formatCurrency(averageExpense)} in monthly charges, with total payments of {formatCurrency(totalPayments)} against total charges of {formatCurrency(totalSpent)}. Keeping your credit utilization low and making timely payments can help improve your credit score and financial health.
+                    Over the last six months, this account has averaged <strong>{formatCurrency(averageExpense)}</strong> in monthly charges, with total payments of <strong>{formatCurrency(totalPayments)}</strong> against total charges of <strong>{formatCurrency(totalSpent)}</strong>. Keeping credit utilization low and making timely payments can help improve credit score and financial health.
                   </p>
                 </div>
               </div>
@@ -471,7 +471,7 @@ function CreditDetails({ selectedClient }) {
               <div className="section-header">
                 <div>
                   <h2>Transactions Table</h2>
-                  <p className="muted">All recent transactions for your Credit account.</p>
+                  <p className="muted">All recent transactions for the Credit account.</p>
                 </div>
               </div>
               <div className="transaction-controls">
