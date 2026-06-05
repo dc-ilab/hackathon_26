@@ -286,7 +286,15 @@ function Homepage({ selectedClient, setSelectedId, filteredClients, openTab, cli
     const client = clients.find(c => c.id === rel.id);
       return client ? { ...client, relation: rel.relation } : null;
     }).filter(Boolean) || [];
+const getAccountNameFromId = (accountId) => {
+    if (!accountId) return null;
 
+    const account = selectedClient.accounts.find(
+      (acct) => acct.account_id === accountId
+    );
+
+    return account?.type || null;
+  };
 
 
 
@@ -368,13 +376,19 @@ function Homepage({ selectedClient, setSelectedId, filteredClients, openTab, cli
                                 <h3 className="goal-title">
                                   {goal.description || goal.goal}
                                 </h3>
-
-                                <div className="goal-type">
-                                  {goal.targetAmount
-                                    ? 'Savings goal'
-                                    : 'Milestone goal'}
+                                <div className='homepage-linked-account-split'>
+                                  {goal.linkedAccount && (
+                                    <div className="goal-linked-account">
+                                      <strong>Linked to: {getAccountNameFromId(goal.linkedAccount)} Account</strong>
+                                    </div>
+                                  )}
+                                  <div className="goal-type">
+                                    {goal.targetAmount
+                                      ? 'Savings goal'
+                                      : 'Milestone goal'}
+                                  </div>
                                 </div>
-
+                                
                                 <div className="goal-dates-row">
                                   <span>Start: {formatDate(goal.startDate) || 'Today'}</span>
                                   <span>Due: {formatDate(goal.date) || 'TBD'}</span>

@@ -130,6 +130,32 @@ function SpendDetails({ selectedClient }) {
         );
       })
     : [];
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedMonth, setSelectedMonth] = useState('');
+  const [selectedYear, setSelectedYear] = useState('');
+  const [selectedTransactionType, setSelectedTransactionType] = useState('');
+
+  const transactionTypes = [...new Set(
+    spendTransactions
+      .map((tx) => String(tx.transaction_type || tx.type || '').toLowerCase())
+      .filter(Boolean)
+  )];
+
+  const filteredTransactions = spendTransactions.filter((tx) => {
+    const txType = String(tx.transaction_type || tx.type || '').toLowerCase();
+    const matchesType = selectedTransactionType ? txType === selectedTransactionType : true;
+
+    const matchesSearch = tx.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const [month, , year] = tx.date.split('/');
+    const matchesMonth = selectedMonth ? parseInt(month, 10) === parseInt(selectedMonth, 10) : true;
+    const matchesYear = selectedYear ? year === selectedYear : true;
+    return matchesSearch && matchesMonth && matchesYear && matchesType;
+  });
+  const sortedTransactions = [...filteredTransactions].sort((a, b) => new Date(b.date) - new Date(a.date));
+  const displayedTransactions = showAllTransactions
+  ? sortedTransactions
+  : sortedTransactions.slice(0, 10);
+  
   const handleDateClick = (dateNumber) => {
     if (dateNumber < 1 || dateNumber > daysInMonth) return;
 
@@ -215,7 +241,7 @@ const displayedTransactions = showAllTransactions
         <div className="spend-header">
           <div className='spend-header-info'>
             <p className="eyebrow">Spend Account</p>
-            <h1>Spend Account Insights</h1>
+            <h1 className='account-title'>Spend Account Overview</h1>
           </div>
           <div className="spend-balance-card">
             <span className="spend-balance-label">Current Balance</span>
@@ -355,9 +381,6 @@ const displayedTransactions = showAllTransactions
                     </div>
                   );
                 })}
-              </div>
-              <div className="calendar-footer">
-                {/* <div className="calendar-note">Upcoming payments and spend reminders are highlighted here.</div> */}
               </div>
               {startDate && (
                 <div className="calendar-transactions-section">

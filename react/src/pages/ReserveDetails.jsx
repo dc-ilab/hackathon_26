@@ -93,10 +93,13 @@ const getReserveTransactions = (reserveTransactions) => {
   return reserveTransactions || [];
 };
 
-function ReserveDetails({ selectedClient }) {
+function ReserveDetails({ selectedClient, clients, handleClientChange }) {
   const reserveTransactions = getReserveTransactions(selectedClient.reserveTransactions);
   const monthlySpendData = buildMonthlyTotals(reserveTransactions);
-  const [selectedDate, setSelectedDate] = useState(null);
+
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+
   const [calendarMonth, setCalendarMonth] = useState(new Date(2026, 3, 1));
   const [showAllTransactions, setShowAllTransactions] = useState(false);
   const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -112,17 +115,30 @@ function ReserveDetails({ selectedClient }) {
     calendarMonth.getFullYear() === today.getFullYear();
 
   const reserveAccount = selectedClient.accounts.find((account) => account.type === 'Reserve');
-  console.log("Reserve Account:", reserveAccount);
-  const isJointAccount =
-    reserveAccount?.isJoint === 'Y' ||
-    reserveAccount?.isJoint === true ||
-    String(reserveAccount?.isJoint).toLowerCase() === 'y';
+  const isJointAccount = String(reserveAccount?.isJoint).toLowerCase() === 'y';
+  const currentCustomerId = selectedClient.customer_id;
+  const otherCustomerId = currentCustomerId === reserveAccount?.customer_id
+    ? reserveAccount?.jointCustomerId
+    : reserveAccount?.customer_id;
+  const sharedClient = clients?.find((c) => c.customer_id === otherCustomerId);
+  const relatedClient = selectedClient.relationships?.find((rel) => rel.id === otherCustomerId);  
+
+
   const highestMonthlyValue = Math.max(...monthlySpendData.flatMap((item) => [item.income, item.expense]));
   const totalExpense = monthlySpendData.reduce((sum, item) => sum + item.expense, 0);
   const totalIncome = monthlySpendData.reduce((sum, item) => sum + item.income, 0);
   const averageExpense = Math.round(totalExpense / monthlySpendData.length);
-  const selectedTransactions = selectedDate
-    ? reserveTransactions.filter((item) => item.date === selectedDate)
+  const selectedTransactions =
+  startDate && !endDate
+    ? reserveTransactions.filter((item) => item.date === startDate)
+    : startDate && endDate
+    ? reserveTransactions.filter((item) => {
+        const itemDate = new Date(item.date);
+        return (
+          itemDate >= new Date(startDate) &&
+          itemDate <= new Date(endDate)
+        );
+      })
     : [];
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -139,11 +155,8 @@ function ReserveDetails({ selectedClient }) {
   const filteredTransactions = reserveTransactions.filter((tx) => {
     const txType = String(tx.transaction_type || tx.type || '').toLowerCase();
     const matchesType = selectedTransactionType ? txType === selectedTransactionType : true;
-    const matchesSearch =
-      tx.description.toLowerCase().includes(searchTerm.toLowerCase());
-
+    const matchesSearch = tx.description.toLowerCase().includes(searchTerm.toLowerCase());
     const [month, , year] = tx.date.split('/');
-
     const matchesMonth = selectedMonth
       ? parseInt(month, 10) === parseInt(selectedMonth, 10)
       : true;
@@ -154,39 +167,72 @@ function ReserveDetails({ selectedClient }) {
 
     return matchesSearch && matchesMonth && matchesYear && matchesType;
   });
+  const sortedTransactions = [...filteredTransactions].sort((a, b) => new Date(b.date) - new Date(a.date));
   const displayedTransactions = showAllTransactions
-    ? filteredTransactions
-    : filteredTransactions.slice(0, 10);
+  ? sortedTransactions
+  : sortedTransactions.slice(0, 10);
+
 
   const handleDateClick = (dateNumber) => {
-    if (dateNumber < 1 || dateNumber > daysInMonth) return;
-    const monthString = String(calendarMonth.getMonth() + 1).padStart(2, '0');
-    const dateString = `${monthString}/${String(dateNumber).padStart(2, '0')}/${calendarMonth.getFullYear()}`;
-    setSelectedDate(dateString);
-  };
+  if (dateNumber < 1 || dateNumber > daysInMonth) return;
+
+  const monthString = String(calendarMonth.getMonth() + 1).padStart(2, '0');
+  const dateString = `${monthString}/${String(dateNumber).padStart(2, '0')}/${calendarMonth.getFullYear()}`;
+
+  if (startDate && !endDate && startDate === dateString) {
+    setStartDate(null);
+    setEndDate(null);
+    return;
+  }
+
+  // CASE 1: no start → set start
+  if (!startDate) {
+    setStartDate(dateString);
+    setEndDate(null);
+    return;
+  }
+
+  // CASE 2: start exists but no end → create range
+  if (startDate && !endDate) {
+    if (new Date(dateString) < new Date(startDate)) {
+      setEndDate(startDate);
+      setStartDate(dateString);
+    } else {
+      setEndDate(dateString);
+    }
+    return;
+  }
+
+  // CASE 3: reset
+  setStartDate(dateString);
+  setEndDate(null);
+};
 
   const handlePrevMonth = () => {
-    setSelectedDate(null);
+    setStartDate(null);
+    setEndDate(null);
     setCalendarMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
+  };
+  const handleNextMonth = () => {
+    setStartDate(null);
+    setEndDate(null);
+    setCalendarMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
   };
 
   const handleToday = () => {
     const now = new Date();
-    setSelectedDate(null);
+    setStartDate(null);
+    setEndDate(null);
     setCalendarMonth(new Date(now.getFullYear(), now.getMonth(), 1));
   };
 
   const getCustomerName = (customerId) => {
-    if (customerId === selectedClient.customer_id) {
-      return selectedClient.name;
-    }
+  const client = clients.find(
+    (c) => c.customer_id === customerId
+  );
 
-    const relationship = selectedClient.relationships?.find(
-      (rel) => rel.id === customerId
-    );
-
-    return relationship ? relationship.relation : customerId;
-  };
+  return client?.name || customerId;
+};
 
   if (!reserveAccount) {
     return <div className="spend-details-page">No Reserve account data available.</div>;
@@ -198,13 +244,11 @@ function ReserveDetails({ selectedClient }) {
         <div className="spend-header">
           <div>
             <p className="eyebrow">Reserve Account</p>
-            <h1>Reserve Account Insights</h1>
-            <p className="muted">A snapshot of your spending trends, cash flow, and recent activity for the Reserve account.</p>
+            <h1 className='account-title'>Reserve Account Overview</h1>
           </div>
           <div className="spend-balance-card">
             <span className="spend-balance-label">Current Balance</span>
             <span className="spend-balance-value">{formatCurrency(reserveAccount.balance)}</span>
-            <span className="spend-balance-note">Account is healthy and operating within budget.</span>
           </div>
         </div>
 
@@ -214,20 +258,41 @@ function ReserveDetails({ selectedClient }) {
               <div className="section-header">
                 <div>
                   <h2>Account Insights</h2>
-                  <p className="muted">Overview of spending habits and account cash flow.</p>
                 </div>
               </div>
+              {isJointAccount && sharedClient && (
+                <div className="shared-with-card">
+                  <h3 className="shared-with-title">Shared With</h3>
+
+                  <div
+                    className="joint-relationship-card"
+                    onClick={() => handleClientChange(sharedClient)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleClientChange(sharedClient);
+                    }}
+                  >
+                    <div className="homepage-relationship-name">
+                      {sharedClient.name}
+                    </div>
+
+                    <div className="homepage-relationship-type">
+                      {relatedClient?.relation}
+                    </div>
+                  </div>
+                </div>
+              )}
               <p>
-                Over the last six months, this account has averaged <strong>{formatCurrency(averageExpense)}</strong> in expenses per month while receiving an average income of <strong>{formatCurrency(Math.round(totalIncome / monthlySpendData.length))}</strong>.
-                Most spending was on food, transport, and subscriptions, with income comfortably covering expenses each month.
+                Over the last six months, this account has averaged <strong>{formatCurrency(averageExpense)}</strong> in withdrawals per month while receiving an average deposit of <strong>{formatCurrency(Math.round(totalIncome / monthlySpendData.length))}</strong>.
               </p>
               <div className="insight-stat-row">
                 <div>
-                  <span className="insight-label">Total income</span>
+                  <span className="insight-label">Total Desposits</span>
                   <strong>{formatCurrency(totalIncome)}</strong>
                 </div>
                 <div>
-                  <span className="insight-label">Total expense</span>
+                  <span className="insight-label">Total Withdrawals</span>
                   <strong>{formatCurrency(totalExpense)}</strong>
                 </div>
               </div>
@@ -236,12 +301,12 @@ function ReserveDetails({ selectedClient }) {
             <section className="spend-graph-card">
               <div className="section-header">
                 <div>
-                  <h2>Income vs Expense</h2>
+                  <h2>Contributions vs Withdrawals</h2>
                   <span className="muted">Monthly performance for the last six months.</span>
                 </div>
                 <div className="chart-legend">
-                  <span className="legend-item"><span className="legend-swatch income" />Income</span>
-                  <span className="legend-item"><span className="legend-swatch expense" />Expense</span>
+                  <span className="legend-item"><span className="legend-swatch income" />Contributions</span>
+                  <span className="legend-item"><span className="legend-swatch expense" />Withdrawals</span>
                 </div>
               </div>
               <div className="spend-bar-chart">
@@ -302,6 +367,9 @@ function ReserveDetails({ selectedClient }) {
                     <p className="eyebrow">Calendar</p>
                     <h2>{currentMonthLabel}</h2>
                   </div>
+                  <button className="calendar-nav-button" onClick={handleNextMonth} type="button">
+                    →
+                  </button>
                 </div>
                 <button className="calendar-action" onClick={handleToday} type="button">Today</button>
               </div>
@@ -316,7 +384,17 @@ function ReserveDetails({ selectedClient }) {
                   return (
                     <div
                       key={index}
-                      className={`calendar-cell ${isCurrent ? 'today' : ''} ${isValidDate ? 'clickable' : 'inactive'} ${selectedDate === dateString ? 'selected' : ''}`}
+                      className={`
+                        calendar-cell ${isCurrent ? 'today' : ''} 
+                        ${isValidDate ? 'clickable' : 'inactive'} 
+                        ${startDate === dateString || endDate === dateString ? 'selected' : ''}
+                        ${startDate && endDate && dateString &&
+                          new Date(dateString) > new Date(startDate) &&
+                          new Date(dateString) < new Date(endDate)
+                            ? 'range'
+                            : ''
+                        }
+                      `}
                       onClick={() => isValidDate && handleDateClick(dateNumber)}
                       role={isValidDate ? 'button' : undefined}
                       tabIndex={isValidDate ? 0 : -1}
@@ -331,14 +409,17 @@ function ReserveDetails({ selectedClient }) {
                   );
                 })}
               </div>
-              <div className="calendar-footer">
-                {/* <div className="calendar-note">Upcoming payments and spend reminders are highlighted here.</div> */}
-              </div>
-              {selectedDate && (
+              {startDate && (
                 <div className="calendar-transactions-section">
                   <div className="section-header">
                     <div>
-                      <h3>Transactions on {selectedDate}</h3>
+                      <h3>
+  {startDate && !endDate
+    ? `Transactions on ${startDate}`
+    : startDate && endDate
+    ? `Transactions from ${startDate} to ${endDate}`
+    : ''}
+</h3>
                       <p className="muted">Showing activity for the selected calendar date.</p>
                     </div>
                   </div>
@@ -349,7 +430,6 @@ function ReserveDetails({ selectedClient }) {
                           <th>Date</th>
                           <th>Name</th>
                           <th>Amount</th>
-                           {isJointAccount && <th>Customer</th>}
                         </tr>
                       </thead>
                       <tbody>
@@ -358,15 +438,8 @@ function ReserveDetails({ selectedClient }) {
                             <td>{item.date}</td>
                             <td>{item.description}</td>
                             <td className={`transaction-amount ${item.type === 'income' ? 'positive' : 'expense'}`}>
-                              {item.type === 'income' ? '+' : '-'}{formatCurrency(item.amount)}
+                              {item.type === 'income' ? '+' : '-'}{formatCurrency(Math.abs(item.amount))}
                             </td>
-                            
-{isJointAccount && (
-  <td className="transaction-customer">
-    {getCustomerName(item.customer_id)}
-  </td>
-)}
-
                           </tr>
                         ))}
                       </tbody>
@@ -448,6 +521,8 @@ function ReserveDetails({ selectedClient }) {
                     <th>Description</th>
                     <th>Category</th>
                     <th>Amount</th>
+
+                    {isJointAccount && <th>Customer</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -455,7 +530,7 @@ function ReserveDetails({ selectedClient }) {
                     const isPositive = item.type === 'income';
                     const typeMeta = getTransactionTypeMeta(item.transaction_type, item.type);
                     return (
-                      <tr key={index} className={typeMeta.className}>
+                      <tr key={index} className={typeMeta.className} >
                         <td>
                           <abbr
                             className={`transaction-type-badge ${typeMeta.className}`}
@@ -470,7 +545,12 @@ function ReserveDetails({ selectedClient }) {
                         <td>{item.category || '—'}</td>
                         <td className={`transaction-amount ${isPositive ? 'positive' : 'expense'}`}>
                           {isPositive ? '+' : '-'}{formatCurrency(item.amount)}
-                        </td>
+                        </td>                      
+                        {isJointAccount && (
+                          <td >
+                            {getCustomerName(item.customer_id)}
+                          </td>
+                        )}
                       </tr>
                     );
                   })}

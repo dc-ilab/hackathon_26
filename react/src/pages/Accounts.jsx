@@ -334,9 +334,7 @@ if (!filteredAccounts.length) {
   );
 }
 
-function Accounts({ selectedClient, openTab }) {
-  // const assetAccounts = selectedClient.accounts.filter((account) => account.balance > 0);
-  // const liabilityAccounts = selectedClient.accounts.filter((account) => account.balance < 0);
+function Accounts({ selectedClient, openTab, clients}) {
   const { assetAccounts, liabilityAccounts } = getAssetsAndLiabilities(selectedClient.accounts);
   const orderedAccounts = [...assetAccounts, ...liabilityAccounts];
   const assetColors = ['#bdddbd','#71B48D','#404E7C', '#4a3974'];
@@ -503,6 +501,7 @@ function Accounts({ selectedClient, openTab }) {
                               style={{ backgroundColor: ['#bdddbd','#71B48D','#404E7C', '#4a3974'][i%4] }}
                             ></div>
                             {account.type}
+                            {account.isJoint === 'Y' && (<span className="joint-badge">Joint</span>)}
                           </div>
                           </td>
                           <td>{formatCurrency(account.balance)}</td>
