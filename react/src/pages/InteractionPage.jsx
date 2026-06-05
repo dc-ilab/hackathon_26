@@ -957,7 +957,7 @@ const getJointAccountHolderName = (account) => {
                   setIsGoalUpdateOpen((prev) => !prev)
                 }
               >
-                <h2 className='update-goals-title'>Update Client Goals...?</h2>
+                <h2 className='update-goals-title'>Update Client Goals</h2>
                 <span
                   className={`goal-update-arrow ${isGoalUpdateOpen ? 'open' : ''}`}>
                   🛆
