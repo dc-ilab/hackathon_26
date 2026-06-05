@@ -218,6 +218,8 @@ const [contactDraft, setContactDraft] = useState({
                       onChange={(e) => handleFormChange('date', e.target.value)}
                     />
                   </label>
+                  <label>
+                    </label>
                   <label className="checkbox-label">
                     <input
                       type="checkbox"
