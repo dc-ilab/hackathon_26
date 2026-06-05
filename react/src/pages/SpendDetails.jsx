@@ -152,9 +152,11 @@ function SpendDetails({ selectedClient }) {
     const matchesYear = selectedYear ? year === selectedYear : true;
     return matchesSearch && matchesMonth && matchesYear && matchesType;
   });
+  const sortedTransactions = [...filteredTransactions].sort((a, b) => new Date(b.date) - new Date(a.date));
   const displayedTransactions = showAllTransactions
-    ? filteredTransactions
-    : filteredTransactions.slice(0, 10);
+  ? sortedTransactions
+  : sortedTransactions.slice(0, 10);
+  
   const handleDateClick = (dateNumber) => {
     if (dateNumber < 1 || dateNumber > daysInMonth) return;
 
@@ -219,7 +221,7 @@ function SpendDetails({ selectedClient }) {
         <div className="spend-header">
           <div className='spend-header-info'>
             <p className="eyebrow">Spend Account</p>
-            <h1>Spend account insights</h1>
+            <h1 className='account-title'>Spend Account Overview</h1>
           </div>
           <div className="spend-balance-card">
             <span className="spend-balance-label">Current Balance</span>
@@ -360,9 +362,6 @@ function SpendDetails({ selectedClient }) {
                     </div>
                   );
                 })}
-              </div>
-              <div className="calendar-footer">
-                {/* <div className="calendar-note">Upcoming payments and spend reminders are highlighted here.</div> */}
               </div>
               {startDate && (
                 <div className="calendar-transactions-section">
