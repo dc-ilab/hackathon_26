@@ -615,7 +615,7 @@ const [contactDraft, setContactDraft] = useState({
         
 
         {/* Recent Activity */}
-        <div className="module module--recent-activity card">
+        {/* <div className="module module--recent-activity card">
           <h2 className="module__title">Recent Activity</h2>
           <div className="module__content">
             <ul className="activity-list">
@@ -639,7 +639,7 @@ const [contactDraft, setContactDraft] = useState({
               ))}
             </ul>
           </div>
-        </div>
+        </div> */}
 
         {/* Opportunities 
         <div className="module module--opportunities card">
