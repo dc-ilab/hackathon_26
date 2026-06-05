@@ -100,6 +100,51 @@ function SpendDetails({ selectedClient }) {
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   
+  const categoryTotals = {};
+  spendTransactions.forEach((tx) => {
+    if (tx.type !== 'expense') return;
+    const category = tx.category || 'Other';
+    categoryTotals[category] =
+      (categoryTotals[category] || 0) + Math.abs(tx.amount);
+  });
+
+  const totalCategorySpend = Object.values(categoryTotals).reduce(
+    (sum, val) => sum + val,
+    0
+  );
+
+  const categoryData = Object.entries(categoryTotals).map(
+    ([category, value]) => ({
+      category,
+      value,
+      percent: value / totalCategorySpend,
+    })
+  );
+
+  // ✅ FIXED donut gradient calculation
+let currentAngle = 0;
+
+const donutGradient = categoryData
+  .map((c, i) => {
+    const colors = [
+      '#71B48D',
+      '#BDDDBD',
+      '#404E7C',
+      '#db8c4f',
+      '#eeceb6',
+      '#a45f8e',
+      '#808080',
+    ];
+
+    const sliceAngle = c.percent * 360;
+    const start = currentAngle;
+    const end = currentAngle + sliceAngle;
+
+    currentAngle = end;
+
+    return `${colors[i % colors.length]} ${start}deg ${end}deg`;
+  })
+  .join(',');
 
   const [calendarMonth, setCalendarMonth] = useState(new Date(2026, 3, 1));
   const [showAllTransactions, setShowAllTransactions] = useState(false);
@@ -406,6 +451,56 @@ const sortedTransactions = [...filteredTransactions].sort((a, b) => new Date(b.d
               )}
             </div>
           </aside>
+          <section className="spend-category-card">
+            <div className="section-header">
+              <div>
+                <h2>Spending by Category</h2>
+                <span className="muted">
+                  Percentage of total expenses by category
+                </span>
+              </div>
+            </div>
+            <div className="category-center-wrapper">
+            <div className="category-layout">
+
+              {/* Donut */}
+              <div className="category-donut">
+                <div
+                  className="donut-chart"
+                  style={{
+                    background: `conic-gradient(${donutGradient})`,
+                  }}
+                />
+              </div>
+
+              {/* Legend */}
+              <div className="category-legend">
+                {categoryData.map((c, i) => {
+                  const colors = [
+                    '#71B48D',
+                    '#BDDDBD',
+                    '#404E7C',
+                    '#db8c4f',
+                    '#eeceb6',
+                    '#a45f8e',
+                    '#979797',
+                  ];
+                  return (
+                    <div key={c.category} className="legend-item">
+                      <span
+                        className="legend-color"
+                        style={{ background: colors[i % colors.length] }}
+                      />
+                      <span>
+                        {c.category} ({Math.round(c.percent * 100)}%)
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+              </div>
+            </div>
+          </section>
           <section className="spend-transactions-card">
               <div className="transaction-section-header">
                 <div>
