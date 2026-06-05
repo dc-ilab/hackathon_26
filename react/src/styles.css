@@ -3321,6 +3321,79 @@ body{
   grid-column: 1 / -1;
 }
 
+.irregular-transactions-alert {
+  background: linear-gradient(135deg, rgba(255, 245, 245, 0.95) 0%, rgba(255, 250, 250, 0.95) 100%);
+  border: 2px solid #e74c3c;
+  border-left: 6px solid #e74c3c;
+  border-radius: 20px;
+  padding: 24px;
+  grid-column: 1 / -1;
+  margin-bottom: 10px;
+}
+
+.alert-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.alert-icon {
+  font-size: 32px;
+  line-height: 1;
+  color: #e74c3c;
+  min-width: 40px;
+  text-align: center;
+}
+
+.alert-content h2 {
+  margin: 0 0 4px 0;
+  color: #2c3e50;
+  font-size: 18px;
+}
+
+.alert-content .muted {
+  margin: 0;
+  color: #e74c3c;
+  font-weight: 500;
+}
+
+.alert-table-container {
+  overflow-x: auto;
+}
+
+.alert-transactions-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.alert-transactions-table thead {
+  background-color: rgba(231, 76, 60, 0.08);
+}
+
+.alert-transactions-table th {
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  color: #2c3e50;
+  border-bottom: 2px solid #e74c3c;
+}
+
+.alert-transactions-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(231, 76, 60, 0.2);
+}
+
+.alert-transactions-table tbody tr:hover {
+  background-color: rgba(231, 76, 60, 0.04);
+}
+
+.alert-transactions-table .amount-highlight {
+  font-weight: 600;
+  color: #e74c3c;
+}
+
 .section-header {
   display: flex;
   justify-content: space-between;

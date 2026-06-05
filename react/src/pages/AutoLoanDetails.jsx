@@ -113,7 +113,7 @@ function AutoLoanLineChart({ data }) {
     y: padding + normalizeY(value),
   });
 
-  const normalizeY = (value) => padding + ((value - minValue) / range) * graphHeight;
+  const normalizeY = (value) => ((value - minValue) / range) * graphHeight;
 
   const [hoverPoint, setHoverPoint] = useState(null);
 
@@ -515,8 +515,8 @@ function AutoLoanDetails({ selectedClient }) {
                 <section className="spend-graph-card">
                   <div className="auto-loan-section-header">
                     <div>
-                      <h2>Loan Balance Trajectory</h2>
-                      <p className="muted">Auto Loan balance trajectory over the last six months.</p>
+                      <h2>Loan Balance Historical Data</h2>
+                      <p className="muted">Auto Loan balance over the last six months.</p>
                     </div>
                   </div>
                   <div className="auto-loan-chart-wrapper">
