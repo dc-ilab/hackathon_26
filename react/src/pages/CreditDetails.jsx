@@ -218,6 +218,7 @@ function CreditDetails({ selectedClient }) {
       : null;
   const minPayment = creditAccount?.balance ? Math.round(Math.max(0, Math.abs(creditAccount.balance) * 0.03)) : null;
   const dueDate = creditAccount?.maturityDate || creditAccount?.lastActivityDate || 'N/A';
+  const irregularTransactions = creditTransactions.filter((tx) => tx.transaction_amt < -500);
 
   if (!creditAccount) {
     return <div className="spend-details-page">No Credit account data available.</div>;
@@ -244,9 +245,9 @@ function CreditDetails({ selectedClient }) {
               <div className="section-header">
                 <div>
                   <h2>Credit Summary</h2>
-                  <p className="muted">Your most recent statement activity and payment health summary.</p>
+                  <p className="muted">The most recent statement activity and payment health summary.</p>
                   <p>
-                    Over the last six months, this account has averaged {formatCurrency(averageExpense)} in monthly charges, with total payments of {formatCurrency(totalPayments)} against total charges of {formatCurrency(totalSpent)}. Keeping your credit utilization low and making timely payments can help improve your credit score and financial health.
+                    Over the last six months, this account has averaged <strong>{formatCurrency(averageExpense)}</strong> in monthly charges, with total payments of <strong>{formatCurrency(totalPayments)}</strong> against total charges of <strong>{formatCurrency(totalSpent)}</strong>. Keeping credit utilization low and making timely payments can help improve credit score and financial health.
                   </p>
                 </div>
               </div>
@@ -324,7 +325,6 @@ function CreditDetails({ selectedClient }) {
                 </div>
               </div>
             </section>
-
             <section className="spend-transactions-card">
               <div className="section-header">
                 <div>
@@ -467,11 +467,42 @@ function CreditDetails({ selectedClient }) {
               )}
             </div>
           </aside>
+                  {irregularTransactions.length > 0 && (
+          <section className="irregular-transactions-alert">
+            <div className="alert-header">
+              <div className="alert-icon">⚠</div>
+              <div className="alert-content">
+                <h2>Large Transactions</h2>
+                <p className="muted">{irregularTransactions.length} transaction{irregularTransactions.length !== 1 ? 's' : ''} over $500 detected</p>
+              </div>
+            </div>
+            <div className="alert-table-container">
+              <table className="alert-transactions-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th>Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {irregularTransactions.slice(0, 8).map((tx) => (
+                    <tr key={`${tx.transaction_id || tx.date}-${tx.description}`}>
+                      <td>{tx.date}</td>
+                      <td>{tx.description}</td>
+                      <td className="amount-highlight">{formatCurrency(tx.amount)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
           <section className="spend-transactions-card">
               <div className="section-header">
                 <div>
                   <h2>Transactions Table</h2>
-                  <p className="muted">All recent transactions for your Credit account.</p>
+                  <p className="muted">All recent transactions for the Credit account.</p>
                 </div>
               </div>
               <div className="transaction-controls">
