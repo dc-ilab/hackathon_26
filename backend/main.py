@@ -119,6 +119,22 @@ def serialize_interaction(interaction):
     }
 
 
+def serialize_insights(insights):
+    return {
+        "customer_id": insights.customer_id,
+        "summary": insights.summary,
+        "category": insights.category,
+        "opportunity_1_title": insights.opportunity_1_title,
+        "opportunity_1_rationale": insights.opportunity_1_rationale,
+        "opportunity_1_priority": insights.opportunity_1_priority,
+        "opportunity_2_title": insights.opportunity_2_title,
+        "opportunity_2_rationale": insights.opportunity_2_rationale,
+        "opportunity_2_priority": insights.opportunity_2_priority,
+        "opportunity_3_title": insights.opportunity_3_title,
+        "opportunity_3_rationale": insights.opportunity_3_rationale,
+        "opportunity_3_priority": insights.opportunity_3_priority,
+    }
+
 def serialize_appointment(appointment):
     if appointment.appointment_date is None:
         date_str = None
@@ -146,7 +162,8 @@ def serialize_customer(customer, db=None):
     goals = [serialize_goal(goal) for goal in customer.goals]
     interactions = [serialize_interaction(interaction) for interaction in customer.interactions]
     appointments = [serialize_appointment(appointment) for appointment in customer.appointments]
-    
+    insights = [serialize_insights(insight) for insight in customer.insights]
+
     # Filter transactions by account type
     spend_transactions = [tx for tx in transactions if tx.get("account_type") == "Spend"]
     auto_loan_transactions = [tx for tx in transactions if tx.get("account_type") == "Auto Loan"]
@@ -266,7 +283,9 @@ def serialize_customer(customer, db=None):
         "age": customer.age,
         "employment": customer.employment,
         "maritalStatus": customer.marital_status,
+        "hasDependents": customer.has_dependents,
         "housingStatus": customer.housing_status,
+        "hasMortgage": customer.has_mortgage,
         "phoneNumber": customer.phone_num,
         "email": customer.email,
         "doNotCall": bool(customer.do_not_call) if customer.do_not_call is not None else False,
@@ -282,6 +301,7 @@ def serialize_customer(customer, db=None):
         "clientGoals": goals,
         "recentActivity": recent_activity,
         "relationships": relationship_items,
+        "transactions": transactions,
         "spendTransactions": spend_transactions,
         "autoLoanTransactions": auto_loan_transactions,
         "growthTransactions": growth_transactions,
@@ -293,6 +313,7 @@ def serialize_customer(customer, db=None):
         "notes": notes,
         "interactionNotes": interaction_notes,
         "appointments": appointments,
+        "insights": insights,   
     }
 
 
