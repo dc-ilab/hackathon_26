@@ -398,7 +398,7 @@ function Accounts({ selectedClient, openTab }) {
       case 'Growth':
         return { id: 'growth-account', title: 'Growth', component: GrowthDetails };
       case 'Auto Loan':
-        return { id: 'loan-account', title: 'Loan', component: LoanDetails };
+        return { id: 'loan-account', title: 'Loan', component: AutoLoanDetails };
       default:
         return null;
     }
@@ -433,7 +433,7 @@ function Accounts({ selectedClient, openTab }) {
             </article>
 
             <article className="overview-chart-card">
-              <h3>Account Trajectories</h3>
+              <h3>Account Changes Over Time</h3>
               <div className="chart-wrapper">
                 <LineChart data={accountHistory} />
               </div>
