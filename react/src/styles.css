@@ -4520,6 +4520,44 @@ a:hover,
   margin: 0 0 20px;
 }
 
+.opportunity-item {
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+  padding: 8px 0;
+}
+
+.opportunity-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  cursor: pointer;
+  font-size: 0.95rem;
+
+  transition: color 0.2s ease;
+}
+
+.opportunity-header:hover {
+  color: var(--color-accent);
+}
+
+.arrow {
+  transition: transform 0.2s ease;
+  font-size: 12px;
+}
+
+.opportunity-item.open .arrow {
+  transform: rotate(90deg);
+}
+
+.opportunity-body {
+  margin-top: 6px;
+  padding-left: 18px;
+
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
 .helper-text-banker-notes{
   margin-top: 25px;
   margin-bottom: 25px;

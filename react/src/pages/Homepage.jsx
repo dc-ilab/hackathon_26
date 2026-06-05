@@ -283,6 +283,7 @@ const assetInnerRadius = hasLiabilities ? innerHoleRadius : innerRadius;
 function Homepage({ selectedClient, setSelectedId, filteredClients, openTab, clientGoals, handleClientChange, clients }) {
   const goals = clientGoals[selectedClient.id] || [];
   const sortedAccounts = sortAccountsByType(selectedClient.accounts);
+  const [openOpportunities, setOpenOpportunities] = useState([]);
 
   let _ai = 0, _li = 0; // asset and liability color indices
   const accountIndicators = sortedAccounts.map((acc) => {
@@ -365,17 +366,42 @@ const getAccountNameFromId = (accountId) => {
               </p>
 
               <h3 className="subcard__title">Possible Opportunities</h3>
-              <ul className="list">
-                {[1,2,3].map((n) => {
-                  const title = selectedClient.insights?.[0]?.[`opportunity_${n}_title`];
-                  const rationale = selectedClient.insights?.[0]?.[`opportunity_${n}_rationale`];
+              <ul className="list opportunities-list">
+                {[1, 2, 3].map((n) => {
+                  const title =
+                    selectedClient.insights?.[0]?.[`opportunity_${n}_title`];
+                  const rationale =
+                    selectedClient.insights?.[0]?.[`opportunity_${n}_rationale`];
+
                   if (!title || !rationale) return null;
+
+                  const isOpen = openOpportunities.includes(n);
+
                   return (
-                    <li key={n} >
-                      <strong>{title}: </strong> 
-                      {rationale}
+                    <li key={n} className={`opportunity-item ${isOpen ? 'open' : ''}`}>
+                      
+                      <div
+                        className="opportunity-header"
+                        onClick={() => {
+                        setOpenOpportunities(prev => 
+                          prev.includes(n)
+                            ? prev.filter(id => id !== n)  
+                            : [...prev, n]                  
+                        );
+                      }}
+                      >
+                        <span className="arrow">▸</span>
+                        <strong>{title}</strong>
+                      </div>
+
+                      {isOpen && (
+                        <div className="opportunity-body">
+                          {rationale}
+                        </div>
+                      )}
+
                     </li>
-                   );
+                  );
                 })}
               </ul>
             </div>

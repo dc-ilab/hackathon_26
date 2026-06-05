@@ -431,7 +431,7 @@ function Accounts({ selectedClient, openTab, clients}) {
             </article>
 
             <article className="overview-chart-card">
-              <h3>Account Trajectories</h3>
+              <h3>Account Changes Over Time</h3>
               <div className="chart-wrapper">
                 <LineChart data={accountHistory} />
               </div>
