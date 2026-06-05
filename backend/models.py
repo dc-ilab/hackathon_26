@@ -102,6 +102,24 @@ class Interaction(Base):
 
     customer = relationship("Customer", back_populates="interactions")
 
+class Insights(Base):
+    __tablename__ = "insights"
+
+    customer_id = Column(String(100), ForeignKey("customers.customer_id"), primary_key=True)
+    summary = Column(Text)
+    category = Column(String(100))
+    opportunity_1_title = Column(Text)
+    opportunity_1_rationale = Column(Text)
+    opportunity_1_priority = Column(String(100))
+    opportunity_2_title = Column(Text)
+    opportunity_2_rationale = Column(Text)
+    opportunity_2_priority = Column(String(100))
+    opportunity_3_title = Column(Text)
+    opportunity_3_rationale = Column(Text)
+    opportunity_3_priority = Column(String(100))
+
+    customer = relationship("Customer", back_populates="insights")
+
 class Goal(Base):
     __tablename__ = "goals"
 

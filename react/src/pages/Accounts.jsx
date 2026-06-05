@@ -3,6 +3,7 @@ import SpendDetails from './SpendDetails';
 import AutoLoanDetails from './AutoLoanDetails';
 import ReserveDetails from './ReserveDetails';
 import GrowthDetails from './GrowthDetails';
+import CreditDetails from './CreditDetails';
 import { getAssetsAndLiabilities } from '../utils';
 
 const formatCurrency = (value) =>
@@ -383,15 +384,19 @@ function Accounts({ selectedClient, openTab, clients}) {
   }, [selectedClient]);
 
   const accountDetailTarget = (accountType) => {
+    if (/credit/i.test(accountType)) {
+      return { id: 'credit-account', title: 'Credit', component: CreditDetails };
+    }
+
     switch (accountType) {
       case 'Spend':
-        return { id: 'spend-account', title: 'Spend Account', component: SpendDetails };
+        return { id: 'spend-account', title: 'Spend', component: SpendDetails };
       case 'Reserve':
-        return { id: 'reserve-account', title: 'Reserve Account', component: ReserveDetails };
+        return { id: 'reserve-account', title: 'Reserve', component: ReserveDetails };
       case 'Growth':
-        return { id: 'growth-account', title: 'Growth Account', component: GrowthDetails };
+        return { id: 'growth-account', title: 'Growth', component: GrowthDetails };
       case 'Auto Loan':
-        return { id: 'loan-account', title: 'Loan Account', component: LoanDetails };
+        return { id: 'loan-account', title: 'Loan', component: LoanDetails };
       default:
         return null;
     }
@@ -472,24 +477,24 @@ function Accounts({ selectedClient, openTab, clients}) {
                   <tbody>
                     {assetAccounts.map((account, i) => {
                       const lastActivity = selectedClient.recentActivity[i] ?? selectedClient.recentActivity[0];
+                      const details = accountDetailTarget(account.type);
+                      const isLinkable = Boolean(details);
                       return (
                         <tr key={account.type}>
                           
                           <td>
                             <div
-                              className={`breakdown-account-name ${['Spend', 'Reserve', 'Growth'].includes(account.type) ? 'account-link' : ''}`}
+                              className={`breakdown-account-name ${isLinkable ? 'account-link' : ''}`}
                               onClick={() => {
-                                const details = accountDetailTarget(account.type);
                                 if (details) openTab(details.id, details.title, details.component);
                               }}
                               onKeyDown={(event) => {
-                                const details = accountDetailTarget(account.type);
                                 if (details && (event.key === 'Enter' || event.key === ' ')) {
                                   openTab(details.id, details.title, details.component);
                                 }
                               }}
-                              role={['Spend', 'Reserve', 'Growth'].includes(account.type) ? 'button' : undefined}
-                              tabIndex={['Spend', 'Reserve', 'Growth'].includes(account.type) ? 0 : undefined}
+                              role={isLinkable ? 'button' : undefined}
+                              tabIndex={isLinkable ? 0 : undefined}
                             >
                             <div
                               className="account-indicator"
@@ -545,20 +550,21 @@ function Accounts({ selectedClient, openTab, clients}) {
                     const lastActivity =
                       selectedClient.recentActivity[i] ??
                       selectedClient.recentActivity[0];
+                    const details = accountDetailTarget(account.type);
+                    const isLinkable = Boolean(details);
                     return (
                       <tr key={account.type}>
                         <td>
                           <div
-                              className={`breakdown-account-name ${account.type === 'Auto Loan' ? 'account-link' : ''}`}
-                              onClick={() => account.type === 'Auto Loan' && openTab('loan-account', 'Loan Account', AutoLoanDetails)}
+                              className={`breakdown-account-name ${isLinkable ? 'account-link' : ''}`}
+                              onClick={() => details && openTab(details.id, details.title, details.component)}
                               onKeyDown={(event) => {
-                                if (account.type === 'Auto Loan' && (event.key === 'Enter' || event.key === ' ')) {
-                                  openTab('loan-account', 'Loan Account', AutoLoanDetails);
-                              
+                                if (details && (event.key === 'Enter' || event.key === ' ')) {
+                                  openTab(details.id, details.title, details.component);
                                 }
                               }}
-                              role={account.type === 'Auto Loan' ? 'button' : undefined}
-                              tabIndex={account.type === 'Auto Loan' ? 0 : undefined}
+                              role={isLinkable ? 'button' : undefined}
+                              tabIndex={isLinkable ? 0 : undefined}
                             >
                             <div
                               className="account-indicator"

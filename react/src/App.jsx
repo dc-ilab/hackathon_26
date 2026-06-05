@@ -9,6 +9,7 @@ import InteractionPage from './pages/InteractionPage';
 import SpendDetails from './pages/SpendDetails';
 import ReserveDetails from './pages/ReserveDetails';
 import GrowthDetails from './pages/GrowthDetails';
+import CreditDetails from './pages/CreditDetails';
 
 const formatCurrency = (value) =>
   new Intl.NumberFormat('en-US', {
@@ -85,6 +86,14 @@ function App() {
     if (!clients.length) return null;
     return clients.find((client) => client.id === selectedId) || filteredClients[0] || clients[0];
   }, [clients, selectedId, filteredClients]);
+
+  const hasCreditAccount = useMemo(() => {
+    if (!selectedClient?.accounts) return false;
+    return selectedClient.accounts.some((account) => {
+      const type = String(account.type || account.category || '').toLowerCase();
+      return type.includes('credit');
+    });
+  }, [selectedClient]);
 
   const openTab = useCallback((id, name, Component, extraProps = {}) => {
     setTabs((prevTabs) => {
@@ -210,7 +219,6 @@ function App() {
 
   return (
     <div className="page">
-      <img className="fixed-logo" src={pncLogo} alt="PNC logo" />
       {/* Hamburger Menu */}
       <div className="hamburger-menu">
         <div className="menu-controls">
@@ -223,7 +231,6 @@ function App() {
             <span></span>
             <span></span>
           </button>
-          <img className="brand-logo" src={brandLogo} alt="Brand logo" />
         </div>
         {isMenuOpen && (
           <div className="menu-overlay" onClick={() => setIsMenuOpen(false)}></div>
@@ -266,6 +273,11 @@ function App() {
               <button className="submenu-item" onClick={() => handleMenuItemClick('growth', 'Growth', GrowthDetails)}>
                 Growth
               </button>
+              {hasCreditAccount && (
+                <button className="submenu-item" onClick={() => handleMenuItemClick('credit', 'Credit', CreditDetails)}>
+                  Credit
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -281,7 +293,8 @@ function App() {
       {/* Top Search Bar */}
       <div className="top-search-bar">
         <div className="top-search-inner">
-          
+          <img className="top-search-logo top-search-logo-left" src={brandLogo} alt="Brand logo" />
+          <img className="top-search-logo top-search-logo-right" src={pncLogo} alt="PNC logo" />
           <div className="liquid-search-wrapper">
             <span className="search-icon">⌕</span>
 
