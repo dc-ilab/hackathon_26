@@ -2365,7 +2365,7 @@ header {
 .breakdown-grid {
   display: grid;
   grid-template-columns: 1fr 2fr;
-  gap: 32px;
+  gap: 15px;
   align-items: center;
 }
 

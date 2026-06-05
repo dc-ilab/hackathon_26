@@ -9,10 +9,7 @@ import CreditDetails from './CreditDetails';
 import ClientProfile from './ClientProfile';
 import AutoLoanDetails from './AutoLoanDetails';
 import externalLinkIcon from '../assets/external-link-icon.png';
-import { sortAccountsByType } from '../utils';
-
-const assetColors = ['#bdddbd','#71B48D','#404E7C', '#4a3974'];
-const liabilityColors = ['#db8c4f', '#eeceb6', '#edeea4', '#e3e64a'];
+import { sortAccountsByType, getVisibleSlices, ASSET_COLORS, LIABILITY_COLORS } from '../utils';
 
 const formatCurrency = (value) =>
   new Intl.NumberFormat('en-US', {
@@ -31,60 +28,6 @@ const formatTime = (value) => {
   const date = new Date(value);
   const time = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit'}); 
   return time;
-};
-
-const fullCircle = Math.PI * 2;
-const circleEpsilon = 0.0001; 
-const minSliceAngle = 0.15;
-
-const getVisibleSlices = (accounts, totalAmount) => {
-  if (!accounts.length) return [];
-  const target = fullCircle - circleEpsilon;
-
-  if (accounts.length === 1) {
-    return [target];
-  }
-
-  const fallbackAngle = target / accounts.length;
-  const rawAngles = accounts.map((account) => {
-    if(totalAmount <= 0) return fallbackAngle;
-    return (Math.abs(account.balance || 0) / totalAmount) * target;
-  });
-
-  const adjustedAngles = rawAngles.map((angle) => Math.max(angle, minSliceAngle));
-  let adjustedSum = adjustedAngles.reduce((sum, angle) => sum + angle, 0);
-
-  if (adjustedSum > target) {
-    let remainingExcess = adjustedSum - target;
-    let adjustableIndexes = adjustedAngles
-      .map((angle, index) => ({angle, index}))
-      .filter(({angle}) => angle > minSliceAngle)
-      .map(({index}) => index);
-
-    while (remainingExcess > 0.000001 && adjustableIndexes.length > 0) {
-      const reductionPerSlice = remainingExcess / adjustableIndexes.length;
-      const nextAdjustable = [];
-
-      adjustableIndexes.forEach((index) => {
-        const reducible = adjustedAngles[index] - minSliceAngle;
-        const reduction = Math.min(reductionPerSlice, reducible);
-        adjustedAngles[index] -= reduction;
-        remainingExcess -= reduction;
-        if (adjustedAngles[index] > minSliceAngle + 0.000001) {
-          nextAdjustable.push(index);
-        }
-      });
-      adjustableIndexes = nextAdjustable;
-    }
-  }
-
-  adjustedSum = adjustedAngles.reduce((sum, angle) => sum + angle, 0);
-  if (adjustedSum < target) {
-    const largestIndex = adjustedAngles.reduce(
-      (currentMaxIndex, angle, index, arr) => angle > (arr[currentMaxIndex] ? index : currentMaxIndex), 0);
-    adjustedAngles[largestIndex] += target - adjustedSum;
-  }
-  return adjustedAngles;
 };
 
 // Pie chart component for account distribution (copied from Accounts.jsx)
@@ -209,7 +152,7 @@ function PieChart({ accounts }) {
           <path
             key={acc.type}
             d={path}
-            fill={liabilityColors[i % liabilityColors.length]}
+            fill={LIABILITY_COLORS[i % LIABILITY_COLORS.length]}
             stroke="#ffffff89"
             strokeWidth="1.5"
             onMouseEnter={(e) => handleMouseEnter(acc, e)}
@@ -236,7 +179,7 @@ function PieChart({ accounts }) {
           <path
             key={acc.type}
             d={path}
-            fill={assetColors[i % assetColors.length]}
+            fill={ASSET_COLORS[i % ASSET_COLORS.length]}
             stroke="#ffffff89"
             strokeWidth="1.5"
             onMouseEnter={(e) => handleMouseEnter(acc, e)}
@@ -287,7 +230,7 @@ function Homepage({ selectedClient, setSelectedId, filteredClients, openTab, cli
   let _ai = 0, _li = 0; // asset and liability color indices
   const accountIndicators = sortedAccounts.map((acc) => {
     const isAsset = acc.category ? acc.category.toLowerCase() === 'asset' : acc.balance > 0;
-    return isAsset ? assetColors[(_ai++) % assetColors.length] : liabilityColors[(_li++) % liabilityColors.length];
+    return isAsset ? ASSET_COLORS[(_ai++) % ASSET_COLORS.length] : LIABILITY_COLORS[(_li++) % LIABILITY_COLORS.length];
   });
 
   const getAppointmentDisplay = (client) => {

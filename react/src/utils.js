@@ -1,3 +1,85 @@
+// Color palettes for charts
+export const ASSET_COLORS = ['#bdddbd','#71B48D','#404E7C', '#4a3974'];
+export const LIABILITY_COLORS = ['#db8c4f', '#eeceb6', '#edeea4', '#e3e64a'];
+
+// Pie chart constants for minimum slice sizing
+const FULL_CIRCLE = Math.PI * 2;
+const CIRCLE_EPSILON = 0.0001;
+const MIN_SLICE_ANGLE = 0.12;
+
+// Calculate visible slice angles with minimum slice size
+export const getVisibleSlices = (accounts, totalAmount) => {
+  if (!accounts.length) return [];
+  const target = FULL_CIRCLE - CIRCLE_EPSILON;
+
+  if (accounts.length === 1) {
+    return [target];
+  }
+
+  const fallbackAngle = target / accounts.length;
+  const rawAngles = accounts.map((account) => {
+    if(totalAmount <= 0) return fallbackAngle;
+    return (Math.abs(account.balance || 0) / totalAmount) * target;
+  });
+
+  const adjustedAngles = rawAngles.map((angle) => Math.max(angle, MIN_SLICE_ANGLE));
+  let adjustedSum = adjustedAngles.reduce((sum, angle) => sum + angle, 0);
+
+  if (adjustedSum > target) {
+    let remainingExcess = adjustedSum - target;
+    let adjustableIndexes = adjustedAngles
+      .map((angle, index) => ({angle, index}))
+      .filter(({angle}) => angle > MIN_SLICE_ANGLE)
+      .map(({index}) => index);
+
+    while (remainingExcess > 0.000001 && adjustableIndexes.length > 0) {
+      const reductionPerSlice = remainingExcess / adjustableIndexes.length;
+      const nextAdjustable = [];
+
+      adjustableIndexes.forEach((index) => {
+        const reducible = adjustedAngles[index] - MIN_SLICE_ANGLE;
+        const reduction = Math.min(reductionPerSlice, reducible);
+        adjustedAngles[index] -= reduction;
+        remainingExcess -= reduction;
+        if (adjustedAngles[index] > MIN_SLICE_ANGLE + 0.000001) {
+          nextAdjustable.push(index);
+        }
+      });
+      adjustableIndexes = nextAdjustable;
+    }
+  }
+
+  adjustedSum = adjustedAngles.reduce((sum, angle) => sum + angle, 0);
+  if (adjustedSum < target) {
+    const largestIndex = adjustedAngles.reduce(
+      (currentMaxIndex, angle, index, arr) => angle > (arr[currentMaxIndex] ? index : currentMaxIndex), 0);
+    adjustedAngles[largestIndex] += target - adjustedSum;
+  }
+  return adjustedAngles;
+};
+
+// Get color for an account based on its category
+export const getAccountColors = (accounts) => {
+  let assetIndex = 0;
+  let liabilityIndex = 0;
+  
+  return accounts.map((account) => {
+    const isAsset = account.category 
+      ? account.category.toLowerCase() === 'asset' 
+      : account.balance > 0;
+    
+    if (isAsset) {
+      const color = ASSET_COLORS[assetIndex % ASSET_COLORS.length];
+      assetIndex++;
+      return color;
+    }
+    
+    const color = LIABILITY_COLORS[liabilityIndex % LIABILITY_COLORS.length];
+    liabilityIndex++;
+    return color;
+  });
+};
+
 //account sorting
 
 export const sortAccountsByType = (accounts) => {
