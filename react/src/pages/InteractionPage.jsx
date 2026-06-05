@@ -274,6 +274,9 @@ const handleSubmit = async () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [openOpportunities, setOpenOpportunities] = useState([]);
+  const totalLiabilities = liabilityAccounts.reduce((sum, acc) => sum + Math.abs(acc.balance),0);
+  const totalAssets = assetAccounts.reduce((sum, acc) => sum + Math.abs(acc.balance),0);
   const handleRestoreLastInteraction = () => {
   console.log("Restore clicked!!");
   if (!latestInteraction) return;
@@ -345,17 +348,51 @@ const getJointAccountHolderName = (account) => {
                   <div className="module__content">
                     <div className="insight-item">
                       <h3>Client Summary</h3>
+
                       <p className="muted">
-                        {selectedClient.name} is a {selectedClient.relationship || 'client'} of PNC, {String(selectedClient.clientSummary || '').toLowerCase()}
+                        {selectedClient.insights?.[0]?.summary}
                       </p>
-                    </div>
-                    <div className="insight-item">
-                      <h3>Possible Opportunities</h3>
-                      <ul className="opportunities-list">
-                        {(selectedClient.opportunities || []).map((opp, index) => (
-                          <li key={index}>{opp}</li>
-                        ))}
+
+                      <h3 className="subcard__title">Possible Opportunities</h3>
+                      <ul className="list opportunities-list">
+                        {[1, 2, 3].map((n) => {
+                          const title =
+                            selectedClient.insights?.[0]?.[`opportunity_${n}_title`];
+                          const rationale =
+                            selectedClient.insights?.[0]?.[`opportunity_${n}_rationale`];
+
+                          if (!title || !rationale) return null;
+
+                          const isOpen = openOpportunities.includes(n);
+
+                          return (
+                            <li key={n} className={`opportunity-item ${isOpen ? 'open' : ''}`}>
+                              
+                              <div
+                                className="opportunity-header"
+                                onClick={() => {
+                                setOpenOpportunities(prev => 
+                                  prev.includes(n)
+                                    ? prev.filter(id => id !== n)  
+                                    : [...prev, n]                  
+                                );
+                              }}
+                              >
+                                <span className="arrow">▸</span>
+                                <strong>{title}</strong>
+                              </div>
+
+                              {isOpen && (
+                                <div className="opportunity-body">
+                                  {rationale}
+                                </div>
+                              )}
+
+                            </li>
+                          );
+                        })}
                       </ul>
+
                     </div>
                   </div>
                 </div>
@@ -364,18 +401,20 @@ const getJointAccountHolderName = (account) => {
                 <div className="module module--accounts-overview card">
                   <h2 className="module__title">Accounts Overview</h2>
                   <div className="module__content">
+                    <h3>Assets</h3>
                     <div className="accounts-grid">
-                      {/* {selectedClient.accounts.filter(account => account.percentage !== null).map((account, index) => ( */}
+                      
                       {assetAccounts.map((account, index) => (
                         <div key={index} className="account-card">
                           <h3>{account.type}</h3>
                           <div className="account-balance">{formatCurrency(account.balance)}</div>
+                          <div className="account-percentage">{((Math.abs(account.balance) / totalAssets) * 100).toFixed(2)}% of total</div>
                           {String(account.isJoint).toLowerCase() === 'y' && (
                             <span className="joint-badge">
                               <strong>Joint</strong> with {getJointAccountHolderName(account)}
                             </span>
                           )}
-                          {/* <div className="account-percentage">{account.percentage}% of total</div> */}
+                          
                           <div
                             className="account-indicator"
                             style={{ backgroundColor: account.color }}
@@ -383,6 +422,7 @@ const getJointAccountHolderName = (account) => {
                         </div>
                       ))}
                     </div>
+                    {liabilityAccounts.length > 0 && (
                     <div className="loans-section">
                       <h3>Loans & Credit</h3>
                       <div className="loans-grid">
@@ -396,6 +436,7 @@ const getJointAccountHolderName = (account) => {
                         ))}
                       </div>
                     </div>
+                    )}
                   </div>
                 </div>
               </div>
