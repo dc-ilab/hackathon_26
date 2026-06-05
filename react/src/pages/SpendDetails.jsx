@@ -41,7 +41,7 @@ const buildMonthlyTotals = (transactions) => {
     if (tx.type === 'income') {
       totals[key].income += tx.amount;
     } else {
-      totals[key].expense += Math.abs(tx.amount);
+      totals[key].expense += tx.amount;
     }
   });
 
@@ -171,11 +171,6 @@ function SpendDetails({ selectedClient }) {
     setEndDate(null);
     setCalendarMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
   };
-  const handleNextMonth = () => {
-    setStartDate(null);
-    setEndDate(null);
-    setCalendarMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
-  }
 
   const handleToday = () => {
     const now = new Date();
@@ -184,26 +179,35 @@ function SpendDetails({ selectedClient }) {
     setCalendarMonth(new Date(now.getFullYear(), now.getMonth(), 1));
   };
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedMonth, setSelectedMonth] = useState('');
-  const [selectedYear, setSelectedYear] = useState('');
-  const filteredTransactions = spendTransactions.filter((tx) => {
-    // Search filter
-    const matchesSearch = tx.description.toLowerCase().includes(searchTerm.toLowerCase());
-    // Date parsing
-    const [month, , year] = tx.date.split('/');
-    const matchesMonth = selectedMonth ? parseInt(month, 10) === parseInt(selectedMonth, 10) : true;
-    const matchesYear = selectedYear ? year === selectedYear : true;
-    return matchesSearch && matchesMonth && matchesYear;
-  });
-  const displayedTransactions = showAllTransactions
-    ? filteredTransactions
-    : filteredTransactions.slice(0, 10);
+const [selectedMonth, setSelectedMonth] = useState('');
+const [selectedYear, setSelectedYear] = useState('');
+const filteredTransactions = spendTransactions.filter((tx) => {
+  // Search filter
+  const matchesSearch =
+    tx.description.toLowerCase().includes(searchTerm.toLowerCase());
+
+  // Date parsing
+  const [month, , year] = tx.date.split('/');
+
+  const matchesMonth = selectedMonth
+    ? parseInt(month, 10) === parseInt(selectedMonth, 10)
+    : true;
+
+  const matchesYear = selectedYear
+    ? year === selectedYear
+    : true;
+
+  return matchesSearch && matchesMonth && matchesYear;
+});
+const displayedTransactions = showAllTransactions
+  ? filteredTransactions
+  : filteredTransactions.slice(0, 10);
 
 
 
-    if (!spendAccount) {
-      return <div className="spend-details-page">No Spend account data available.</div>;
-    }
+  if (!spendAccount) {
+    return <div className="spend-details-page">No Spend account data available.</div>;
+  }
 
   return (
     <div className="background-card">
@@ -211,7 +215,7 @@ function SpendDetails({ selectedClient }) {
         <div className="spend-header">
           <div className='spend-header-info'>
             <p className="eyebrow">Spend Account</p>
-            <h1>Spend account insights</h1>
+            <h1>Spend Account Insights</h1>
           </div>
           <div className="spend-balance-card">
             <span className="spend-balance-label">Current Balance</span>
@@ -224,11 +228,13 @@ function SpendDetails({ selectedClient }) {
             <section className="spend-insights-card">
               <div className="section-header">
                 <div>
-                  <h2>Account Summary</h2>
+                  <h2>Account Insights</h2>
+                  <p className="muted">Overview of spending habits and account cash flow.</p>
                 </div>
               </div>
               <p>
                 Over the last six months, this account has averaged <strong>{formatCurrency(averageExpense)}</strong> in expenses per month while receiving an average income of <strong>{formatCurrency(Math.round(totalIncome / monthlySpendData.length))}</strong>.
+                Most spending was on food, transport, and subscriptions, with income comfortably covering expenses each month.
               </p>
               <div className="insight-stat-row">
                 <div>
@@ -307,13 +313,10 @@ function SpendDetails({ selectedClient }) {
                   <button className="calendar-nav-button" onClick={handlePrevMonth} type="button">
                     ←
                   </button>
-                  <div className='calendar-date'>
+                  <div>
                     <p className="eyebrow">Calendar</p>
                     <h2>{currentMonthLabel}</h2>
                   </div>
-                  <button className="calendar-nav-button" onClick={handleNextMonth} type="button">
-                    →
-                  </button>
                 </div>
                 <button className="calendar-action" onClick={handleToday} type="button">Today</button>
               </div>
@@ -385,7 +388,7 @@ function SpendDetails({ selectedClient }) {
                             <td>{item.date}</td>
                             <td>{item.description}</td>
                             <td className={`transaction-amount ${item.type === 'income' ? 'positive' : 'expense'}`}>
-                              {item.type === 'income' ? '+' : '-'}{formatCurrency(Math.abs(item.amount))}
+                              {item.type === 'income' ? '+' : '-'}{formatCurrency(item.amount)}
                             </td>
                           </tr>
                         ))}
@@ -406,7 +409,6 @@ function SpendDetails({ selectedClient }) {
                 </div>
               </div>
               <div className="transaction-controls">
-
                 {/*  Search */}
                 <input
                   type="text"
@@ -461,7 +463,7 @@ function SpendDetails({ selectedClient }) {
                         <td>{item.date}</td>
                         <td>{item.description}</td>
                         <td className={`transaction-amount ${isPositive ? 'positive' : 'expense'}`}>
-                          {isPositive ? '+' : '-'}{formatCurrency(Math.abs(item.amount))}
+                          {isPositive ? '+' : '-'}{formatCurrency(item.amount)}
                         </td>
                       </tr>
                     );

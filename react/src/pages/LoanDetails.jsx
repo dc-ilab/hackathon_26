@@ -211,7 +211,7 @@ function LoanDetails({ selectedClient }) {
             <div className="spend-header">
             <div className='spend-header-info'>
                 <p className="eyebrow">Loan Account</p>
-                <h1>Loan insights</h1>
+                <h1>Loan Insights</h1>
             </div>
             <div className="loan-balance-card">
                 <span className="spend-balance-label">Current Balance</span>

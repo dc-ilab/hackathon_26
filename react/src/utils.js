@@ -40,6 +40,36 @@ export const sortAccountsByType = (accounts) => {
     return sortedAccounts;
 };
 
+export const getTransactionTypeMeta = (transactionType, fallbackType) => {
+    const rawType = String(transactionType || fallbackType || '').toLowerCase();
+    if (rawType.includes('withdrawal')) {
+        return { abbr: 'W', label: 'Withdrawal', className: 'transaction-type-withdraw' };
+    }
+    if (rawType.includes('transfer')) {
+        return { abbr: 'T', label: 'Transfer', className: 'transaction-type-transfer' };
+    }
+    if (rawType.includes('deposit')) {
+        return { abbr: 'D', label: 'Deposit', className: 'transaction-type-deposit' };
+    }
+    if (rawType.includes('charge')) {
+        return { abbr: 'C', label: 'Charge', className: 'transaction-type-charge' };
+    }
+    if (rawType.includes('payment')) {
+        return { abbr: 'P', label: 'Payment', className: 'transaction-type-payment' };
+    }
+    if (rawType.includes('interest')) {
+        return { abbr: 'I', label: 'Interest', className: 'transaction-type-interest' };
+    }
+    if (rawType.includes('loan')) {
+        return { abbr: 'L', label: 'Loan', className: 'transaction-type-loan' };
+    }
+    return {
+        abbr: fallbackType === 'income' ? 'D' : 'C',
+        label: fallbackType === 'income' ? 'Deposit' : 'Charge',
+        className: 'transaction-type-default',
+    };
+};
+
 // split accounts into assets and liabilities, both properly sorted
 export const getAssetsAndLiabilities = (accounts) => {
     const sorted = sortAccountsByType(accounts);

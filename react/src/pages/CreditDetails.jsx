@@ -1,11 +1,14 @@
-import { useState } from 'react';
-import { getTransactionTypeMeta } from '../utils';
+import { useMemo, useState } from 'react';
+
+const formatCurrency = (value) =>
+  new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: 0,
+  }).format(value);
 
 const buildMonthlyTotals = (transactions) => {
-
   const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-  // Anchor the 6-month window to the most recent spend transaction
   let anchor = new Date();
   if (transactions.length > 0) {
     const dates = transactions.map((tx) => {
@@ -26,7 +29,6 @@ const buildMonthlyTotals = (transactions) => {
     const key = `${m.year}-${String(m.index + 1).padStart(2, '0')}`;
     totals[key] = { month: m.label, income: 0, expense: 0, hasData: false, txCount: 0 };
   });
-
 
   transactions.forEach((tx) => {
     const [month, , year] = tx.date.split('/');
@@ -50,17 +52,14 @@ const buildMonthlyTotals = (transactions) => {
     const key = `${m.year}-${String(m.index + 1).padStart(2, '0')}`;
     return { ...m, order: i, key, ...totals[key] };
   });
- 
-// Find full month from spend data
+
   const fullMonth = [...monthEntries]
     .reverse()
     .find((entry) => entry.txCount >= 6 && entry.income > 0 && entry.expense > 0)
     || [...monthEntries].reverse().find((entry) => entry.hasData && entry.income > 0 && entry.expense > 0)
     || [...monthEntries].reverse().find((entry) => entry.hasData)
-    || { income: 6500, expense: 4200, order: 0 };
+    || { income: 3500, expense: 2900, order: 0 };
 
-
-  // Fill missing months with mock data; leave real months untouched
   return months.map((m, i) => {
     const key = `${m.year}-${String(m.index + 1).padStart(2, '0')}`;
     const entry = totals[key];
@@ -68,11 +67,10 @@ const buildMonthlyTotals = (transactions) => {
       return { month: entry.month, income: entry.income, expense: entry.expense };
     }
 
-    // Deterministic slight variation around the last full month
     const distance = fullMonth.order - i;
-    const incomeFactor = 1 + ((distance % 3) - 1) * 0.035;
-    const expenseFactor = 1 + (((distance + 1) % 3) - 1) * 0.04;
- 
+    const incomeFactor = 1 + ((distance % 3) - 1) * 0.04;
+    const expenseFactor = 1 + (((distance + 1) % 3) - 1) * 0.045;
+
     return {
       month: entry.month,
       income: Math.round(Math.max(0, fullMonth.income * incomeFactor)),
@@ -81,23 +79,43 @@ const buildMonthlyTotals = (transactions) => {
   });
 };
 
-const formatCurrency = (value) =>
-  new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 0,
-  }).format(value);
-
-// Transform client spendTransactions to match expected transaction format
-const getSpendTransactions = (spendTransactions) => {
-  return spendTransactions || [];
+const getCreditTransactions = (transactions) => {
+  if (!transactions) return [];
+  return transactions.filter((tx) => {
+    const type = String(tx.account_type || tx.account_category || '').toLowerCase();
+    const transactionType = String(tx.transaction_type || '').toLowerCase();
+    const description = String(tx.description || '').toLowerCase();
+    return type.includes('credit') || transactionType.includes('charge') || transactionType.includes('payment') || description.includes('credit');
+  });
 };
 
-function GrowthDetails({ selectedClient }) {
-  const transactions = getSpendTransactions(selectedClient.growthTransactions);
-  const monthlySpendData = buildMonthlyTotals(transactions);
-  const [selectedDate, setSelectedDate] = useState(null);
-  const [calendarMonth, setCalendarMonth] = useState(new Date(2026, 3, 1));
+function CreditDetails({ selectedClient }) {
+  const creditAccount = selectedClient.accounts.find(
+    (account) => /credit/i.test(account.type || '') || /credit/i.test(account.category || '')
+  );
+
+  const creditTransactions = useMemo(
+    () => getCreditTransactions(selectedClient.creditTransactions || selectedClient.transactions || []),
+    [selectedClient.creditTransactions, selectedClient.transactions]
+  );
+
+  const monthlyCreditData = buildMonthlyTotals(creditTransactions);
+  const highestMonthlyValue = Math.max(...monthlyCreditData.flatMap((item) => [item.income, item.expense]));
+  const totalSpent = monthlyCreditData.reduce((sum, item) => sum + item.expense, 0);
+  const totalPayments = monthlyCreditData.reduce((sum, item) => sum + item.income, 0);
+  const averageExpense = Math.round(totalSpent / monthlyCreditData.length);
+
+  const [searchTerm, setSearchTerm] = useState('');
+  const filteredTransactions = creditTransactions.filter((tx) =>
+    tx.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    tx.category?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+  const displayedTransactions = filteredTransactions.slice(0, 12);
+
+  // Calendar state and helpers (copied from SpendDetails for identical look/behavior)
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+  const [calendarMonth, setCalendarMonth] = useState(new Date());
   const [showAllTransactions, setShowAllTransactions] = useState(false);
   const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -111,30 +129,65 @@ function GrowthDetails({ selectedClient }) {
     calendarMonth.getMonth() === today.getMonth() &&
     calendarMonth.getFullYear() === today.getFullYear();
 
-  const growthAccount = selectedClient.accounts.find((account) => account.type === 'Growth');
-  const highestMonthlyValue = Math.max(...monthlySpendData.flatMap((item) => [item.income, item.expense]));
-  const totalExpense = monthlySpendData.reduce((sum, item) => sum + item.expense, 0);
-  const totalIncome = monthlySpendData.reduce((sum, item) => sum + item.income, 0);
-  const averageExpense = Math.round(totalExpense / monthlySpendData.length);
-  const selectedTransactions = selectedDate
-    ? transactions.filter((item) => item.date === selectedDate)
+  const selectedTransactions = startDate && !endDate
+    ? creditTransactions.filter((item) => item.date === startDate)
+    : startDate && endDate
+    ? creditTransactions.filter((item) => {
+        const itemDate = new Date(item.date);
+        return (
+          itemDate >= new Date(startDate) &&
+          itemDate <= new Date(endDate)
+        );
+      })
     : [];
 
-  const [searchTerm, setSearchTerm] = useState('');
+  const handleDateClick = (dateNumber) => {
+    if (dateNumber < 1 || dateNumber > daysInMonth) return;
+
+    const monthString = String(calendarMonth.getMonth() + 1).padStart(2, '0');
+    const dateString = `${monthString}/${String(dateNumber).padStart(2, '0')}/${calendarMonth.getFullYear()}`;
+
+    if (startDate && !endDate && startDate === dateString) {
+        setStartDate(null);
+        setEndDate(null);
+        return;
+      }
+
+        if (!startDate) {
+          setStartDate(dateString);
+          setEndDate(null);
+          return;
+        }
+
+        if (startDate && !endDate) {
+          if (new Date(dateString) < new Date(startDate)) {
+            setEndDate(startDate);
+            setStartDate(dateString);
+          } else {
+            setEndDate(dateString);
+          }
+          return;
+        }
+
+        setStartDate(dateString);
+        setEndDate(null);
+      };
+
+  const handlePrevMonth = () => {
+    setStartDate(null);
+    setEndDate(null);
+    setCalendarMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
+  };
+
+  const handleToday = () => {
+    const now = new Date();
+    setStartDate(null);
+    setEndDate(null);
+    setCalendarMonth(new Date(now.getFullYear(), now.getMonth(), 1));
+  };
   const [selectedMonth, setSelectedMonth] = useState('');
   const [selectedYear, setSelectedYear] = useState('');
-  const [selectedTransactionType, setSelectedTransactionType] = useState('');
-
-  const transactionTypes = [...new Set(
-    transactions
-      .map((tx) => String(tx.transaction_type || tx.type || '').toLowerCase())
-      .filter(Boolean)
-  )];
-
-  const filteredTransactions = transactions.filter((tx) => {
-    const txType = String(tx.transaction_type || tx.type || '').toLowerCase();
-    const matchesType = selectedTransactionType ? txType === selectedTransactionType : true;
-
+  const filteredForTable = creditTransactions.filter((tx) => {
     const matchesSearch =
       tx.description.toLowerCase().includes(searchTerm.toLowerCase());
 
@@ -148,32 +201,26 @@ function GrowthDetails({ selectedClient }) {
       ? year === selectedYear
       : true;
 
-    return matchesSearch && matchesMonth && matchesYear && matchesType;
+    return matchesSearch && matchesMonth && matchesYear;
   });
-  const displayedTransactions = showAllTransactions
-    ? filteredTransactions
-    : filteredTransactions.slice(0, 10);
+  const displayedForTable = showAllTransactions
+    ? filteredForTable
+    : filteredForTable.slice(0, 10);
 
-  const handleDateClick = (dateNumber) => {
-    if (dateNumber < 1 || dateNumber > daysInMonth) return;
-    const monthString = String(calendarMonth.getMonth() + 1).padStart(2, '0');
-    const dateString = `${monthString}/${String(dateNumber).padStart(2, '0')}/${calendarMonth.getFullYear()}`;
-    setSelectedDate(dateString);
-  };
+  const lastPayment = creditTransactions
+    .filter((tx) => tx.type === 'income' || /payment/i.test(tx.transaction_type || tx.description || ''))
+    .sort((a, b) => new Date(b.date) - new Date(a.date))[0];
 
-  const handlePrevMonth = () => {
-    setSelectedDate(null);
-    setCalendarMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
-  };
+  const availableCredit = creditAccount?.availableCredit != null
+    ? creditAccount.availableCredit
+    : creditAccount?.creditLimit != null
+      ? creditAccount.creditLimit - Math.abs(creditAccount.balance || 0)
+      : null;
+  const minPayment = creditAccount?.balance ? Math.round(Math.max(0, Math.abs(creditAccount.balance) * 0.03)) : null;
+  const dueDate = creditAccount?.maturityDate || creditAccount?.lastActivityDate || 'N/A';
 
-  const handleToday = () => {
-    const now = new Date();
-    setSelectedDate(null);
-    setCalendarMonth(new Date(now.getFullYear(), now.getMonth(), 1));
-  };
-
-  if (!growthAccount) {
-    return <div className="spend-details-page">No Growth account data available.</div>;
+  if (!creditAccount) {
+    return <div className="spend-details-page">No Credit account data available.</div>;
   }
 
   return (
@@ -181,14 +228,13 @@ function GrowthDetails({ selectedClient }) {
       <div className="spend-details-page">
         <div className="spend-header">
           <div>
-            <p className="eyebrow">Growth Account</p>
-            <h1>Growth Account Insights</h1>
-            <p className="muted">A snapshot of your spending trends, cash flow, and recent activity for the Growth account.</p>
+            <p className="eyebrow">Credit Account</p>
+            <h1>Credit Account Insights</h1>
           </div>
           <div className="spend-balance-card">
             <span className="spend-balance-label">Current Balance</span>
-            <span className="spend-balance-value">{formatCurrency(growthAccount.balance)}</span>
-            <span className="spend-balance-note">Account is healthy and operating within budget.</span>
+            <span className="spend-balance-value">{formatCurrency(creditAccount.balance)}</span>
+            <span className="spend-balance-note">{creditAccount.type} • {creditAccount.interestRate ? `${creditAccount.interestRate}% APR` : 'Rate unavailable'}</span>
           </div>
         </div>
 
@@ -197,22 +243,31 @@ function GrowthDetails({ selectedClient }) {
             <section className="spend-insights-card">
               <div className="section-header">
                 <div>
-                  <h2>Account Insights</h2>
-                  <p className="muted">Overview of spending habits and account cash flow.</p>
+                  <h2>Credit Summary</h2>
+                  <p className="muted">Your most recent statement activity and payment health summary.</p>
+                  <p>
+                    Over the last six months, this account has averaged {formatCurrency(averageExpense)} in monthly charges, with total payments of {formatCurrency(totalPayments)} against total charges of {formatCurrency(totalSpent)}. Keeping your credit utilization low and making timely payments can help improve your credit score and financial health.
+                  </p>
                 </div>
               </div>
-              <p>
-                Over the last six months, this account has averaged <strong>{formatCurrency(averageExpense)}</strong> in expenses per month while receiving an average income of <strong>{formatCurrency(Math.round(totalIncome / monthlySpendData.length))}</strong>.
-                Most spending was on food, transport, and subscriptions, with income comfortably covering expenses each month.
-              </p>
               <div className="insight-stat-row">
                 <div>
-                  <span className="insight-label">Total income</span>
-                  <strong>{formatCurrency(totalIncome)}</strong>
+                  <span className="insight-label">Available credit</span>
+                  <strong>{availableCredit != null ? formatCurrency(availableCredit) : 'N/A'}</strong>
                 </div>
                 <div>
-                  <span className="insight-label">Total expense</span>
-                  <strong>{formatCurrency(totalExpense)}</strong>
+                  <span className="insight-label">Suggested min payment</span>
+                  <strong>{minPayment != null ? formatCurrency(minPayment) : 'N/A'}</strong>
+                </div>
+              </div>
+              <div className="insight-stat-row">
+                <div>
+                  <span className="insight-label">Last payment</span>
+                  <strong>{lastPayment ? `${formatCurrency(lastPayment.amount)} on ${lastPayment.date}` : 'No payment data'}</strong>
+                </div>
+                <div>
+                  <span className="insight-label">Statement due</span>
+                  <strong>{dueDate}</strong>
                 </div>
               </div>
             </section>
@@ -220,12 +275,8 @@ function GrowthDetails({ selectedClient }) {
             <section className="spend-graph-card">
               <div className="section-header">
                 <div>
-                  <h2>Income vs Expense</h2>
-                  <span className="muted">Monthly performance for the last six months.</span>
-                </div>
-                <div className="chart-legend">
-                  <span className="legend-item"><span className="legend-swatch income" />Income</span>
-                  <span className="legend-item"><span className="legend-swatch expense" />Expense</span>
+                  <h2>Monthly card activity</h2>
+                  <span className="muted">6-month view of charges vs payments.</span>
                 </div>
               </div>
               <div className="spend-bar-chart">
@@ -248,20 +299,20 @@ function GrowthDetails({ selectedClient }) {
                     ))}
                   </div>
                   <div className="chart-bars">
-                    {monthlySpendData.map((item) => (
+                    {monthlyCreditData.map((item) => (
                       <div key={item.month} className="chart-column">
                         <div className="bar-group">
                           <div
                             className="bar income"
                             style={{ height: `${(item.income / highestMonthlyValue) * 100}%` }}
-                            title={`Income: ${formatCurrency(item.income)}`}
+                            title={`Payments: ${formatCurrency(item.income)}`}
                           >
                             <span className="bar-tooltip">{formatCurrency(item.income)}</span>
                           </div>
                           <div
                             className="bar expense"
                             style={{ height: `${(item.expense / highestMonthlyValue) * 100}%` }}
-                            title={`Expense: ${formatCurrency(item.expense)}`}
+                            title={`Charges: ${formatCurrency(item.expense)}`}
                           >
                             <span className="bar-tooltip">{formatCurrency(item.expense)}</span>
                           </div>
@@ -273,7 +324,54 @@ function GrowthDetails({ selectedClient }) {
                 </div>
               </div>
             </section>
-          </div> 
+
+            <section className="spend-transactions-card">
+              <div className="section-header">
+                <div>
+                  <h2>Recent credit activity</h2>
+                  <p className="muted">Filter by merchant or category.</p>
+                </div>
+                <div>
+                  <input
+                    type="text"
+                    placeholder="Search transactions"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="transaction-search-input"
+                  />
+                </div>
+              </div>
+              <div className="table-responsive">
+                <table className="accounts-table">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Description</th>
+                      <th>Category</th>
+                      <th>Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {displayedTransactions.map((tx) => (
+                      <tr key={`${tx.transaction_id || tx.date}-${tx.description}`}>
+                        <td>{tx.date}</td>
+                        <td>{tx.description}</td>
+                        <td>{tx.category || tx.transaction_type}</td>
+                        <td className={tx.type === 'income' ? 'text-positive' : 'text-negative'}>
+                          {tx.type === 'income' ? '+' : '-'}{formatCurrency(tx.amount)}
+                        </td>
+                      </tr>
+                    ))}
+                    {displayedTransactions.length === 0 && (
+                      <tr>
+                        <td colSpan="4">No credit transactions found.</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </div>
 
           <aside className="spend-calendar-card">
             <div className="calendar-card">
@@ -300,7 +398,17 @@ function GrowthDetails({ selectedClient }) {
                   return (
                     <div
                       key={index}
-                      className={`calendar-cell ${isCurrent ? 'today' : ''} ${isValidDate ? 'clickable' : 'inactive'} ${selectedDate === dateString ? 'selected' : ''}`}
+                      className={`
+                        calendar-cell ${isCurrent ? 'today' : ''} 
+                        ${isValidDate ? 'clickable' : 'inactive'} 
+                        ${startDate === dateString || endDate === dateString ? 'selected' : ''}
+                        ${startDate && endDate && dateString &&
+                          new Date(dateString) > new Date(startDate) &&
+                          new Date(dateString) < new Date(endDate)
+                            ? 'range'
+                            : ''
+                        }
+                      `}
                       onClick={() => isValidDate && handleDateClick(dateNumber)}
                       role={isValidDate ? 'button' : undefined}
                       tabIndex={isValidDate ? 0 : -1}
@@ -316,13 +424,18 @@ function GrowthDetails({ selectedClient }) {
                 })}
               </div>
               <div className="calendar-footer">
-                {/* <div className="calendar-note">Upcoming payments and spend reminders are highlighted here.</div> */}
               </div>
-              {selectedDate && (
+              {startDate && (
                 <div className="calendar-transactions-section">
                   <div className="section-header">
                     <div>
-                      <h3>Transactions on {selectedDate}</h3>
+                      <h3>
+                        {startDate && !endDate
+                          ? `Transactions on ${startDate}`
+                          : startDate && endDate
+                          ? `Transactions from ${startDate} to ${endDate}`
+                          : ''}
+                      </h3>
                       <p className="muted">Showing activity for the selected calendar date.</p>
                     </div>
                   </div>
@@ -355,39 +468,21 @@ function GrowthDetails({ selectedClient }) {
             </div>
           </aside>
           <section className="spend-transactions-card">
-              <div className="transaction-section-header">
+              <div className="section-header">
                 <div>
-                  <h2>Transactions</h2>
-                  <p className="muted">All recent transactions for your Growth account.</p>
-                </div>
-                <div className="transaction-type-filters">
-                  {transactionTypes.map((type) => {
-                    const typeMeta = getTransactionTypeMeta(type, type);
-                    const isActive = selectedTransactionType === type;
-                    return (
-                      <button
-                        key={type}
-                        type="button"
-                        className={`transaction-filter-btn ${isActive ? 'active' : ''}`}
-                        onClick={() => setSelectedTransactionType(isActive ? '' : type)}
-                      >
-                        {typeMeta.label}
-                      </button>
-                    );
-                  })}
+                  <h2>Transactions Table</h2>
+                  <p className="muted">All recent transactions for your Credit account.</p>
                 </div>
               </div>
               <div className="transaction-controls">
-                {/*  Search */}
                 <input
                   type="text"
-                  placeholder="Search transactions..."
+                  placeholder="Search by merchant..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="transaction-search"
                 />
 
-                {/*  Month filter */}
                 <select
                   value={selectedMonth}
                   onChange={(e) => setSelectedMonth(e.target.value)}
@@ -400,13 +495,12 @@ function GrowthDetails({ selectedClient }) {
                   ))}
                 </select>
 
-                {/*  Year filter */}
                 <select
                   value={selectedYear}
                   onChange={(e) => setSelectedYear(e.target.value)}
                 >
                   <option value="">All Years</option>
-                  {[...new Set(transactions.map(tx => tx.date.split('/')[2]))].map(
+                  {[...new Set(creditTransactions.map(tx => tx.date.split('/')[2]))].map(
                     (year) => (
                       <option key={year} value={year}>
                         {year}
@@ -419,29 +513,18 @@ function GrowthDetails({ selectedClient }) {
               <table className="transaction-table">
                 <thead>
                   <tr>
-                    <th className="transaction-type-column">Type</th>
                     <th>Date</th>
-                    <th>Category</th>
+                    <th>Name of Institution</th>
                     <th>Amount</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {displayedTransactions.map((item, index) => {
+                  {displayedForTable.map((item, index) => {
                     const isPositive = item.type === 'income';
-                    const typeMeta = getTransactionTypeMeta(item.transaction_type, item.type);
                     return (
-                      <tr key={index} className={typeMeta.className}>
-                        <td>
-                          <abbr
-                            className={`transaction-type-badge ${typeMeta.className}`}
-                            title={typeMeta.label}
-                            aria-label={typeMeta.label}
-                          >
-                            {typeMeta.abbr}
-                          </abbr>
-                        </td>
+                      <tr key={index}>
                         <td>{item.date}</td>
-                        <td>{item.category || '—'}</td>
+                        <td>{item.description}</td>
                         <td className={`transaction-amount ${isPositive ? 'positive' : 'expense'}`}>
                           {isPositive ? '+' : '-'}{formatCurrency(item.amount)}
                         </td>
@@ -450,7 +533,7 @@ function GrowthDetails({ selectedClient }) {
                   })}
                 </tbody>
               </table>
-              {filteredTransactions.length > 10 && (
+              {filteredForTable.length > 10 && (
                 <button 
                   className="btn show-more-button" 
                   onClick={() => setShowAllTransactions(!showAllTransactions)}
@@ -466,4 +549,4 @@ function GrowthDetails({ selectedClient }) {
   );
 }
 
-export default GrowthDetails;
+export default CreditDetails;
