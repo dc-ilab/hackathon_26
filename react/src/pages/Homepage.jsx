@@ -361,14 +361,22 @@ const getAccountNameFromId = (accountId) => {
               <h2 className="module__title">Insights</h2>
               <h3 className="subcard__title">Client Summary</h3>
               <p className="muted">
-                {selectedClient.name} {selectedClient.clientSummary}
+                {selectedClient.insights?.[0]?.summary}
               </p>
 
               <h3 className="subcard__title">Possible Opportunities</h3>
               <ul className="list">
-                {selectedClient.opportunities.map((opp, i) => (
-                  <li key={i}>{opp}</li>
-                ))}
+                {[1,2,3].map((n) => {
+                  const title = selectedClient.insights?.[0]?.[`opportunity_${n}_title`];
+                  const rationale = selectedClient.insights?.[0]?.[`opportunity_${n}_rationale`];
+                  if (!title || !rationale) return null;
+                  return (
+                    <li key={n} >
+                      <strong>{title}: </strong> 
+                      {rationale}
+                    </li>
+                   );
+                })}
               </ul>
             </div>
             

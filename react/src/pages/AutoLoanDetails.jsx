@@ -113,7 +113,7 @@ function AutoLoanLineChart({ data }) {
     y: padding + normalizeY(value),
   });
 
-  const normalizeY = (value) => graphHeight - ((value - minValue) / range) * graphHeight;
+  const normalizeY = (value) => ((value - minValue) / range) * graphHeight;
 
   const [hoverPoint, setHoverPoint] = useState(null);
 
@@ -495,7 +495,7 @@ function AutoLoanDetails({ selectedClient }) {
                       </div>
                   </div>
                   <p>
-                      Auto loan has an estimated annual interest rate of <strong>{estimatedAnnualRate}%</strong>. Over the last 3 months, you've averaged <strong>{formatCurrency(avg3MonthPayment)}</strong> in monthly payments, with <strong>{formatCurrency(Math.abs(last3MonthInterestTotal))}</strong> in interest accrued. At your current payment rate, your loan should be paid off in approximately <strong>{Math.abs(estimatedPayoffMonths)} months</strong>.
+                      Auto loan has an estimated annual interest rate of <strong>{estimatedAnnualRate}%</strong>. Over the last 3 months, you've averaged <strong>{formatCurrency(avg3MonthPayment)}</strong> in monthly payments, with <strong>{formatCurrency(Math.abs(last3MonthInterestTotal))}</strong> in interest accrued. At this current payment rate, the loan should be paid off in approximately <strong>{Math.abs(estimatedPayoffMonths)} months</strong>.
                   </p>
                   <div className="loan-insight-stat-row">
                       <div>
@@ -516,8 +516,8 @@ function AutoLoanDetails({ selectedClient }) {
                 <section className="spend-graph-card">
                   <div className="auto-loan-section-header">
                     <div>
-                      <h2>Loan Balance Trajectory</h2>
-                      <p className="muted">Auto Loan balance trajectory over the last six months.</p>
+                      <h2>Loan Balance Historical Data</h2>
+                      <p className="muted">Auto Loan balance over the last six months.</p>
                     </div>
                   </div>
                   <div className="auto-loan-chart-wrapper">

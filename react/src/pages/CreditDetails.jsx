@@ -241,6 +241,7 @@ const sortedTransactions = [...filteredTransactions].sort((a, b) => new Date(b.d
       : null;
   const minPayment = creditAccount?.balance ? Math.round(Math.max(0, Math.abs(creditAccount.balance) * 0.03)) : null;
   const dueDate = creditAccount?.maturityDate || creditAccount?.lastActivityDate || 'N/A';
+  const irregularTransactions = creditTransactions.filter((tx) => tx.transaction_amt < -500);
 
   if (!creditAccount) {
     return <div className="spend-details-page">No Credit account data available.</div>;
@@ -495,6 +496,37 @@ const sortedTransactions = [...filteredTransactions].sort((a, b) => new Date(b.d
               )}
             </div>
           </aside>
+                  {irregularTransactions.length > 0 && (
+          <section className="irregular-transactions-alert">
+            <div className="alert-header">
+              <div className="alert-icon">⚠</div>
+              <div className="alert-content">
+                <h2>Large Transactions</h2>
+                <p className="muted">{irregularTransactions.length} transaction{irregularTransactions.length !== 1 ? 's' : ''} over $500 detected</p>
+              </div>
+            </div>
+            <div className="alert-table-container">
+              <table className="alert-transactions-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th>Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {irregularTransactions.slice(0, 8).map((tx) => (
+                    <tr key={`${tx.transaction_id || tx.date}-${tx.description}`}>
+                      <td>{tx.date}</td>
+                      <td>{tx.description}</td>
+                      <td className="amount-highlight">{formatCurrency(tx.amount)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
           <section className="spend-transactions-card">
               <div className="transaction-section-header">
                   <div>
