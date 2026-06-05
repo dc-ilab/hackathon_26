@@ -794,6 +794,12 @@ header {
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   margin-bottom: 16px;
 }
+.goal-form-top-row {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(4, minmax(220px, 1fr));
+  margin-bottom: 16px;
+}
 
 .goal-form-row label {
   display: flex;
