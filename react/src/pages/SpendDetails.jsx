@@ -81,7 +81,7 @@ const buildMonthlyTotals = (transactions) => {
   });
 };
 
-const formatCurrency = (value) =>
+export const formatCurrency = (value) =>
   new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
@@ -143,18 +143,21 @@ function SpendDetails({ selectedClient }) {
   )];
 
     const filteredTransactions = spendTransactions.filter((tx) => {
-    const txType = String(tx.transaction_type || tx.type || '').toLowerCase();
-    const matchesType = selectedTransactionType ? txType === selectedTransactionType : true;
+      const txType = String(tx.transaction_type || tx.type || '').toLowerCase();
+      const matchesType = selectedTransactionType ? txType === selectedTransactionType : true;
 
-    const matchesSearch = tx.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const [month, , year] = tx.date.split('/');
-    const matchesMonth = selectedMonth ? parseInt(month, 10) === parseInt(selectedMonth, 10) : true;
-    const matchesYear = selectedYear ? year === selectedYear : true;
-    return matchesSearch && matchesMonth && matchesYear && matchesType;
-  });
+      const matchesSearch = tx.description.toLowerCase().includes(searchTerm.toLowerCase());
+      const [month, , year] = tx.date.split('/');
+      const matchesMonth = selectedMonth ? parseInt(month, 10) === parseInt(selectedMonth, 10) : true;
+      const matchesYear = selectedYear ? year === selectedYear : true;
+      return matchesSearch && matchesMonth && matchesYear && matchesType;
+    });
+
+const sortedTransactions = [...filteredTransactions].sort((a, b) => new Date(b.date) - new Date(a.date));
   const displayedTransactions = showAllTransactions
-    ? filteredTransactions
-    : filteredTransactions.slice(0, 10);
+  ? sortedTransactions
+  : sortedTransactions.slice(0, 10);
+
   const handleDateClick = (dateNumber) => {
     if (dateNumber < 1 || dateNumber > daysInMonth) return;
 
@@ -405,11 +408,11 @@ function SpendDetails({ selectedClient }) {
           </aside>
           <section className="spend-transactions-card">
               <div className="transaction-section-header">
-                              <div>
-                                <h2>Transactions Table</h2>
-                                <p className="muted">Transaction type filters and recent Spend activity.</p>
-                              </div>
-                              <div className="transaction-type-filters">
+                <div>
+                  <h2>Transactions Table</h2>
+                  <p className="muted">Transaction type filters and recent Spend activity.</p>
+                </div>
+                <div className="transaction-type-filters">
                                 {transactionTypes.map((type) => {
                                   const typeMeta = getTransactionTypeMeta(type, type);
                                   const isActive = selectedTransactionType === type;
@@ -424,9 +427,9 @@ function SpendDetails({ selectedClient }) {
                                     </button>
                                   );
                                 })}
-                              </div>
-                            </div>
-                            <div className="transaction-controls">
+                </div>
+              </div>
+              <div className="transaction-controls">
               
                               {/*  Search */}
                               <input
