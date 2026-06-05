@@ -357,7 +357,7 @@ function GrowthDetails({ selectedClient }) {
               <div className="transaction-section-header">
                 <div>
                   <h2>Transactions</h2>
-                  <p className="muted">All recent transactions for your Growth account.</p>
+                  <p className="muted">All recent transactions for the Growth account.</p>
                 </div>
                 <div className="transaction-type-filters">
                   {transactionTypes.map((type) => {
