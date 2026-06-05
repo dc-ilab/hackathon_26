@@ -282,6 +282,9 @@ const handleSubmit = async () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [openOpportunities, setOpenOpportunities] = useState([]);
+  const totalLiabilities = liabilityAccounts.reduce((sum, acc) => sum + Math.abs(acc.balance),0);
+  const totalAssets = assetAccounts.reduce((sum, acc) => sum + Math.abs(acc.balance),0);
 
   const handleRestorePreviousAnswers = () => {
   const last = selectedClient.interactions?.[0]; // most recent
