@@ -219,7 +219,6 @@ function App() {
 
   return (
     <div className="page">
-      <img className="fixed-logo" src={pncLogo} alt="PNC logo" />
       {/* Hamburger Menu */}
       <div className="hamburger-menu">
         <div className="menu-controls">
@@ -232,7 +231,6 @@ function App() {
             <span></span>
             <span></span>
           </button>
-          <img className="brand-logo" src={brandLogo} alt="Brand logo" />
         </div>
         {isMenuOpen && (
           <div className="menu-overlay" onClick={() => setIsMenuOpen(false)}></div>
@@ -295,7 +293,8 @@ function App() {
       {/* Top Search Bar */}
       <div className="top-search-bar">
         <div className="top-search-inner">
-          
+          <img className="top-search-logo top-search-logo-left" src={brandLogo} alt="Brand logo" />
+          <img className="top-search-logo top-search-logo-right" src={pncLogo} alt="PNC logo" />
           <div className="liquid-search-wrapper">
             <span className="search-icon">⌕</span>
 
