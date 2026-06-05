@@ -8,6 +8,14 @@ const formatDate = (value) => {
   if (Number.isNaN(date.getTime())) return value;
   return new Intl.DateTimeFormat('en-US').format(date);
 };
+const parseCommaList = (value) => {
+  if (!value) return [];
+
+  return String(value)
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean); // removes empty values
+};
 
 function InteractionPage({ selectedClient, saveInteractionDocument, submitInteractionDocument, draft, interactionDraft, clientGoals, setClientGoals, filteredClients, handleClientChange, closeTab, activeTab, clients}) {
   
@@ -277,30 +285,56 @@ const handleSubmit = async () => {
   const [openOpportunities, setOpenOpportunities] = useState([]);
   const totalLiabilities = liabilityAccounts.reduce((sum, acc) => sum + Math.abs(acc.balance),0);
   const totalAssets = assetAccounts.reduce((sum, acc) => sum + Math.abs(acc.balance),0);
-  const handleRestoreLastInteraction = () => {
-  console.log("Restore clicked!!");
-  if (!latestInteraction) return;
-  console.log('latestInteraction:', latestInteraction);
-  setFormData((prev) => ({
-    ...prev,
 
-    trackExpenses: latestInteraction.track_expenses ? 'yes' : 'no',
-    trackExpensesDesc: latestInteraction.track_expenses_desc || '',
+  const handleRestorePreviousAnswers = () => {
+  const last = selectedClient.interactions?.[0]; // most recent
+console.log("Restoring:", last);
+  if (!last) return;
 
-    borrowMoney: latestInteraction.borrow_money ? 'yes' : 'no',
-    borrowMoneyDesc: latestInteraction.borrow_money_desc || '',
+  // normalize Yes/No strings
+  const normalizeYesNo = (value) => {
+  if (value === true || value === 'Y' || String(value).toLowerCase() === 'yes') {
+    return 'yes';
+  }
 
-    saveRetirement: latestInteraction.save_retirement ? 'yes' : 'no',
-    saveRetirementDesc: latestInteraction.save_retirement_desc || '',
+  if (value === false || value === 'N' || String(value).toLowerCase() === 'no') {
+    return 'no';
+  }
 
-    incomeSources: latestInteraction.income_srcs || '',
-    currentSaving: latestInteraction.current_save || '',
-    typicalPurchase: latestInteraction.typ_purchase || '',
-
-    bankerNotes: latestInteraction.banker_notes || '',
-    pncNotes: latestInteraction.pnc_notes || ''
-  }));
+  return '';
 };
+
+  setAnswers((prev) => ({
+  ...prev,
+
+  tracksExpenses: {
+    choice: normalizeYesNo(last.track_expenses),
+    details: last.track_expenses_desc || ''
+  },
+
+  borrowsMoney: {
+    choice: normalizeYesNo(last.borrow_money),
+    details: last.borrow_money_desc || ''
+  },
+
+  retirementSaving: {
+    choice: normalizeYesNo(last.save_retirement),
+    details: last.save_retirement_desc || ''
+  },
+
+  currentSaving: {
+    choice: prev.currentSaving.choice, 
+    details: last.current_save || ''
+  },
+
+  incomeSources: parseCommaList(last.income_srcs),
+
+  purchaseMethod: parseCommaList(last.typ_purchase)
+}));
+setIncomeInput('');
+};
+
+
 const getJointAccountHolderName = (account) => {
   if (!account?.isJoint) return null;
 
@@ -317,6 +351,7 @@ const getJointAccountHolderName = (account) => {
 
   return otherClient?.name || null;
 };
+
 
 
   return (
@@ -572,39 +607,35 @@ const getJointAccountHolderName = (account) => {
             <div className="module module--prep-notes card">
               <h2 className="module__title">Interaction Preparation Notes</h2>
               <div className="module__content">
-                {/* <textarea
+                <textarea
+                  value={preparationNotes}
+                  onChange={(e) => setPreparationNotes(e.target.value)}
                   className="notes-textarea"
                   placeholder="Add preparation notes for this interaction..."
                   rows="6"
-                ></textarea> */}
-                <textarea
-                value={preparationNotes}
-                onChange={(e) => setPreparationNotes(e.target.value)}
-                className="notes-textarea"
-                                placeholder="Add preparation notes for this interaction..."
-                                rows="6"
-              />
-
+                />
               </div>
             </div>
 
             {/* Interaction Questions Module */}
             <div className="module module--interaction-questions card">
               {latestInteraction && (
-  <div className="interaction-restore-bar">
-    <span className="interaction-last-date">
-      Last Interaction Form Submitted on {latestInteraction.interaction_date}
-    </span>
-
-    <button
-      className="restore-button"
-      onClick={handleRestoreLastInteraction}
-    >
-      Restore Answers from Last Appointment
-    </button>
-  </div>
-)}
+                <div className="interaction-restore-bar">
+                  <span className="interaction-last-date">
+                    Last Interaction Form Submitted on <strong>{latestInteraction.interaction_date}</strong>
+                  </span>
+                  <button
+                    id = "restore-button"
+                    type="button"
+                    className="btn btn--secondary"
+                    onClick={handleRestorePreviousAnswers}
+                  >
+                    Restore Previous Answers
+                  </button>
+                </div>
+              )}
               <h2 className="module__title">Interaction Questions</h2>
+              <p id="interaction-question-desc" className='insight-description'>Questions to review with your client</p>
               <div className="module__content">
                 <div className="questions-grid">
                   {/* Row 1 */}
@@ -614,42 +645,52 @@ const getJointAccountHolderName = (account) => {
                         <div className="question-inputs">
                           <div className="question-buttons">
                             <button
-                              type="button"
                               className={`btn btn--toggle ${
-                                answers.tracksExpenses.choice === 'Yes' ? 'active' : ''
+                                answers.tracksExpenses.choice === 'yes' ? 'active' : ''
                               }`}
                               onClick={() =>
-                                handleAnswerChange('tracksExpenses', 'choice', 'Yes')
+                                setAnswers((prev) => ({
+                                  ...prev,
+                                  tracksExpenses: {
+                                    ...prev.tracksExpenses,
+                                    choice: 'yes'
+                                  }
+                                }))
                               }
                             >
                               Yes
                             </button>
-
                             <button
-                              type="button"
-                              className={`btn btn--toggle btn--secondary ${
-                                answers.tracksExpenses.choice === 'No' ? 'active' : ''
-                              }`}
-                              onClick={() =>
-                                handleAnswerChange('tracksExpenses', 'choice', 'No')
-                              }
-                            >
-                              No
-                            </button>
+                            className={`btn btn--toggle ${
+                              answers.tracksExpenses.choice === 'no' ? 'active' : ''
+                            }`}
+                            onClick={() =>
+                              setAnswers((prev) => ({
+                                ...prev,
+                                tracksExpenses: {
+                                  ...prev.tracksExpenses,
+                                  choice: 'no'
+                                }
+                              }))
+                            }
+                          >
+                            No
+                          </button>
                           </div>
                           <input
-                            type="text"
-                            className="input-small"
-                            placeholder="Additional details..."
-                            value={answers.tracksExpenses.details}
-                            onChange={(e) =>
-                              handleAnswerChange(
-                                'tracksExpenses',
-                                'details',
-                                e.target.value
-                              )
-                            }
-                          />
+                          className="input-small"
+                          placeholder="Additional details..."
+                          value={answers.tracksExpenses.details}
+                          onChange={(e) =>
+                            setAnswers((prev) => ({
+                              ...prev,
+                              tracksExpenses: {
+                                ...prev.tracksExpenses,
+                                details: e.target.value
+                              }
+                            }))
+                          }
+                        />
                         </div>
                     </div>
                     <div className="question-block">
@@ -657,42 +698,52 @@ const getJointAccountHolderName = (account) => {
                         <div className="question-inputs">
                           <div className="question-buttons">
                             <button
-                              type="button"
                               className={`btn btn--toggle ${
-                                answers.borrowsMoney.choice === 'Yes' ? 'active' : ''
+                                answers.borrowsMoney.choice === 'yes' ? 'active' : ''
                               }`}
                               onClick={() =>
-                                handleAnswerChange('borrowsMoney', 'choice', 'Yes')
+                                setAnswers((prev) => ({
+                                  ...prev,
+                                  borrowsMoney: {
+                                    ...prev.borrowsMoney,
+                                    choice: 'yes'
+                                  }
+                                }))
                               }
                             >
                               Yes
                             </button>
-
                             <button
-                              type="button"
-                              className={`btn btn--toggle btn--secondary ${
-                                answers.borrowsMoney.choice === 'No' ? 'active' : ''
-                              }`}
-                              onClick={() =>
-                                handleAnswerChange('borrowsMoney', 'choice', 'No')
-                              }
-                            >
-                              No
-                            </button>
+                            className={`btn btn--toggle ${
+                              answers.borrowsMoney.choice === 'no' ? 'active' : ''
+                            }`}
+                            onClick={() =>
+                              setAnswers((prev) => ({
+                                ...prev,
+                                borrowsMoney: {
+                                  ...prev.borrowsMoney,
+                                  choice: 'no'
+                                }
+                              }))
+                            }
+                          >
+                            No
+                          </button>
                           </div>
                           <input
-                            type="text"
-                            className="input-small"
-                            placeholder="Additional details..."
-                            value={answers.borrowsMoney.details}
-                            onChange={(e) =>
-                              handleAnswerChange(
-                                'borrowsMoney',
-                                'details',
-                                e.target.value
-                              )
-                            }
-                          />
+                          className="input-small"
+                          placeholder="Additional details..."
+                          value={answers.borrowsMoney.details}
+                          onChange={(e) =>
+                            setAnswers((prev) => ({
+                              ...prev,
+                              borrowsMoney: {
+                                ...prev.borrowsMoney,
+                                details: e.target.value
+                              }
+                            }))
+                          }
+                        />
                         </div>
                     </div>
                   </div>
@@ -703,43 +754,53 @@ const getJointAccountHolderName = (account) => {
                       <label className="question-label">Are you saving for retirement?</label>
                         <div className="question-inputs">
                           <div className="question-buttons">
-                            <button
-                              type="button"
+                             <button
                               className={`btn btn--toggle ${
-                                answers.retirementSaving.choice === 'Yes' ? 'active' : ''
+                                answers.retirementSaving.choice === 'yes' ? 'active' : ''
                               }`}
                               onClick={() =>
-                                handleAnswerChange('retirementSaving', 'choice', 'Yes')
+                                setAnswers((prev) => ({
+                                  ...prev,
+                                  retirementSaving: {
+                                    ...prev.retirementSaving,
+                                    choice: 'yes'
+                                  }
+                                }))
                               }
                             >
                               Yes
                             </button>
-
                             <button
-                              type="button"
-                              className={`btn btn--toggle btn--secondary ${
-                                answers.retirementSaving.choice === 'No' ? 'active' : ''
-                              }`}
-                              onClick={() =>
-                                handleAnswerChange('retirementSaving', 'choice', 'No')
-                              }
-                            >
-                              No
-                            </button>
+                            className={`btn btn--toggle ${
+                              answers.retirementSaving.choice === 'no' ? 'active' : ''
+                            }`}
+                            onClick={() =>
+                              setAnswers((prev) => ({
+                                ...prev,
+                                retirementSaving: {
+                                  ...prev.retirementSaving,
+                                  choice: 'no'
+                                }
+                              }))
+                            }
+                          >
+                            No
+                          </button>
                           </div>
                           <input
-                            type="text"
-                            className="input-small"
-                            placeholder="Additional details..."
-                            value={answers.retirementSaving.details}
-                            onChange={(e) =>
-                              handleAnswerChange(
-                                'retirementSaving',
-                                'details',
-                                e.target.value
-                              )
-                            }
-                          />
+                          className="input-small"
+                          placeholder="Additional details..."
+                          value={answers.retirementSaving.details}
+                          onChange={(e) =>
+                            setAnswers((prev) => ({
+                              ...prev,
+                              retirementSaving: {
+                                ...prev.retirementSaving,
+                                details: e.target.value
+                              }
+                            }))
+                          }
+                        />
                         </div>
                     </div>
                     <div className="question-block">
@@ -788,18 +849,19 @@ const getJointAccountHolderName = (account) => {
                       <label className="question-label">What are you currently saving?</label>
                         <div className="question-inputs">
                           <input
-                            type="text"
-                            className="input-small"
-                            placeholder="Additional details..."
-                            value={answers.currentSaving.details}
-                            onChange={(e) =>
-                              handleAnswerChange(
-                                'currentSaving',
-                                'details',
-                                e.target.value
-                              )
-                            }
-                          />
+                          className="input-small"
+                          placeholder="Additional details..."
+                          value={answers.currentSaving.details}
+                          onChange={(e) =>
+                            setAnswers((prev) => ({
+                              ...prev,
+                              currentSaving: {
+                                ...prev.currentSaving,
+                                details: e.target.value
+                              }
+                            }))
+                          }
+                        />
                         </div>
                     </div>
                     <div className="question-block">
@@ -930,6 +992,7 @@ const getJointAccountHolderName = (account) => {
                   {showGoalForm && (
                   <section className="update-goal-form-panel">
 
+                    
                     <input
                       type="text"
                       placeholder="Goal description"
@@ -952,6 +1015,7 @@ const getJointAccountHolderName = (account) => {
                         }))
                       }
                     />
+
 
                     <input
                       type="number"
