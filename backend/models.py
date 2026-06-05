@@ -50,6 +50,7 @@ class Customer(Base):
     interactions = relationship("Interaction", back_populates="customer")
     goals = relationship("Goal", back_populates="customer")
     transactions = relationship("Transaction", back_populates="customer")
+    insights = relationship("Insights", back_populates="customer")
 
 class Account(Base):
     __tablename__ = "accounts"
