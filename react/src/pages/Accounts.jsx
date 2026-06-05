@@ -4,13 +4,13 @@ import AutoLoanDetails from './AutoLoanDetails';
 import ReserveDetails from './ReserveDetails';
 import GrowthDetails from './GrowthDetails';
 import CreditDetails from './CreditDetails';
-import { getAssetsAndLiabilities } from '../utils';
+import { getAssetsAndLiabilities, getVisibleSlices, ASSET_COLORS, LIABILITY_COLORS } from '../utils';
 
 const formatCurrency = (value) =>
   new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
-    maximumFractionDigits: 0,
+    maximumFractionDigits: 2,
   }).format(value);
 
 const formatDate = (value) => {
@@ -20,39 +20,123 @@ const formatDate = (value) => {
   return new Intl.DateTimeFormat('en-US').format(date);
 };
 
+const parseMonthDate = (dateString) => {
+  if (!dateString) return null;
+  const parsed = new Date(dateString);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+};
+
+const getLastNMonths = (count, endDate) => {
+  const months = [];
+  const current = new Date(endDate.getFullYear(), endDate.getMonth(), 1);
+
+  for (let i = count - 1; i >= 0; i -= 1) {
+    const date = new Date(current.getFullYear(), current.getMonth() - i, 1);
+    months.push({
+      key: `${date.getFullYear()}-${date.getMonth() + 1}`,
+      label: new Intl.DateTimeFormat('en-US', { month: 'short' }).format(date),
+      date,
+    });
+  }
+
+  return months;
+};
+
+const getAccountHistoryFromTransactions = (accounts, transactions, months) => {
+  const monthMap = {};
+
+  transactions.forEach((tx) => {
+    const date = parseMonthDate(tx.date || tx.transaction_date);
+    if (!date) return;
+
+    const monthKey = `${date.getFullYear()}-${date.getMonth() + 1}`;
+    const accountKey = tx.account_id ?? tx.account_type;
+    if (!accountKey) return;
+
+    const current = monthMap[accountKey]?.[monthKey];
+    if (!current || date > current.date) {
+      monthMap[accountKey] = {
+        ...(monthMap[accountKey] || {}),
+        [monthKey]: { date, balance: Number(tx.acct_balance ?? tx.account_balance ?? 0) },
+      };
+    }
+  });
+
+  return accounts.map((account) => {
+    const accountKey = account.account_id ?? account.type;
+    const monthlyBalances = [];
+    let lastBalance = Number(account.balance ?? 0);
+
+    months.forEach((month) => {
+      const monthEntry = monthMap[accountKey]?.[month.key];
+      if (monthEntry) {
+        lastBalance = monthEntry.balance;
+      }
+      monthlyBalances.push(lastBalance);
+    });
+
+    return {
+      accountType: account.type,
+      values: monthlyBalances,
+      color: (account.category?.toLowerCase() === 'liability' ? LIABILITY_COLORS : ASSET_COLORS)[0],
+    };
+  });
+};
+
 // Line chart component for Overview Insight
-function LineChart({ data }) {
+function LineChart({ data, series }) {
+  if (!data || !data.length || !series || !series.length) {
+    return null;
+  }
+
   const width = 560;
   const height = 450;
   const padding = 40;
   const graphWidth = width - padding * 2;
   const graphHeight = height - padding * 2;
-  const hasAutoLoan = data.some(row => Math.abs(row.AutoLoan) > 0);
-  const hasHELOC = data.some(row => Math.abs(row.HELOC) > 0);
+
+  
+  const values = data.flatMap((row) =>
+    series.map((seriesItem) => row[seriesItem.key] ?? 0)
+  );
 
 
-  const values = data.flatMap((row) => [
-    row.Spend, 
-    row.Reserve, 
-    row.Growth,
-    row.AutoLoan,
-    row.HELOC,
-  ]);
-  const maxValueRaw = Math.max(...values);
-  const minValueRaw = Math.min(...values);
+  const OUTLIER_THRESHOLD = 100000;
 
-  // padding space
-  const maxValue = Math.max(maxValueRaw * 1.5, 0);
-  const minValue = Math.min(minValueRaw * 1.0, 0);
+  const hasOutlier = values.some(v => Math.abs(v) > OUTLIER_THRESHOLD);
+
+
+  const transformValue = (value) => {
+    if (!hasOutlier) return value;
+
+    if (value < -OUTLIER_THRESHOLD) {
+      return -OUTLIER_THRESHOLD - Math.log10(Math.abs(value)) * 4000;
+    }
+
+    if (value > OUTLIER_THRESHOLD) {
+      return OUTLIER_THRESHOLD + Math.log10(value) * 4000;
+    }
+
+    return value;
+  };
+
+
+  const transformedValues = values.map(transformValue);
+
+  const maxValueRaw = Math.max(...transformedValues);
+  const minValueRaw = Math.min(...transformedValues);
+
+
+  const maxValue = Math.max(maxValueRaw * 1.2, 0);
+  const minValue = Math.min(minValueRaw, 0);
   const range = maxValue - minValue || 1;
+  const isCompressedRange = range < 50000; // tweak if needed
 
-  const series = [
-    { key: 'Spend', color: '#71B48D' },
-    { key: 'Reserve', color: '#BDDDBD' },
-    { key: 'Growth', color: '#404E7C' },
-    ...(hasAutoLoan ? [{ key: 'AutoLoan', color: '#db8c4f' }] : []),
-    ...(hasHELOC ? [{ key: 'HELOC', color: '#eeceb6' }] : []),
-  ];
+  const normalizeY = (value) => {
+    const v = transformValue(value);
+    return graphHeight - ((v - minValue) / range) * graphHeight;
+  };
+
 
   const xStep = data.length > 1 ? graphWidth / (data.length - 1) : 0;
 
@@ -60,6 +144,7 @@ function LineChart({ data }) {
     x: padding + index * xStep,
     y: padding + normalizeY(value),
   });
+
   const [hoverPoint, setHoverPoint] = useState(null);
 
   const getPath = (key) =>
@@ -70,19 +155,45 @@ function LineChart({ data }) {
       })
       .join(' ');
 
-  const tickCount = 6;
-  const tickValues = Array.from({ length: tickCount }, (_, i) => maxValue - (range / (tickCount - 1)) * i);
-  const zeroIndex = tickValues.findIndex(v => Math.abs(v) < range / 100);
-  // Force 0 into ticks if missing
-  if (!tickValues.some(v => Math.abs(v) < 1)) {
-    tickValues.push(0);
-  }
-  const normalizeY = (value) => graphHeight - ((value - minValue) / range) * graphHeight;
-  const zeroY = padding + normalizeY(0);
+  
+let filteredTickValues;
 
+if (hasOutlier) {
+  filteredTickValues = [
+    maxValue,
+    maxValue * 0.5,
+    0,
+    minValue
+  ];
+} else {
+  const tickCount = 6;
+
+  const raw = Array.from(
+    { length: tickCount },
+    (_, i) => maxValue - (range / (tickCount - 1)) * i
+  );
+
+  filteredTickValues = [];
+  let lastY = null;
+
+  for (let value of raw) {
+    const y = padding + normalizeY(value);
+
+    if (lastY === null || Math.abs(y - lastY) > 30) {
+      filteredTickValues.push(value);
+      lastY = y;
+    }
+  }
+}
+
+  
   return (
     <svg id="accounts-line-chart" viewBox={`0 0 ${width} ${height}`} width="100%" height="100%">
-      {tickValues.map((value, i) => { const y = padding + normalizeY(value);
+            
+      
+      {filteredTickValues.map((value, i) => {
+        const y = padding + normalizeY(value);
+
         return (
           <g key={`y-tick-${i}`}>
             <line
@@ -90,18 +201,24 @@ function LineChart({ data }) {
               y1={y}
               x2={width - padding}
               y2={y}
-              stroke={Math.abs(tickValues[i]) < range / 100 ? "rgb(153,153,153)" : "#f0f0f0"}
-              strokeWidth={Math.abs(tickValues[i]) < range / 100 ? "2" : "1"}
+              stroke={Math.abs(value) < range / 100 ? "#999" : "#f0f0f0"}
+              strokeWidth={Math.abs(value) < range / 100 ? "2" : "1"}
             />
-            <text x={padding - 10} y={y + 4} textAnchor="end" fontSize="12" fill="#666">
-              {Math.abs(value) < 1
-                ? "$0"
-                : `$${Math.round(value / 1000)}k`
-                }
+            <text
+              x={padding - 10}
+              y={y + 4}
+              textAnchor="end"
+              fontSize="12"
+              fill="#666"
+            >
+              {Math.abs(value) < 1000
+                ? `$${Math.round(value)}`
+                : `$${Math.round(value / 1000)}k`}
             </text>
           </g>
         );
       })}
+
 
       <line id='y-axis-line'
         x1={padding} 
@@ -153,7 +270,7 @@ function LineChart({ data }) {
 
       {data.map((row, index) => (
         <text
-          key={`x-label-${row.month}`}
+          key={`x-label-${row.month}-${index}`}
           x={padding + index * xStep}
           y={height - padding + 20}
           textAnchor="middle"
@@ -241,12 +358,15 @@ if (!filteredAccounts.length) {
   return null;
 }
 
+  // Get visible slice angles with minimum size
+  const sliceAngles = getVisibleSlices(filteredAccounts, total);
+
   let currentAngle = -Math.PI / 2; // Start from top
 
   const colors =
   type === 'liability'
-    ? ['#db8c4f', '#eeceb6']
-    : ['#71B48D', '#BDDDBD', '#404E7C'];
+    ? LIABILITY_COLORS
+    : ASSET_COLORS;
 
   const [hoverSlice, setHoverSlice] = useState(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -271,8 +391,7 @@ if (!filteredAccounts.length) {
     <div className="pie-chart-container" onMouseMove={handleMouseMove}>
       <svg id="pie-chart" viewBox={`0 0 ${width} ${height}`} width="100%" height="100%">
         {filteredAccounts.map((account, index) => {
-          const percentage = total > 0 ? Math.abs(account.balance) / total: 0;
-          const angle = isNaN(percentage) ? 0 : percentage * 2 * Math.PI;
+          const angle = sliceAngles[index] || 0;
 
           const startAngle = currentAngle;
           const endAngle = currentAngle + angle;
@@ -297,7 +416,7 @@ if (!filteredAccounts.length) {
             <path
               key={account.type}
               d={pathData}
-              fill={colors[index]}
+              fill={colors[index % colors.length]}
               stroke="#fff"
               strokeWidth="2"
               onMouseEnter={(event) => handleMouseEnter(account, event)}
@@ -337,50 +456,66 @@ if (!filteredAccounts.length) {
 function Accounts({ selectedClient, openTab, clients}) {
   const { assetAccounts, liabilityAccounts } = getAssetsAndLiabilities(selectedClient.accounts);
   const orderedAccounts = [...assetAccounts, ...liabilityAccounts];
-  const assetColors = ['#bdddbd','#71B48D','#404E7C', '#4a3974'];
-  const liabilityColors = ['#db8c4f', '#eeceb6', '#edeea4', '#e3e64a'];
   let _ai = 0, _li = 0; // asset and liability color indices
   const overviewColors = orderedAccounts.map((acc) => {
     const isAsset = acc.category ? acc.category.toLowerCase() === 'asset' : acc.balance > 0;
     if(isAsset) {
-      const color = assetColors[_ai % assetColors.length];
+      const color = ASSET_COLORS[_ai % ASSET_COLORS.length];
       _ai++;
       return color;
     }
-    const color = liabilityColors[_li % liabilityColors.length];
+    const color = LIABILITY_COLORS[_li % LIABILITY_COLORS.length];
     _li++;
     return color; 
   });
 
+  
+const OUTLIER_THRESHOLD = 200000;  //for now, not showing outlier accounts on line chart to avoid compression - can add toggle later
+
+const visibleAccounts = orderedAccounts.filter(
+  (account) => Math.abs(account.balance) <= OUTLIER_THRESHOLD
+);
+
+const lineSeries = visibleAccounts.map((account) => {
+  const index = orderedAccounts.findIndex(a => a.type === account.type);
+
+  return {
+    key: account.type,
+    color: overviewColors[index],
+  };
+});
+
+
   const totalLiabilities = liabilityAccounts.reduce((sum, acc) => sum + Math.abs(acc.balance),0);
+  const totalAssets = assetAccounts.reduce((sum, acc) => sum + Math.abs(acc.balance),0);
 
   const accountHistory = useMemo(() => {
-    const spend = selectedClient.accounts.find((account) => account.type === 'Spend')?.balance || 0;
-    const reserve = selectedClient.accounts.find((account) => account.type === 'Reserve')?.balance || 0;
-    const growth = selectedClient.accounts.find((account) => account.type === 'Growth')?.balance || 0;
+    const transactions = selectedClient.transactions || [];
+    const accounts = selectedClient.accounts || [];
+    const parsedTransactions = transactions
+      .map((tx) => ({
+        ...tx,
+        date: parseMonthDate(tx.date || tx.transaction_date),
+      }))
+      .filter((tx) => tx.date);
 
-    const autoLoan = selectedClient.accounts.find(a => a.type === 'Auto Loan')?.balance || 0;
-    const heloc = selectedClient.accounts.find(a => a.type === 'Home Equity Line of Credit')?.balance || 0;
+    const latestDate = parsedTransactions.reduce(
+      (latest, tx) => (tx.date > latest ? tx.date : latest),
+      new Date()
+    );
 
+    const months = getLastNMonths(6, latestDate);
+    const accountHistories = getAccountHistoryFromTransactions(accounts, parsedTransactions, months);
 
-    const factors = [
-      { month: 'Nov', Spend: 0.78, Reserve: 0.74, Growth: 0.66 },
-      { month: 'Dec', Spend: 0.82, Reserve: 0.78, Growth: 0.70 },
-      { month: 'Jan', Spend: 0.86, Reserve: 0.82, Growth: 0.74 },
-      { month: 'Feb', Spend: 0.90, Reserve: 0.86, Growth: 0.78 },
-      { month: 'Mar', Spend: 0.94, Reserve: 0.90, Growth: 0.84 },
-      { month: 'Apr', Spend: 1, Reserve: 1, Growth: 1 },
-    ];
+    const data = months.map((month, monthIndex) => {
+      const row = { month: month.label };
+      accountHistories.forEach((accountHistoryEntry) => {
+        row[accountHistoryEntry.accountType] = accountHistoryEntry.values[monthIndex];
+      });
+      return row;
+    });
 
-    return factors.map((factor) => ({
-      month: factor.month,
-      Spend: Math.round(spend * factor.Spend),
-      Reserve: Math.round(reserve * factor.Reserve),
-      Growth: Math.round(growth * factor.Growth),
-      
-      AutoLoan: Math.round(autoLoan * factor.Spend),
-      HELOC: Math.round(heloc * factor.Reserve),
-    }));
+    return data;
   }, [selectedClient]);
 
   const accountDetailTarget = (accountType) => {
@@ -433,19 +568,25 @@ function Accounts({ selectedClient, openTab, clients}) {
             <article className="overview-chart-card">
               <h3>Account Changes Over Time</h3>
               <div className="chart-wrapper">
-                <LineChart data={accountHistory} />
+                <LineChart data={accountHistory} series={lineSeries} />
               </div>
 
               <div className="chart-legend">
-                {orderedAccounts.map((account, i) => (
-                  <div key={account.type} className="legend-item">
-                    <div
-                      className="legend-color"
-                      style={{ backgroundColor: overviewColors[i] }}
-                    ></div>
-                    <span>{account.type}</span>
-                  </div>
-                ))}
+                
+                {visibleAccounts.map((account) => {
+                  const i = orderedAccounts.findIndex(a => a.type === account.type);
+
+                  return (
+                    <div key={account.type} className="legend-item">
+                      <div
+                        className="legend-color"
+                        style={{ backgroundColor: overviewColors[i] }}
+                      ></div>
+                      <span>{account.type}</span>
+                    </div>
+                  );
+                })}
+
               </div>
             </article>
           </div>
@@ -505,12 +646,18 @@ function Accounts({ selectedClient, openTab, clients}) {
                           </div>
                           </td>
                           <td>{formatCurrency(account.balance)}</td>
-                          <td>{account.percentage}%</td>
+                          <td>{totalAssets > 0
+                            ? 
+                            `${(
+                              (Math.abs(account.balance) / totalAssets) * 100
+                            ).toFixed(1)}%
+                            `
+                            : '-'}</td>
                           <td>
                             {lastActivity.type === 'deposit' && '+'}
                             {lastActivity.type === 'withdrawal' && '-'}
                             {lastActivity.type !== 'deposit' && lastActivity.type !== 'withdrawal' && ''}
-                            {formatCurrency(lastActivity.amount)} ({formatDate(lastActivity.date)})
+                            {formatCurrency(account.lastActivityAmount)} ({formatDate(lastActivity.date)})
                           </td>
                         </tr>
                       );
@@ -568,7 +715,7 @@ function Accounts({ selectedClient, openTab, clients}) {
                             >
                             <div
                               className="account-indicator"
-                              style={{ backgroundColor: [ '#db8c4f', '#eeceb6', '#905122', '#e3af87'][i] }}
+                              style={{ backgroundColor: ['#db8c4f', '#eeceb6', '#edeea4', '#e3e64a'][i] }}
                             ></div>
                             {account.type}
                           </div>
@@ -589,7 +736,7 @@ function Accounts({ selectedClient, openTab, clients}) {
                           {lastActivity.type === 'deposit' && '+'}
                           {lastActivity.type === 'withdrawal' && '-'}
                           {lastActivity.type !== 'deposit' && lastActivity.type !== 'withdrawal' && ''}
-                          {formatCurrency(lastActivity.amount)} ({formatDate(lastActivity.date)})
+                          {formatCurrency(account.lastActivityAmount)} ({formatDate(lastActivity.date)})
                         </td>
                       </tr>
                     );
