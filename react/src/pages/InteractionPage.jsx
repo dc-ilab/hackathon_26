@@ -408,7 +408,7 @@ const getJointAccountHolderName = (account) => {
                         <div key={index} className="account-card">
                           <h3>{account.type}</h3>
                           <div className="account-balance">{formatCurrency(account.balance)}</div>
-                          <div className="account-percentage">{((Math.abs(account.balance) / totalAssets) * 100).toFixed(2)}% of total</div>
+                          <div className="account-percentage">{((Math.abs(account.balance) / totalAssets) * 100).toFixed(2)}% of total assets</div>
                           {String(account.isJoint).toLowerCase() === 'y' && (
                             <span className="joint-badge">
                               <strong>Joint</strong> with {getJointAccountHolderName(account)}
