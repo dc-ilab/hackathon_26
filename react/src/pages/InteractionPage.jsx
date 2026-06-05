@@ -9,8 +9,7 @@ const formatDate = (value) => {
   return new Intl.DateTimeFormat('en-US').format(date);
 };
 
-function InteractionPage({ selectedClient, saveInteractionDocument, submitInteractionDocument, draft, interactionDraft, clientGoals, setClientGoals, filteredClients, handleClientChange, closeTab, activeTab,
-}) {
+function InteractionPage({ selectedClient, saveInteractionDocument, submitInteractionDocument, draft, interactionDraft, clientGoals, setClientGoals, filteredClients, handleClientChange, closeTab, activeTab, clients}) {
   
   const activeDraft = draft || interactionDraft;
   const [isGroupingOpen, setIsGroupingOpen] = useState(false);
@@ -32,6 +31,7 @@ function InteractionPage({ selectedClient, saveInteractionDocument, submitIntera
   const goals = clientGoals[selectedClient.id] || [];
   const [preparationNotes, setPreparationNotes] = useState('');
   const {assetAccounts, liabilityAccounts } = getAssetsAndLiabilities(selectedClient.accounts);
+  const latestInteraction = selectedClient.interactions?.[0] || null;
 
   
   const relatedClients =
@@ -274,6 +274,47 @@ const handleSubmit = async () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const handleRestoreLastInteraction = () => {
+  console.log("Restore clicked!!");
+  if (!latestInteraction) return;
+  console.log('latestInteraction:', latestInteraction);
+  setFormData((prev) => ({
+    ...prev,
+
+    trackExpenses: latestInteraction.track_expenses ? 'yes' : 'no',
+    trackExpensesDesc: latestInteraction.track_expenses_desc || '',
+
+    borrowMoney: latestInteraction.borrow_money ? 'yes' : 'no',
+    borrowMoneyDesc: latestInteraction.borrow_money_desc || '',
+
+    saveRetirement: latestInteraction.save_retirement ? 'yes' : 'no',
+    saveRetirementDesc: latestInteraction.save_retirement_desc || '',
+
+    incomeSources: latestInteraction.income_srcs || '',
+    currentSaving: latestInteraction.current_save || '',
+    typicalPurchase: latestInteraction.typ_purchase || '',
+
+    bankerNotes: latestInteraction.banker_notes || '',
+    pncNotes: latestInteraction.pnc_notes || ''
+  }));
+};
+const getJointAccountHolderName = (account) => {
+  if (!account?.isJoint) return null;
+
+  const currentId = selectedClient.customer_id;
+
+  const otherCustomerId =
+    currentId === account.customer_id
+      ? account.jointCustomerId
+      : account.customer_id;
+
+  const otherClient = clients?.find(
+    (c) => c.customer_id === otherCustomerId
+  );
+
+  return otherClient?.name || null;
+};
+
 
   return (
     <div className="background-card">
@@ -329,6 +370,11 @@ const handleSubmit = async () => {
                         <div key={index} className="account-card">
                           <h3>{account.type}</h3>
                           <div className="account-balance">{formatCurrency(account.balance)}</div>
+                          {String(account.isJoint).toLowerCase() === 'y' && (
+                            <span className="joint-badge">
+                              <strong>Joint</strong> with {getJointAccountHolderName(account)}
+                            </span>
+                          )}
                           {/* <div className="account-percentage">{account.percentage}% of total</div> */}
                           <div
                             className="account-indicator"
@@ -491,18 +537,32 @@ const handleSubmit = async () => {
                   rows="6"
                 ></textarea> */}
                 <textarea
-  value={preparationNotes}
-  onChange={(e) => setPreparationNotes(e.target.value)}
-  className="notes-textarea"
-                  placeholder="Add preparation notes for this interaction..."
-                  rows="6"
-/>
+                value={preparationNotes}
+                onChange={(e) => setPreparationNotes(e.target.value)}
+                className="notes-textarea"
+                                placeholder="Add preparation notes for this interaction..."
+                                rows="6"
+              />
 
               </div>
             </div>
 
             {/* Interaction Questions Module */}
             <div className="module module--interaction-questions card">
+              {latestInteraction && (
+  <div className="interaction-restore-bar">
+    <span className="interaction-last-date">
+      Last Interaction Form Submitted on {latestInteraction.interaction_date}
+    </span>
+
+    <button
+      className="restore-button"
+      onClick={handleRestoreLastInteraction}
+    >
+      Restore Answers from Last Appointment
+    </button>
+  </div>
+)}
               <h2 className="module__title">Interaction Questions</h2>
               <div className="module__content">
                 <div className="questions-grid">
